@@ -5,7 +5,7 @@ library(DBI)
 
 connection_string <- paste0(
   "Driver={Microsoft Access Driver (*.mdb, *.accdb)};",
-  "DBQ=", normalizePath("./Smoky_Samples taken at DBH.mdb")
+  "DBQ=", normalizePath("./data/Smoky_Samples taken at DBH.mdb")
 )
 
 con <- dbConnect(odbc::odbc(), .connection_string = connection_string, timeout = 10)
