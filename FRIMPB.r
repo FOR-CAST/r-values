@@ -1451,3 +1451,14 @@ lines(residuals.sum.correlog[,1],residuals.sum.correlog.mean)
 points(residuals.sum.correlog[,1],residuals.sum.correlog.mean,pch=21)
 abline(h=0)
 
+###################
+#   Jasper data   #
+#  June 18 2024   #
+###################
+
+infile<-"data/Brett/JasperData/AreaInfested20132021.txt"
+Jasper.AreaInfested<-read.table(infile,header=T)
+win.graph(height=5,width=5)
+plot(Jasper.AreaInfested$year, Jasper.AreaInfested$area,type="l",xlab="year",ylab="area infested (ha)",main="Jasper National Park")
+points(Jasper.AreaInfested$year, Jasper.AreaInfested$area,pch=19)
+
