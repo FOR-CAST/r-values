@@ -1462,3 +1462,10 @@ win.graph(height=5,width=5)
 plot(Jasper.AreaInfested$year, Jasper.AreaInfested$area,type="l",xlab="year",ylab="area infested (ha)",main="Jasper National Park")
 points(Jasper.AreaInfested$year, Jasper.AreaInfested$area,pch=19)
 
+#plot interannual change in area infested, R
+Jasper.R<-Jasper.AreaInfested$area[2:length(Jasper.AreaInfested$area)]/Jasper.AreaInfested$area[1:(length(Jasper.AreaInfested$area)-1)]
+win.graph(height=5,width=5)
+hist(Jasper.R)
+
+win.graph(height=6,width=6)
+plot(2014:2021,log10(Jasper.R),type="l",xlab="year",ylab="log10 (Area t/Area t-1)",main="Jasper National Park")
