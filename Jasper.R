@@ -6,6 +6,9 @@
 # last change: June 25, 2024                       #
 ####################################################
 
+# r-value: springtime recruitment rate
+# R-value: interannual rate of change in infestation rate (# trees or area)
+
 ##########################
 #   area infested data   #
 ##########################
@@ -21,5 +24,6 @@ Jasper.R<-Jasper.AreaInfested$area[2:length(Jasper.AreaInfested$area)]/Jasper.Ar
 win.graph(height=5,width=5)
 hist(Jasper.R)
 
+#plot on log scale
 win.graph(height=6,width=6)
 plot(2014:2021,log10(Jasper.R),type="l",xlab="year",ylab="log10 (Area t/Area t-1)",main="Jasper National Park")
