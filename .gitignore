@@ -31,7 +31,9 @@ Rplots*.pdf
 *_cache/
 /cache/
 
-# output directories
+# input + output directories
+data/
+data
 outputs/
 outputs
 
