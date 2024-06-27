@@ -5,6 +5,6 @@ library(odbc)
 library(ggplot2)
 library(ggspatial)
 
-# read in data from MS Access databoses -------------------------------------------------------
+# read in data from MS Access databases -------------------------------------------------------
 
 ## TODO
