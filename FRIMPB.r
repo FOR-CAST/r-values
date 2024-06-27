@@ -70,6 +70,7 @@ abr$ELEV[abr$ELEV==0]<-NA
 ###############################################################################################################
 # This is the new set of data files post March 20, which have years de-merged, and columns named differently. #
 # A long set of steps are required to merge and QC these data.                                                #
+# Note: these data have more errors than the original, such as numerous zeroes for NBR_INFEST in 06,07,09,14  #
 ###############################################################################################################
 
 ########
@@ -499,9 +500,13 @@ w.2007<-ncol(abr.2007)
 abr.2007[,w.2007+1]<-rep(2007,l.2007)
 
 # yr, lat, lon, infest, r, dbh,  ht, cf, ssi : Column numbers varies across years
+
+## CAUTION 1: NBR_TREES column 11 in abr.2006 is the number of sample trees, *not* the number of infested trees
+## CAUTION 2: SAMPLE_TRE column 9 in abr.2007 is the number of sample trees, *not* the number of infested trees
+
 abr.new<-as.data.frame(rbind(
-  as.matrix(abr.2006[,c(8,14,15,11,19,20,21,22,23)]),
-  as.matrix(abr.2007[,c(25,7, 8, 9,21,11,12,23,24)]),
+  as.matrix(abr.2006[,c(8,14,15,11,19,20,21,22,23)]), #see caution 1 above
+  as.matrix(abr.2007[,c(25,7, 8, 9,21,11,12,23,24)]), #see caution 2 above
   as.matrix(abr.2008[,c(8,15,16,14,27,29,30,31,32)]),
   as.matrix(abr.2009[,c(8,21,22,14,33,35,36,37,38)]),
   as.matrix(abr.2010[,c(9,16,17,15,28,30,31,32,33)]),
