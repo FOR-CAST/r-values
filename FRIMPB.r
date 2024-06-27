@@ -14,9 +14,10 @@ library(sf)
 library(raster)
 library(wesanderson)
 
-#This is the original data file, which had years pre-merged
+#This is the original data file for the 2017 FRI report, which had years pre-merged
 #abr <- read.csv("C:\\Barry\\Data\\MPB\\fRIreportrvalueanalysis\\rvaluerawdata20062015Aug2016.csv",header=T)
-#abr <- read.csv("C:\\Barry\\Data\\MPB\\rvaluesQvalues.csv", h = T)
+
+#This input file has jack pine introgression coefficients, Q, merged
 infile<-paste0(getwd(),"/data/FRI/rvaluesQvalues.csv")
 abr <- read.csv(infile, header = T,na.strings=".")
 
@@ -35,7 +36,7 @@ hist(abr$NBR_INFEST)
 
 sum(na.omit(abr$NBR_INFEST==0))
 
-#FRI report has infestation levels for 2006, 2007, 2009
+#FRI report has mostly non-zero infestation levels for 2006, 2007, 2009
 win.graph(height=4,width=4)
 boxplot(log10(abr$NBR_INFEST+1)~abr$Beetle_YEAR)
 
