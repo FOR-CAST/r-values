@@ -26,11 +26,18 @@ par(mfrow=c(1,1))
 plot(abr$PLOT_LON,abr$PLOT_LAT)
 
 #quick check of some variables
-win.graph(height=5,width=12)
-par(mfrow=c(1,3))
+win.graph(height=6,width=6)
+par(mfrow=c(2,2))
 hist(abr$ELEV)
 hist(abr$DBH)
 hist(log10(abr$HT_PITCH_T))
+hist(abr$NBR_INFEST)
+
+sum(na.omit(abr$NBR_INFEST==0))
+
+#FRI report has infestation levels for 2006, 2007, 2009
+win.graph(height=4,width=4)
+boxplot(log10(abr$NBR_INFEST+1)~abr$Beetle_YEAR)
 
 ############################################
 # There appear to be some database errors  #
