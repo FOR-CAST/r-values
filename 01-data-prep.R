@@ -38,19 +38,8 @@ source("R/helpers.R")
 
 drive_id <- as_id("1EiproEknMuuze5c6U_1tCptB8UM4z5YI")
 
-## create local data directory structure to match that on Google Drive
-drive_dirs <- drive_ls(drive_id, recursive = FALSE, type = "folder")
-
-purrr::walk(drive_dirs$name, function(d) {
-  if (!dir.exists(file.path(dataPath, d))) {
-    dir.create(file.path(dataPath, d), recursive = TRUE)
-  }
-})
-
-## fetch file info for ALL files; will refer to this data frame as needed to download files
-drive_files <- drive_ls(drive_id, recursive = TRUE)
-
-## TODO: download files
+## NOTE: use overwrite=TRUE if e.g., data updated on Google Drive
+all_drive_files <- workflowtools::drive_download_folder(drive_id, dataPath, overwrite = FALSE)
 
 # Alberta administrative boundaries -----------------------------------------------------------
 
