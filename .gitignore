@@ -28,8 +28,9 @@ Rplots*.pdf
 .httr-oauth
 
 # cache directories
-*_cache/
+cache
 /cache/
+*_cache/
 
 # input + output directories
 data/
