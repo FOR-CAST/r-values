@@ -73,7 +73,7 @@ gg_abmpb <- ggplot() +
 
 ggsave(file.path(figPath, "carroll_et_al_2017_map_banff_jasper.png"), gg_abmpb, height = 10, width = 7)
 
-# infestation counts/areas for Jasper & Banff --------------(from Unger, Roke, Thandi & Brett 2003-2022) --------------------------------------
+# infestation counts/areas for Jasper & Banff --------------(from Unger, Roke, Thandi & Brett 1999-2022) --------------------------------------
 
 ABMtnParksMPB <- read.table(file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt"), header = TRUE)
 
