@@ -46,7 +46,7 @@ natl_prks <- st_transform(natl_prks.latlon, targetCRS)
 np_banff.latlon <- natl_prks.latlon[natl_prks.latlon$DESC_EN == "Banff National Park of Canada", ]
 np_banff <- natl_prks[natl_prks$DESC_EN == "Banff National Park of Canada", ]
 
-np_jasper.latlon[natl_prks.latlon$DESC_EN == "Jasper National Park of Canada", ]
+np_jasper.latlon <- natl_prks.latlon[natl_prks.latlon$DESC_EN == "Jasper National Park of Canada", ]
 np_jasper <- natl_prks[natl_prks$DESC_EN == "Jasper National Park of Canada", ]
 
 # map locations from Carroll et al. 2017 ------------------------------------------------------
