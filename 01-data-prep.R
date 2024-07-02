@@ -93,9 +93,7 @@ DEM <- Cache(
   studyArea = studyAreaReporting,
   destinationPath = dataPath
 ) |>
-  writeRaster(file.path(outputPath, "DEM_ABSK_studyArea.tif")) ## TODO: different file format?
-
-## TODO: does BioSIM handle projected DEMs? or should latlon version be used?
+  writeRaster(file.path(outputPath, "DEM_ABSK_studyArea.tif"), NAflag = -9999)
 
 # get pine maps -------------------------------------------------------------------------------
 
