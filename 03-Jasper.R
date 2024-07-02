@@ -4,6 +4,7 @@ library(archive)
 library(ggplot2)
 library(ggspatial)
 library(sf)
+library(terra)
 
 # setup ---------------------------------------------------------------------------------------
 
@@ -32,12 +33,12 @@ targetCRS <- crs(paste(
 ## Banff and Jasper National Parks
 ## see: https://hub.arcgis.com/datasets/dd8cd91871534c9aa34310eed84fe076_1/about
 np_url <- "https://drive.google.com/file/d/1Rz8BzyWtirXuCbAxx8MqeJs2KlNYO9eh/"
-np_zip <- file.path(dataPath, basename(np_url))
 np_file <- "National_Parks_and_National_Park_Reserves_of_Canada_Legislative_Boundaries"
 np_fext <- c("cpg", "dbf", "prj", "shp", "shx")
+np_zip <- file.path(dataPath, paste0(np_file, ".zip"))
 
 if (!file.exists(np_zip)) {
-  googledrive::drive_download(as_id(np_url), np_zip)
+  googledrive::drive_download(googledrive::as_id(np_url), np_zip)
 }
 
 if (!all(file.exists(file.path(dataPath, paste0(np_file, ".", np_fext))))) {
