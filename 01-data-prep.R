@@ -68,8 +68,7 @@ ab <- can1[can1$NAME_1 == "Alberta", ]
 # create DEM for use with BioSIM --------------------------------------------------------------
 
 ## follows approach taken in LandR_MPB_studyArea and mpbClimateData modules
-absk <- subset(can1.latlon, NAME_1 %in% c("Alberta", "Saskatchewan")) |>
-  sf::st_transform(targetCRS)
+absk <- subset(can1, NAME_1 %in% c("Alberta", "Saskatchewan"))
 
 studyAreaReporting <- mpbutils::mpbStudyArea(
   ecoregions = c(112, 120, 122, 124, 126),
@@ -95,6 +94,8 @@ DEM <- Cache(
   destinationPath = dataPath
 ) |>
   writeRaster(file.path(outputPath, "DEM_ABSK_studyArea.tif")) ## TODO: different file format?
+
+## TODO: does BioSIM handle projected DEMs? or should latlon version be used?
 
 # get pine maps -------------------------------------------------------------------------------
 
