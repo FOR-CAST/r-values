@@ -93,7 +93,7 @@ DEM <- Cache(
   studyArea = studyAreaReporting,
   destinationPath = dataPath
 ) |>
-  writeRaster(file.path(outputPath, "DEM_ABSK_studyArea.tif"), NAflag = -9999)
+  writeRaster(file.path(outputPath, "DEM_ABSK_studyArea.tif"), NAflag = -9999, overwrite = TRUE)
 
 # get pine maps -------------------------------------------------------------------------------
 
