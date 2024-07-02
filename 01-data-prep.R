@@ -68,9 +68,7 @@ ab <- can1[can1$NAME_1 == "Alberta", ]
 # create DEM for use with BioSIM --------------------------------------------------------------
 
 ## follows approach taken in LandR_MPB_studyArea and mpbClimateData modules
-absk <- geodata::gadm(country = "CAN", level = 1, path = dataPath) |>
-  sf::st_as_sf() |>
-  subset(x = _, NAME_1 %in% c("Alberta", "Saskatchewan")) |>
+absk <- subset(can1.latlon, NAME_1 %in% c("Alberta", "Saskatchewan")) |>
   sf::st_transform(targetCRS)
 
 studyAreaReporting <- mpbutils::mpbStudyArea(

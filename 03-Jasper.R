@@ -8,13 +8,17 @@ library(sf)
 # setup ---------------------------------------------------------------------------------------
 
 ## paths
+cachePath <- "cache"
 dataPath <- normalizePath("./data", mustWork = FALSE)
 figPath <- "figures"
 outputPath <- "outputs"
 
+if (!dir.exists(cachePath)) dir.create(cachePath)
 if (!dir.exists(dataPath)) dir.create(dataPath)
 if (!dir.exists(figPath)) dir.create(figPath)
 if (!dir.exists(outputPath)) dir.create(outputPath)
+
+options(reproducible.cachePath = cachePath)
 
 ## set map projection
 latlon <- crs("epsg:4326")
@@ -26,10 +30,10 @@ targetCRS <- crs(paste(
 # National Parks ------------------------------------------------------------------------------
 
 ## Banff and Jasper National Parks
-## see: https://open.canada.ca/data/dataset/e1f0c975-f40c-4313-9be2-beb951e35f4e
-np_url <- "https://opendata.arcgis.com/datasets/0fb235ee5bb34e51a825add061dd1a21_0.zip"
+## see: https://hub.arcgis.com/datasets/dd8cd91871534c9aa34310eed84fe076_1/about
+np_url <- "https://opendata.arcgis.com/api/v3/datasets/dd8cd91871534c9aa34310eed84fe076_1/downloads/data?format=shp&spatialRefId=4326&where=1%3D1"
 np_zip <- file.path(dataPath, basename(np_url))
-np_file <- "vw_Places_Public_lieux_public_APCA"
+np_file <- "National_Parks_and_National_Park_Reserves_of_Canada_Legislative_Boundaries"
 np_fext <- c("cpg", "dbf", "prj", "shp", "shx")
 
 if (!file.exists(np_zip)) {
@@ -43,11 +47,11 @@ if (!all(file.exists(file.path(dataPath, paste0(np_file, ".", np_fext))))) {
 natl_prks.latlon <- st_read(file.path(dataPath, paste0(np_file, ".shp")))
 natl_prks <- st_transform(natl_prks.latlon, targetCRS)
 
-np_banff.latlon <- natl_prks.latlon[natl_prks.latlon$DESC_EN == "Banff National Park of Canada", ]
-np_banff <- natl_prks[natl_prks$DESC_EN == "Banff National Park of Canada", ]
+np_banff.latlon <- natl_prks.latlon[natl_prks.latlon$adminAreaN == "BANFF NATIONAL PARK OF CANADA", ]
+np_banff <- natl_prks[natl_prks$adminAreaN == "BANFF NATIONAL PARK OF CANADA", ]
 
-np_jasper.latlon <- natl_prks.latlon[natl_prks.latlon$DESC_EN == "Jasper National Park of Canada", ]
-np_jasper <- natl_prks[natl_prks$DESC_EN == "Jasper National Park of Canada", ]
+np_jasper.latlon <- natl_prks.latlon[natl_prks.latlon$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
+np_jasper <- natl_prks[natl_prks$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
 
 # map locations from Carroll et al. 2017 ------------------------------------------------------
 
