@@ -52,8 +52,20 @@ source("R/helpers.R")
 
 drive_id <- as_id("1EiproEknMuuze5c6U_1tCptB8UM4z5YI")
 
+all_drive_files <- drive_ls(drive_id, recursive = TRUE) ## can be used to look up file ids etc.
+
 ## NOTE: use overwrite=TRUE if e.g., data updated on Google Drive
-all_drive_files <- workflowtools::drive_download_folder(drive_id, dataPath, overwrite = FALSE)
+downloaded_files <- workflowtools::drive_download_folder(drive_id, dataPath, overwrite = FALSE)
+
+## e.g., to re-download a subdirectory only:
+# withr::with_dir(
+#   file.path(dataPath, "Brett"),
+#   workflowtools::drive_download_folder(
+#     as_id("12aHAFqjL40ly6x9tvfjj_96HE0ZjOQyl"), ## get drive folder ID from the 'share' link/url
+#     file.path(dataPath, "Brett"),
+#     overwrite = TRUE
+#   )
+# )
 
 # Alberta administrative boundaries -----------------------------------------------------------
 
