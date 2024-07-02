@@ -78,35 +78,41 @@ gg_abmpb <- ggplot() +
 
 ggsave(file.path(figPath, "carroll_et_al_2017_map_banff_jasper.png"), gg_abmpb, height = 10, width = 7)
 
-# infestation counts/areas for Jasper & Banff --------------(from Unger, Roke, Thandi & Brett 1999-2022) --------------------------------------
+# infestation counts/areas for Jasper & Banff -------------------------------------------------
 
-ABMtnParksMPB <- read.table(file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt"), header = TRUE)
+## from Unger, Roke, Thandi & Brett 1999-2022
 
-win.graph(height=5,width=8)
-par(mar=c(5,5,2,6))
-# 100 ha is about 2000 mature trees in AB Mtn Parks (20 trees/ha)
-#Area after 2013 needs to be scaled between 10 ha and 1 000 000 ha
-#Count before 2013 needs to be scaled between 100 trees to 100 000 trees, but 100 000 trees is only 50 000 ha, so uncounted tree count after 2013 could be as high as 2 000 000
+ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt") |>
+  read.table(header = TRUE)
 
-#Banff will be solid black; Jasper white
-#counts will be squares; areas will be circles
+win.graph(height = 5, width = 8)
+par(mar = c(5, 5, 2, 6))
+## 100 ha is about 2000 mature trees in AB Mtn Parks (20 trees/ha)
+## Area after 2013 needs to be scaled between 10 ha and 1 000 000 ha
+## Count before 2013 needs to be scaled between 100 trees to 100 000 trees,
+## but 100,000 trees is only 50,000 ha, so uncounted tree count after 2013 could be as high as 2,000,000
 
-plot(ABMtnParksMPB$year,log10(ABMtnParksMPB$BanffCount),type="l",xlab="year",ylab="trees infested (log10 count)",ylim=c(1,11.5)) # 100 trees to 10 000 000 trees; low end scaled so that white circle perfectly overlaps white square
-points(ABMtnParksMPB$year,log10(ABMtnParksMPB$BanffCount),pch=15) #black squares
-lines(ABMtnParksMPB$year,log10(ABMtnParksMPB$JasperCount))
-points(ABMtnParksMPB$year,log10(ABMtnParksMPB$JasperCount),pch=22,bg="white") #white squares
+## Banff will be solid black; Jasper white
+## counts will be squares; areas will be circles
 
-par(new=TRUE)
-plot(ABMtnParksMPB$year,log10(ABMtnParksMPB$Jasperha),axes=F,type="l",ylim=c(1,6),xlab="",ylab="") # 10 ha to 1 000 000 ha
-points(ABMtnParksMPB$year,log10(ABMtnParksMPB$Jasperha),pch=21,bg="white") #white circles
-lines(ABMtnParksMPB$year,log10(ABMtnParksMPB$Banffha))
-points(ABMtnParksMPB$year,log10(ABMtnParksMPB$Banffha),pch=19) #black circles
-axis(side=4)
+## 100 trees to 10 000 000 trees; low end scaled so that white circle perfectly overlaps white square:
+plot(ABMtnParksMPB$year, log10(ABMtnParksMPB$BanffCount), type = "l",
+     xlab = "year", ylab = "trees infested (log10 count)", ylim = c(1, 11.5))
+points(ABMtnParksMPB$year, log10(ABMtnParksMPB$BanffCount), pch = 15) # black squares
+lines(ABMtnParksMPB$year, log10(ABMtnParksMPB$JasperCount))
+points(ABMtnParksMPB$year, log10(ABMtnParksMPB$JasperCount), pch = 22, bg = "white") # white squares
+
+par(new = TRUE)
+plot(ABMtnParksMPB$year, log10(ABMtnParksMPB$Jasperha), axes = FALSE, type = "l",
+     xlab = "", ylab = "", ylim = c(1, 6)) # 10 ha to 1 000 000 ha
+points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Jasperha), pch = 21, bg = "white") # white circles
+lines(ABMtnParksMPB$year, log10(ABMtnParksMPB$Banffha))
+points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Banffha), pch = 19) # black circles
+axis(side = 4)
 mtext("area infested (log10 ha)", side = 4, line = 3)
 
-abline(v=2012.5,lty=3)
-text(2005.3,6,"count infested")
-text(2017.5,6,"area infested")
-legend(2003.5,5.7,pch=c(22,15),c("Jasper","Banff"))
-legend(2015.5,1.9,pch=c(21,19),c("Jasper","Banff"))
-
+abline(v = 2012.5, lty = 3)
+text(2005.3, 6, "count infested")
+text(2017.5, 6, "area infested")
+legend(2003.5, 5.7, pch = c(22, 15), c("Jasper", "Banff"))
+legend(2015.5, 1.9, pch = c(21, 19), c("Jasper", "Banff"))
