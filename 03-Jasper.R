@@ -129,24 +129,28 @@ ABMtnParksMPB_long <- ABMtnParksMPB |>
   mutate(Park = as.factor(Park)) |>
   rename(Year = year, Area_ha = ha)
 
+scaleFact <- 2
+
 gg <- ggplot(ABMtnParksMPB_long, aes(x = Year, col = Park, fill = Park)) +
   geom_point(aes(y = log10(Count)), shape = 22, size = 3) +
   geom_line(aes(y = log10(Count)), size = 1) +
-  geom_point(aes(y = log10(Area_ha)), shape = 21, size = 3) +
-  geom_line(aes(y = log10(Area_ha)), size = 1) +
+  geom_point(aes(y = log10(Area_ha)*scaleFact), shape = 21, size = 3) +
+  geom_line(aes(y = log10(Area_ha)*scaleFact), size = 1) +
   geom_vline(xintercept = 2012.5, linetype = "dotted", size = 1.5) +
   expand_limits(y = c(0, 11.5)) +
   scale_y_continuous(
     name = "trees infested (log10 count)",
-    sec.axis = sec_axis(~ ., name = "area infested (log10 ha)")
+    sec.axis = sec_axis(~ . / scaleFact, name = "area infested (log10 ha)")
   ) +
   geom_text(
-    data = data.frame(x = c(2005.3, 2017.5), y = c(11, 11), label = c("count infested", "area infested")),
+    data = data.frame(x = c(2005.3, 2017.5), y = c(11.5, 11.5), label = c("count infested", "area infested")),
     aes(x = x, y = y, label = label),
     size = 5,
     inherit.aes = FALSE
   ) +
   theme_bw() +
   theme(legend.position = "bottom")
+
+## TODO: count value for Jasper @ 2013 ends up separated from other count data on left side of fig.
 
 ggsave(file.path(figPath, "AB_mtn_parks_infested_gg.png"), gg)
