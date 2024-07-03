@@ -6,17 +6,17 @@ library(odbc)
 # setup ---------------------------------------------------------------------------------------
 
 ## paths
-cachePath <- "cache"
+# cachePath <- "cache"
 dataPath <- normalizePath("./data", mustWork = FALSE)
 figPath <- "figures"
 outputPath <- "outputs"
 
-if (!dir.exists(cachePath)) dir.create(cachePath)
+# if (!dir.exists(cachePath)) dir.create(cachePath)
 if (!dir.exists(dataPath)) dir.create(dataPath)
 if (!dir.exists(figPath)) dir.create(figPath)
 if (!dir.exists(outputPath)) dir.create(outputPath)
 
-options(reproducible.cachePath = cachePath)
+# options(reproducible.cachePath = cachePath)
 
 # read in data from MS Access databases -------------------------------------------------------
 
@@ -40,17 +40,17 @@ purrr::walk(mdb_files, function(mdb) {
 
   if ("mpb_trees" %in% db_tbls) {
     mpb_trees <- dbReadTable(con, "mpb_trees")
-    write.csv(mpb_trees, paste0(tools::file_path_sans_ext(mdb), "_mpb_trees.csv"))
+    write.csv(mpb_trees, paste0(tools::file_path_sans_ext(mdb), "_mpb_trees.csv"), row.names = FALSE)
   }
 
   if ("mpb_survey_info" %in% db_tbls) {
     surv_info <- dbReadTable(con, "mpb_survey_info")
-    write.csv(surv_info, paste0(tools::file_path_sans_ext(mdb), "_mpb_survey_info.csv"))
+    write.csv(surv_info, paste0(tools::file_path_sans_ext(mdb), "_mpb_survey_info.csv"), row.names = FALSE)
   }
 
   if ("mpb_site" %in% db_tbls) {
     mpb_site <- dbReadTable(con, "mpb_site")
-    write.csv(mpb_site, paste0(tools::file_path_sans_ext(mdb), "_mpb_site.csv"))
+    write.csv(mpb_site, paste0(tools::file_path_sans_ext(mdb), "_mpb_site.csv"), row.names = FALSE)
   }
 
   ## cleanup
