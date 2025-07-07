@@ -10,19 +10,20 @@ library(terra)
 library(reproducible)
 library(LandR)
 
-## NOTE: several suggested packages used here but renv complains:
-#
-# package  installed recorded used
-# BioSIM   y         y        n
-# cluster  y         y        n
-# foreign  y         y        n
-# httpuv   y         y        n
-# J4R      y         y        n
-# later    y         y        n
-# promises y         y        n
-# rpart    y         y        n
-# spatial  y         y        n
-# XML      y         y        n
+## NOTE: several suggested packages used here indirectly;
+## library() calls included here to appease renv.
+if (FALSE) {
+  library(BioSIM)
+  library(cluster)
+  library(foreign)
+  library(httpuv)
+  library(J4R)
+  library(later)
+  library(promises)
+  library(rpart)
+  library(spatial)
+  library(XML)
+}
 
 # setup ---------------------------------------------------------------------------------------
 
