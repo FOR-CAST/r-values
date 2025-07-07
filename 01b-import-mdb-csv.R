@@ -32,12 +32,14 @@ dirname(dirname(csv_files)) |>
   unique() |>
   purrr::walk(function(d) {
     ## if mpb_site table missing, use mpb_survey_info
-    survey_site_csv <- file.path(d, "site", list.files(d, pattern = "_mpb_site[.]csv"))
+    d_site <- file.path(d, "site")
+    survey_site_csv <- file.path(d_site, list.files(d_site, pattern = "_mpb_site[.]csv"))
     if (length(survey_site_csv) == 0) {
-      survey_site_csv <- file.path(d, "site", list.files(d, pattern = "_mpb_survey_info[.]csv"))
+      survey_site_csv <- file.path(d_site, list.files(d_site, pattern = "_mpb_survey_info[.]csv"))
     }
 
-    mpb_trees_csv <- file.path(d, "tree", list.files(d, pattern = "_mpb_trees[.]csv"))
+    d_tree <- file.path(d, "tree")
+    mpb_trees_csv <- file.path(d_tree, list.files(d_tree, pattern = "_mpb_trees[.]csv"))
 
     purrr::walk2(survey_site_csv, mpb_trees_csv, function(fsite, ftrees) {
       ## check the csvs are correctly paired before joining
