@@ -18,8 +18,8 @@ outputPath <- "outputs" |> fs::dir_create()
 csv_zip <- file.path(dataPath, "extracted_mdb_tables.zip")
 
 if (!file.exists(csv_zip)) {
-  as_id("16OK48u6g5-JdWvEFhIJ0vMxvcK-k6z5l") |>
-    googledrive::drive_download()
+    googledrive::as_id("16OK48u6g5-JdWvEFhIJ0vMxvcK-k6z5l") |>
+    googledrive::drive_download(overwrite=TRUE)
   archive::archive_extract(csv_zip, dataPath)
 }
 
