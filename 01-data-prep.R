@@ -28,15 +28,10 @@ if (FALSE) {
 # setup ---------------------------------------------------------------------------------------
 
 ## paths
-cachePath <- "cache"
-dataPath <- normalizePath("./data", mustWork = FALSE)
-figPath <- "figures"
-outputPath <- "outputs"
-
-if (!dir.exists(cachePath)) dir.create(cachePath)
-if (!dir.exists(dataPath)) dir.create(dataPath)
-if (!dir.exists(figPath)) dir.create(figPath)
-if (!dir.exists(outputPath)) dir.create(outputPath)
+cachePath <- "cache" |> fs::dir_create()
+dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
+figPath <- "figures" |> fs::dir_create()
+outputPath <- "outputs" |> fs::dir_create()
 
 options(reproducible.cachePath = cachePath)
 
