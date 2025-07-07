@@ -20,6 +20,7 @@ mdb_files <- file.path(dataPath, "AB", "mdb") |>
   list.files(full.names = TRUE, pattern = "[.](accdb|mdb)$", recursive = TRUE) |>
   grep("/Copy of", x = _, invert = TRUE, value = TRUE) |> ## filter unwanted files
   grep("rollup", x = _, invert = TRUE, value = TRUE) |>   ## filter unwanted files
+  grep("/source/", x = _, invert = TRUE, value = TRUE) |>   ## filter unwanted files
   normalizePath()
 
 purrr::walk(mdb_files, function(mdb) {
