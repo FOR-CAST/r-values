@@ -28,9 +28,9 @@ csv_files <- dataPath |>
   fs::path_rel()
 
 ## read in each (set of) files, validate, and merge
-dirname(dirname(csv_files)) |>
+all_data <- dirname(dirname(csv_files)) |>
   unique() |>
-  purrr::walk(function(d) {
+  purrr::map(function(d) {
     ## if mpb_site table missing, use mpb_survey_info
     d_site <- file.path(d, "site")
     survey_site_csv <- file.path(d_site, list.files(d_site, pattern = "_mpb_site[.]csv"))
@@ -41,25 +41,50 @@ dirname(dirname(csv_files)) |>
     d_tree <- file.path(d, "tree")
     mpb_trees_csv <- file.path(d_tree, list.files(d_tree, pattern = "_mpb_trees[.]csv"))
 
-    purrr::walk2(survey_site_csv, mpb_trees_csv, function(fsite, ftrees) {
+    purrr::map2(survey_site_csv, mpb_trees_csv, function(fsite, ftrees) {
       ## check the csvs are correctly paired before joining
       stopifnot(identical(sub("(mpb_site|mpb_survey_info)", "mpb_trees", basename(fsite)), basename(ftrees)))
-
+browser()
       survey_site <- read.csv(fsite) |>
         mutate(infestation = as.character(infestation))
+
+      btl_yr <- unique(survey_site$beetle_yr)
 
       mpb_trees <- read.csv(ftrees) |>
         mutate(infestation = as.character(infestation))
 
       mpb_site_trees <- left_join(mpb_trees, survey_site, by = "siteID") |>
         rename(infestation = infestation.y, site_nbr = site_nbr.y) |>
-        mutate(infestation.x = NULL, site_nbr.x = NULL)
+        mutate(infestation.x = NULL, site_nbr.x = NULL) |>
+        select(
+          beetle_yr
+          ## TODO: only take the columns we care about
+        ) |>
+        mutate(
+          ## type checking
+          access_lat_dmd = as.character(access_lat_dmd), ## TODO: verify format - why *lat_dmd have 2 values?
+          access_long_dmd = as.character(access_long_dmd), ## TODO: verify format - why *lond_dmd have 2 values?
+          corp_area = as.character(corp_area),
+          project = as.character(project),
+          project_mgr = as.character(project_mgr),
+          sample_tree_nbr = as.integer(sample_tree_nbr),
+          site_nbr = as.integer(site_nbr),
+          surv_date = as.character(surv_date), ## TODO: use date format?
+          tree_nbr = as.integer(tree_nbr)
+          ## TODO: perform additional validation
+        )
 
-      ## TODO: more validation
-      ## sample_tree_nbr and tree_nbr
+      fname_new <- basename(fsite) |>
+        sub("(mpb_site|mpb_survey_info)", "mpb_site_trees_cleaned", x = _)
+      fname_new <- paste0(btl_yr, "_", fname_new)
 
-      sub("(mpb_site|mpb_survey_info)", "mpb_site_trees_cleaned", fsite) |>
+      file.path(dataPath, "AB", "csv") |>
+        fs::dir_create() |>
+        file.path(fname_new) |>
         write.csv(mpb_site_trees, file = _, row.names = FALSE)
-    })
-    ## TODO: merge tables
-  })
+
+      mpb_site_trees
+    }) |>
+      purrr::list_rbind()
+}) |>
+  purrr::list_rbind()
