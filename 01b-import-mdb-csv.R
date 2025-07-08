@@ -63,7 +63,8 @@ csv_files <- dataPath |>
 #   we will test what happens when we alter the denominator policy. Dividing by zero holes gives an Inf, which can't be used in a model.
 #   But zero holes happens more often than you'd like, because the disks are only 4" circles, not 12" squares. Adding 1 to every
 #   every denominator biases the r-value low ... but (a) the bias is small (and measurable), and (b) we don't care about absolute values
-#   in our model. We care about spatial variation in pattern.
+#   in our model. We care about spatial variation in pattern. So adding 1 to all denominators avoids having to chuck hard-earned count data
+#   because of a spurious Inf.
 #   Why are we doing this? Because we do not want to lose a single r_value because of simple sampling snafu.
 
 
