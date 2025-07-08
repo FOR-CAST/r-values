@@ -49,9 +49,9 @@ csv_files <- dataPath |>
 #1. Note that the names of the geospatials differ between site & tree files. (site files pre-pend _dd with "plot".)
 #   Good. When we join the tables we want to keep both sets of geospatials, site and tree.
 #   So we can use the names as they exist. The reason we are
-#   keeping both sets of spatials is in case siteIDs are erroneous, missing or don't match.
+#   keeping both sets of geospatials is in case siteIDs are erroneous, missing or don't match.
 #   We can always associate site with tree by geospatial proximity if siteID ever fails.
-#   Also, if lat/lons in one file are erroneous, they can be guessed at from the other.
+#   Also, if lat/lons in one file are erroneous (which they are in rare cases), they can be guessed at from the other.
 #   Why are we doing this? Because we do not want to lose a single r_value because of simple metadata snafu.
 
 #2. Note that r_value exists in both files under the same name. We will not analyze either,
@@ -64,6 +64,7 @@ csv_files <- dataPath |>
 #   But zero holes happens more often than you'd like, because the disks are only 4" circles, not 12" squares. Adding 1 to every
 #   every denominator biases the r-value low ... but (a) the bias is small (and measurable), and (b) we don't care about absolute values
 #   in our model. We care about spatial variation in pattern.
+#   Why are we doing this? Because we do not want to lose a single r_value because of simple sampling snafu.
 
 
 ## read in each (set of) files, validate, and merge
