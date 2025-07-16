@@ -42,7 +42,7 @@ ssi_crs <- st_crs(mpb_ssi_2023)
 all_data_sf <- file.path(dataPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv") |>
   read.csv() |>
   dplyr::filter(!is.na(lon_dd) & !is.na(lat_dd)) |>
-  st_as_sf(coords = c("lon_dd","lat_dd"), crs = 4326) |>
+  st_as_sf(coords = c("lon_dd", "lat_dd"), crs = 4326) |>
   st_make_valid() |>
   st_transform(st_crs(ssi_crs)) |>
   st_join(mpb_ssi_2008) |>
