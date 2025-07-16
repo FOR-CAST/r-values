@@ -7,7 +7,16 @@ dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
 figPath <- "figures" |> fs::dir_create()
 outputPath <- "outputs" |> fs::dir_create()
 
-## load MPB SSI layers
+# load MPB SSI layers ---------------------------------------------------------
+
+ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
+
+if (!file.exists(ssi_gdb)) {
+  googledrive::as_id("1meuraFVblxD8ZlwuqgKy0ADHOs-EAN13") |>
+    googledrive::drive_download(path = ssi_gdb)
+  archive::archive_extract(ssi_gdb, dataPath)
+}
+
 get_SSI <- function(dsn, year) {
   ssi <- st_read(dsn = dsn, layer = paste0("MPB_SSI_", year)) |>
     st_cast("MULTIPOLYGON")
@@ -23,9 +32,9 @@ get_SSI <- function(dsn, year) {
   return(ssi)
 }
 
-mpb_ssi_2008 <- get_SSI(dsn = "data/MPB_SSI.gdb", year = 2008)
-mpb_ssi_2016 <- get_SSI(dsn = "data/MPB_SSI.gdb", year = 2016)
-mpb_ssi_2023 <- get_SSI(dsn = "data/MPB_SSI.gdb", year = 2023)
+mpb_ssi_2008 <- get_SSI(dsn = ssi_gdb, year = 2008)
+mpb_ssi_2016 <- get_SSI(dsn = ssi_gdb, year = 2016)
+mpb_ssi_2023 <- get_SSI(dsn = ssi_gdb, year = 2023)
 
 ssi_crs <- st_crs(mpb_ssi_2023)
 
