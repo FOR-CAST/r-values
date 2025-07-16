@@ -26,15 +26,15 @@ ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
 
 # validate and merge csv tables ---------------------------------------------------------------
 
-csv_zip <- file.path(dataPath, "extracted_mdb_tables.zip")
+csv_zip <- file.path(outputPath, "extracted_mdb_tables.zip")
 
 if (!file.exists(csv_zip)) {
   googledrive::as_id("16OK48u6g5-JdWvEFhIJ0vMxvcK-k6z5l") |>
     googledrive::drive_download(path = csv_zip)
-  archive::archive_extract(csv_zip, dataPath)
+  archive::archive_extract(csv_zip, outputPath)
 }
 
-csv_files <- dataPath |>
+csv_files <- outputPath |>
   list.files(pattern = "_mpb_(site|trees)[.]csv", full.names = TRUE, recursive = TRUE) |>
   fs::path_rel()
 
@@ -55,7 +55,7 @@ stat_mode <- function(x) {
 ##    We can always associate site with tree by geospatial proximity if siteID ever fails.
 ##    Also, if lat/lon in one file are erroneous (which they are in rare cases), they can be guessed at from the other.
 ##    We do not want to lose a single r_value because of simple metadata snafu.
-
+##
 ## 2. Both files contain 'r_value' under the same name. We will not analyze either,
 ##    but we want to examine the consequences of computing r_value different ways, including their
 ##    two ways, using whatever method they used. We what to know if method matters.
@@ -71,6 +71,10 @@ stat_mode <- function(x) {
 ##    chuck hard-earned count data because of a spurious Inf.
 ##    We do not want to lose a single r_value because of simple sampling snafu.
 
+## cleanup any pre-existing files from previous runs
+prev_output_dirs <- file.path(dataPath, "AB", c("csv", "gdb", "png"))
+purrr::walk(prev_output_dirs, function(d) if (dir.exists(d)) unlink(d, recursive = TRUE))
+
 ## read in each (set of) files, validate, and merge
 log_file <- file.path(dataPath, "AB", "_mdb_data_clean_log.txt")
 file.remove(log_file)
@@ -78,7 +82,8 @@ file.remove(log_file)
 all_data <- dirname(dirname(csv_files)) |>
   unique() |>
   purrr::map(function(d) {
-    ## if mpb_site table missing, use mpb_survey_info
+    message(glue::glue("Processing directory {fs::path(d)}"))
+    ## if 'mpb_site' table missing, use 'mpb_survey_info'
     d_site <- file.path(d, "site")
     survey_site_csv <- file.path(d_site, list.files(d_site, pattern = "_mpb_site[.]csv"))
     if (length(survey_site_csv) == 0) {
@@ -91,6 +96,10 @@ all_data <- dirname(dirname(csv_files)) |>
     purrr::map2(survey_site_csv, mpb_trees_csv, function(fsite, ftrees) {
       ## check the csvs are correctly paired before joining
       stopifnot(identical(sub("(mpb_site|mpb_survey_info)", "mpb_trees", basename(fsite)), basename(ftrees)))
+
+      site_tbl_name <- fs::path_file(fs::path_ext_remove(fsite))
+      trees_tbl_name <- fs::path_file(fs::path_ext_remove(ftrees))
+      message(glue::glue("    joining tables: '{site_tbl_name}' and '{trees_tbl_name}'..."))
 
       ## From the site files we only want:
       ## - btl_year;
@@ -145,6 +154,10 @@ all_data <- dirname(dirname(csv_files)) |>
       }
 
       btl_yr <- stat_mode(survey_site$beetle_yr)
+      if (is.na(btl_yr)) {
+        ## extract year from the filename
+        btl_yr <- stringr::str_extract(basename(fsite), "20[0-9][0-9]") |> as.integer()
+      }
 
       ## From the trees files we only want:
       ## - siteID;
@@ -214,8 +227,8 @@ all_data <- dirname(dirname(csv_files)) |>
         xlab("Longitude") +
         ylab("Latitude")
 
-      out_path_csv <- file.path(dataPath, "AB", "csv") |> fs::dir_create()
-      out_path_png <- file.path(dataPath, "AB", "png") |> fs::dir_create()
+      out_path_csv <- file.path(outputPath, "AB", "csv") |> fs::dir_create()
+      out_path_png <- file.path(outputPath, "AB", "png") |> fs::dir_create()
 
       fname_csv <- basename(fsite) |>
         sub("(mpb_site|mpb_survey_info)", "mpb_site_trees_cleaned", x = _)
@@ -236,4 +249,4 @@ all_data <- dirname(dirname(csv_files)) |>
 }) |>
   purrr::list_rbind()
 
-write.csv(all_data, file = file.path(dataPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"), row.names = FALSE)
+write.csv(all_data, file = file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"), row.names = FALSE)
