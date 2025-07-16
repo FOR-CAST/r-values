@@ -174,7 +174,7 @@ all_data <- dirname(dirname(csv_files)) |>
           ## bounds checking + validation:
           siteID = as.integer(siteID),
           tree_nbr = as.character(tree_nbr), ## character id which is sometimes a number;
-          ht_pitch_tube = case_when(ht_pitch_tube > 25 ~ ht_pitch_tube / 100) ## should be m, not cm
+          ht_pitch_tube = if_else(ht_pitch_tube > 25, ht_pitch_tube / 100, ht_pitch_tube) ## should be m, not cm
         )
 
       if (!any(c("lat_dd", "lon_dd") %in% colnames(mpb_trees))) {
