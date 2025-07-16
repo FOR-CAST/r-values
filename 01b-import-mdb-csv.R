@@ -181,6 +181,8 @@ all_data <- dirname(dirname(csv_files)) |>
         mpb_trees <- mutate(mpb_trees, lat_dd = NA_real_, lon_dd = NA_real_)
       }
 
+      ## TODO: identify erroneous tree lat/lon using st_is_within_distance() from site lat/lon
+
       if (!"r_value_tree" %in% colnames(mpb_trees)) {
         mpb_trees <- mutate(mpb_trees, r_value_tree = NA_real_)
       }
