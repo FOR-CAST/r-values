@@ -39,7 +39,7 @@ mpb_ssi_2023 <- get_SSI(dsn = ssi_gdb, year = 2023)
 ssi_crs <- st_crs(mpb_ssi_2023)
 
 ## requires having already run 01b-import-mdb-csv.R
-all_data_sf <- file.path(dataPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv") |>
+all_data_sf <- file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv") |>
   read.csv() |>
   dplyr::filter(!is.na(lon_dd) & !is.na(lat_dd)) |>
   st_as_sf(coords = c("lon_dd", "lat_dd"), crs = 4326) |>
@@ -52,7 +52,7 @@ all_data_sf <- file.path(dataPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"
   st_join(mpb_ssi_2023) |>
   dplyr::rename(SSI_2023 = SSI)
 
-fs::dir_create(file.path(dataPath, "AB", "gdb")) |>
+fs::dir_create(file.path(outputPath, "AB", "gdb")) |>
   file.path("all_mpb_site_trees_cleaned_SSI.gdb") |>
   st_write(all_data_sf, dsn = _)
 
