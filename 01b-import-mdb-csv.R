@@ -320,7 +320,7 @@ all_data <- dirname(dirname(csv_files)) |>
       write.csv(mpb_site_trees, file = file.path(out_path_csv, fname_csv), row.names = FALSE)
 
       fname_png <- paste0(tools::file_path_sans_ext(fname_csv), ".png")
-      ggsave(plot = p, filename = file.path(out_path_png, fname_png), width = 15, height = 7)
+      ggsave(plot = p, filename = file.path(out_path_png, fname_png))
 
       ## capture and log ggplot2 warnings
       cat(paste(">> plotting coords for", fsite), file = log_file, append = TRUE, sep = "\n")
