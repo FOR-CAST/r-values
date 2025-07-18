@@ -103,7 +103,7 @@ fix_coords <- function(df) {
     mutate(
       lat_diff = abs(floor(lat_dd) - stat_mode(floor(lat_dd))),
       lat_outlier = lat_diff >= lat_thrsh,
-      lon_diff = abs(floor(lon_dd) - stat_mode(floor(lon_dd))),
+      lon_diff = abs(ceiling(lon_dd) - stat_mode(ceiling(lon_dd))), ## lon is negative; use ceiling
       lon_outlier = lon_diff >= lon_thrsh
     ) |>
     group_modify(
@@ -111,7 +111,7 @@ fix_coords <- function(df) {
         .x |>
             mutate(
               lat_dd = if_else(lat_outlier, stat_mode(floor(lat_dd)) + lat_dd %% 1, lat_dd),
-              lon_dd = if_else(lon_outlier, stat_mode(floor(lon_dd)) + lon_dd %% 1, lon_dd)
+              lon_dd = if_else(lon_outlier, stat_mode(ceiling(lon_dd)) - lon_dd %% 1, lon_dd)
             )
       }
     ) |>
