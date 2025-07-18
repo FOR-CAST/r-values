@@ -27,10 +27,10 @@ mdb_files <- file.path(dataPath, "AB", "mdb") |>
   normalizePath()
 
 ## cleanup any pre-existing files from previous runs
-prev_output_dirs <- dirname(mdb_files) |>
+dirname(mdb_files) |>
   unique() |>
-  vapply(function(d) fs::path(d, c("source", "site", "tree")), character(3))
-purrr::walk(prev_output_dirs, function(d) if (dir.exists(d)) unlink(d, recursive = TRUE))
+  vapply(function(d) fs::path(d, c("source", "site", "tree")), character(3)) |>
+  purrr::walk(function(d) if (dir.exists(d)) unlink(d, recursive = TRUE))
 
 ## extract mdb tables and output to csv
 purrr::walk(mdb_files, function(mdb) {
