@@ -23,6 +23,7 @@ mdb_files <- file.path(dataPath, "AB", "mdb") |>
   grep("rollup", x = _, invert = TRUE, value = TRUE) |>
   grep("/source/", x = _, invert = TRUE, value = TRUE) |>
   grep("/PopForecast_Master2009[.]mdb", x = _, invert = TRUE, value = TRUE) |>
+  grep("mpb_survey_Slave_2009_woSP", x = _, invert = TRUE, value = TRUE) |>
   normalizePath()
 
 ## cleanup any pre-existing files from previous runs
