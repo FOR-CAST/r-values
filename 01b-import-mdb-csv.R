@@ -79,10 +79,47 @@ purrr::walk(prev_output_dirs, function(d) if (dir.exists(d)) unlink(d, recursive
 log_file <- file.path(dataPath, "AB", "_mdb_data_clean_log.txt")
 file.remove(log_file)
 
+fix_coords <- function(df) {
+  ## allow at most ~1 degree lon/lat error; adjust this as needed
+  lat_thrsh <- 0.99
+  lon_thrsh <- 0.99
+
+  df |>
+    ## longitude sometimes entered as e.g., 110 (i.e. degrees E) instead of -110 (degrees W)
+    mutate(
+      lon_dd = if_else(lon_dd > 0, -lon_dd, lon_dd)
+    ) |>
+    ## coords 0,0 were likely used as NA
+    mutate(
+      lat_dd = if_else(lat_dd == 0 & lon_dd == 0, NA_real_, lat_dd),
+      lon_dd = if_else(lat_dd == 0 & lon_dd == 0, NA_real_, lon_dd)
+    ) |>
+    ## fix presumed mis-entered degrees (e.g., 50.12345 when all others in site are 54.vwxyz)
+    group_by(siteID) |>
+    mutate(
+      lat_diff = abs(floor(lat_dd) - stat_mode(floor(lat_dd))),
+      lat_outlier = lat_diff >= lat_thrsh,
+      lon_diff = abs(floor(lon_dd) - stat_mode(floor(lon_dd))),
+      lon_outlier = lon_diff >= lon_thrsh
+    ) |>
+    group_modify(
+      .f = function(.x, .y) {
+        .x |>
+            mutate(
+              lat_dd = if_else(lat_outlier, stat_mode(floor(lat_dd)) + lat_dd %% 1, lat_dd),
+              lon_dd = if_else(lon_outlier, stat_mode(floor(lon_dd)) + lon_dd %% 1, lon_dd)
+            )
+      }
+    ) |>
+    ungroup() |>
+    ## drop accounting cols
+    select(-lat_diff, -lat_outlier, -lon_diff, -lon_outlier)
+}
+
 all_data <- dirname(dirname(csv_files)) |>
   unique() |>
   purrr::map(function(d) {
-    message(glue::glue("Processing directory {fs::path(d)}"))
+    cli::cli_h1(glue::glue("Processing directory {fs::path(d)}"))
     ## if 'mpb_site' table missing, use 'mpb_survey_info'
     d_site <- file.path(d, "site")
     survey_site_csv <- file.path(d_site, list.files(d_site, pattern = "_mpb_site[.]csv"))
@@ -99,7 +136,7 @@ all_data <- dirname(dirname(csv_files)) |>
 
       site_tbl_name <- fs::path_file(fs::path_ext_remove(fsite))
       trees_tbl_name <- fs::path_file(fs::path_ext_remove(ftrees))
-      message(glue::glue("    joining tables: '{site_tbl_name}' and '{trees_tbl_name}'..."))
+      cli::cli_alert_info(glue::glue("    joining tables: '{site_tbl_name}' and '{trees_tbl_name}'..."))
 
       ## From the site files we only want:
       ## - btl_year;
@@ -124,9 +161,38 @@ all_data <- dirname(dirname(csv_files)) |>
         )
 
       ## bounds checking + validation:
+      survey_site <- survey_site |>
+        mutate(
+          plot_lat_dd = if_else(plot_lat_dd == 0 & plot_lon_dd == 0, NA_real_, plot_lat_dd ),
+          plot_lon_dd = if_else(plot_lat_dd == 0 & plot_lon_dd == 0, NA_real_, plot_lon_dd )
+        ) |>
+        mutate(
+          plot_lon_dd = if_else(plot_lon_dd > 0, -plot_lon_dd, plot_lon_dd )
+        )
+
+      if (grepl("mpb_survey_jun_11_2008", fsite)) {
+        survey_site <- survey_site |>
+          mutate(
+            ## entered longitude -188; likely should be -118
+            plot_lon_dd = if_else(siteID == 20 & floor(abs(plot_lon_dd)) == 188, -(118 + plot_lon_dd %% 1), plot_lon_dd )
+          )
+      } else if (grepl("mpb_survey_may_01_2008", fsite)) {
+        survey_site <- survey_site |>
+          mutate(
+            ## entered latitude 50; likely should be 51 to be in AB
+            plot_lat_dd = if_else(siteID == 6 & round(plot_lat_dd) == 50, 51 + plot_lat_dd %% 1, plot_lat_dd )
+          )
+      }
+
+      ## correct for missing r-values
       if (!"r_value_site" %in% colnames(survey_site)) {
         survey_site <- mutate(survey_site, r_value_site = NA_real_)
       }
+
+      survey_site <- survey_site |>
+        mutate(
+          r_value_site = if_else(r_value_site == -999, NA_real_, r_value_site)
+        )
 
       ## beetle_yr should be 4 digits, +/- 1 year from the rest of the table
       if (length(unique(survey_site$beetle_yr)) > 1) {
@@ -185,8 +251,9 @@ all_data <- dirname(dirname(csv_files)) |>
         ) |>
         mutate(
           ## bounds checking + validation:
-          siteID = as.integer(siteID),
+          siteID = if_else(is.na(siteID), lead(siteID), as.integer(siteID)),
           tree_nbr = as.character(tree_nbr), ## character id which is sometimes a number;
+          dbh = if_else(dbh > 130, 130, dbh), ## TODO: cap dbh at 130? or use idiosyncratic rules per BC email
           ht_pitch_tube = if_else(ht_pitch_tube > 25, ht_pitch_tube / 100, ht_pitch_tube) ## should be m, not cm
         )
 
@@ -194,16 +261,28 @@ all_data <- dirname(dirname(csv_files)) |>
         mpb_trees <- mutate(mpb_trees, lat_dd = NA_real_, lon_dd = NA_real_)
       }
 
-      ## TODO: identify erroneous tree lat/lon using st_is_within_distance() from site lat/lon
+      ## identify and fix erroneous tree lat/lon
+      mpb_trees <- mpb_trees |> fix_coords()
 
+      ## correct for missing r-values
       if (!"r_value_tree" %in% colnames(mpb_trees)) {
         mpb_trees <- mutate(mpb_trees, r_value_tree = NA_real_)
       }
 
+      mpb_trees <- mpb_trees |>
+        mutate(
+          r_value_tree = if_else(r_value_tree == -999, NA_real_, r_value_tree)
+        )
+
       mpb_site_trees <- left_join(mpb_trees, survey_site, by = "siteID")
 
       ## create maps of lat/lon plots to identify erroneous coords
-      site_sf <- sf::st_as_sf(survey_site, coords = c("plot_lon_dd", "plot_lat_dd"), crs = sf::st_crs(4326))
+      site_sf <- survey_site |>
+        na.omit() |>
+        sf::st_as_sf(
+          coords = c("plot_lon_dd", "plot_lat_dd"),
+          crs = sf::st_crs(4326)
+        )
 
       if (all(is.na(mpb_trees$lat_dd)) || all(is.na(mpb_trees$lon_dd))) {
         p <- ggplot() +
@@ -237,7 +316,7 @@ all_data <- dirname(dirname(csv_files)) |>
       write.csv(mpb_site_trees, file = file.path(out_path_csv, fname_csv), row.names = FALSE)
 
       fname_png <- paste0(tools::file_path_sans_ext(fname_csv), ".png")
-      ggsave(plot = p, filename = file.path(out_path_png, fname_png))
+      ggsave(plot = p, filename = file.path(out_path_png, fname_png), width = 15, height = 7)
 
       ## capture and log ggplot2 warnings
       cat(paste(">> plotting coords for", fsite), file = log_file, append = TRUE, sep = "\n")
