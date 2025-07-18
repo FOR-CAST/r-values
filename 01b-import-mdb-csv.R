@@ -73,8 +73,11 @@ stat_mode <- function(x) {
 ##    We do not want to lose a single r_value because of simple sampling snafu.
 
 ## cleanup any pre-existing files from previous runs
-prev_output_dirs <- file.path(dataPath, "AB", c("csv", "gdb", "png"))
-purrr::walk(prev_output_dirs, function(d) if (dir.exists(d)) unlink(d, recursive = TRUE))
+file.path(dataPath, "AB", c("csv", "gdb", "png")) |>
+  purrr::walk(function(d) if (dir.exists(d)) unlink(d, recursive = TRUE))
+
+file.path(outputPath, "AB", c("csv", "gdb", "png")) |>
+  purrr::walk(function(d) if (dir.exists(d)) unlink(d, recursive = TRUE))
 
 ## read in each (set of) files, validate, and merge
 log_file <- file.path(dataPath, "AB", "_mdb_data_clean_log.txt")
