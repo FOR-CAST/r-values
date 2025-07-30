@@ -31,7 +31,12 @@ mdb_files <- file.path(dataPath, "AB", "mdb") |>
 dirname(mdb_files) |>
   unique() |>
   vapply(function(d) fs::path(d, c("source", "site", "tree")), character(3)) |>
-  purrr::walk(function(d) if (dir.exists(d)) unlink(d, recursive = TRUE))
+  purrr::walk(function(d) {
+    if (dir.exists(d)) unlink(d, recursive = TRUE) ## from dataPath
+
+    od <- file.path(outputPath, fs::path_rel(dirname(d), dataPath)) |> dirname()
+    if (dir.exists(od)) unlink(od, recursive = TRUE) ## from outputPath
+  })
 
 ## extract mdb tables and output to csv
 purrr::walk(mdb_files, function(mdb) {
