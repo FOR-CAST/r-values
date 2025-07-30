@@ -19,11 +19,18 @@ stopifnot(.Platform$OS.type == "windows")
 mdb_files <- file.path(dataPath, "AB", "mdb") |>
   list.files(full.names = TRUE, pattern = "[.](accdb|mdb)$", recursive = TRUE) |>
   ## filter unwanted files:
+  ## - exclude copies of other files;
   grep("/Copy of", x = _, invert = TRUE, value = TRUE) |>
+  ## - exclude 'rollup' and 'source' files;
   grep("rollup", x = _, invert = TRUE, value = TRUE) |>
   grep("/source/", x = _, invert = TRUE, value = TRUE) |>
+  ## - /PopForecast_Master2009.mdb is duplicate;
   grep("/PopForecast_Master2009[.]mdb", x = _, invert = TRUE, value = TRUE) |>
+  ## - mpb_survey_Slave_2009_woSP also duplicated with modifications;
   grep("mpb_survey_Slave_2009_woSP", x = _, invert = TRUE, value = TRUE) |>
+  ## - /Population Forecast Surveys beetle_yr_2011/ erroneously contains copies of the 2010 data
+  grep("/Population Forecast Surveys beetle_yr_2011/", x = _, invert = TRUE, value = TRUE) |>
+  ## - /Peace_PopForecast_2012* has original and 'corrected' version;
   # grep("/Peace_PopForecast_2012.mdb", x = _, invert = TRUE, value = TRUE) |> ## TODO: confirm
   normalizePath()
 
