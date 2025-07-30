@@ -63,6 +63,22 @@ downloaded_files <- workflowtools::drive_download_folder(drive_id, dataPath, ove
 #   )
 # )
 
+## ensure the 20111 beetle year data are present locally
+## (they were uploaded after the initial drive upload)
+f_zip_2011 <- file.path(dataPath, "AB", "2011_Population_forecast_r-value.zip")
+d_zip_2011 <- file.path(dataPath, "AB", "mdb", "SourceData2009to2011") ## dest dir
+if (!file.exists(f_zip_2011)) {
+  as_id("1z2KmKFAar-G0-5iJGdi1uhcv5gSftfPu") |>
+    drive_download(f_zip_2011)
+}
+
+if (!dir.exists(file.path(d_zip_2011, "Population forecast (r value)"))) {
+  archive::archive_extract(
+    archive = f_zip_2011,
+    dir = d_zip_2011
+  )
+}
+
 # Alberta administrative boundaries -----------------------------------------------------------
 
 ## Canadian provincial/territorial boundaries
