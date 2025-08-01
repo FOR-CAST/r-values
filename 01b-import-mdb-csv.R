@@ -154,40 +154,62 @@ all_data <- dirname(dirname(csv_files)) |>
         select(
           beetle_yr, siteID,
           matches("plot_(lat|lon|long)_dd"),
+          matches("plot_(lat|lon|long)_dmd"),
           matches("nbr_infest|nbr_trees"),
           r_value
         ) |>
         rename(
           any_of(c(
-            plot_lon_dd = "plot_long_dd", ## if plot_long_dd exists, rename to plot_lon_dd
-            nbr_trees = "nbr_infest",     ## if nbr_infest exists, rename to nbr_trees
-            r_value_site = "r_value"      ## if r_value exists, rename to r_value_site
+            plot_lon_dd = "plot_long_dd",   ## if plot_long_dd exists, rename to plot_lon_dd
+            plot_lon_dmd = "plot_long_dmd", ## if plot_long_dmd exists, rename to plot_lon_dmd
+            nbr_trees = "nbr_infest",       ## if nbr_infest exists, rename to nbr_trees
+            r_value_site = "r_value"        ## if r_value exists, rename to r_value_site
           ))
-        )
+        ) |>
+        mutate(
+          ## NAs generate spurious warnings
+          plot_lat_dd2 = suppressWarnings(parzer::parse_lat(as.character(plot_lat_dmd))),
+          plot_lon_dd2 = suppressWarnings(parzer::parse_lon(as.character(plot_lon_dmd)))
+        ) |>
+        mutate(plot_lat_dmd = NULL, plot_lon_dmd = NULL)
 
       ## bounds checking + validation:
       survey_site <- survey_site |>
         mutate(
-          plot_lat_dd = if_else(plot_lat_dd == 0 & plot_lon_dd == 0, NA_real_, plot_lat_dd ),
-          plot_lon_dd = if_else(plot_lat_dd == 0 & plot_lon_dd == 0, NA_real_, plot_lon_dd )
+          plot_lat_dd = if_else(plot_lat_dd == 0 & plot_lon_dd == 0, NA_real_, plot_lat_dd),
+          plot_lon_dd = if_else(plot_lat_dd == 0 & plot_lon_dd == 0, NA_real_, plot_lon_dd),
+
+          plot_lat_dd2 = if_else(plot_lat_dd2 == 0 & plot_lon_dd2 == 0, NA_real_, plot_lat_dd2),
+          plot_lon_dd2 = if_else(plot_lat_dd2 == 0 & plot_lon_dd2 == 0, NA_real_, plot_lon_dd2)
         ) |>
         mutate(
-          plot_lon_dd = if_else(plot_lon_dd > 0, -plot_lon_dd, plot_lon_dd )
+          plot_lon_dd = if_else(plot_lon_dd > 0, -plot_lon_dd, plot_lon_dd),
+          plot_lon_dd2 = if_else(plot_lon_dd2 > 0, -plot_lon_dd2, plot_lon_dd2)
         )
 
       if (grepl("mpb_survey_jun_11_2008", fsite)) {
         survey_site <- survey_site |>
           mutate(
             ## entered longitude -188; likely should be -118
-            plot_lon_dd = if_else(siteID == 20 & floor(abs(plot_lon_dd)) == 188, -(118 + plot_lon_dd %% 1), plot_lon_dd )
+            plot_lon_dd = if_else(siteID == 20 & floor(abs(plot_lon_dd)) == 188, -(118 + plot_lon_dd %% 1), plot_lon_dd),
+            plot_lon_dd2 = if_else(siteID == 20 & floor(abs(plot_lon_dd2)) == 188, -(118 + plot_lon_dd2 %% 1), plot_lon_dd2)
           )
       } else if (grepl("mpb_survey_may_01_2008", fsite)) {
         survey_site <- survey_site |>
           mutate(
             ## entered latitude 50; likely should be 51 to be in AB
-            plot_lat_dd = if_else(siteID == 6 & round(plot_lat_dd) == 50, 51 + plot_lat_dd %% 1, plot_lat_dd )
+            plot_lat_dd = if_else(siteID == 6 & round(plot_lat_dd) == 50, 51 + plot_lat_dd %% 1, plot_lat_dd),
+            plot_lat_dd2 = if_else(siteID == 6 & round(plot_lat_dd2) == 50, 51 + plot_lat_dd2 %% 1, plot_lat_dd2)
           )
       }
+if (any(is.na(plot_lat_dd) | is.na(plot_lon_dd))) browser()
+      survey_site <- survey_site |>
+        mutate(
+          ## use lat/lon_dd2 (from lat/lon_dmd) where lat/lon_dd are NA
+          plot_lat_dd = if_else(is.na(plot_lat_dd) & !is.na(plot_lat_dd2), plot_lat_dd2, plot_lat_dd),
+          plot_lon_dd = if_else(is.na(plot_lon_dd) & !is.na(plot_lon_dd2), plot_lon_dd2, plot_lon_dd)
+        ) |>
+        mutate(plot_lat_dd2 = NULL, plot_lon_dd2 = NULL)
 
       ## correct for missing r-values
       if (!"r_value_site" %in% colnames(survey_site)) {
@@ -334,3 +356,7 @@ all_data <- dirname(dirname(csv_files)) |>
   purrr::list_rbind()
 
 write.csv(all_data, file = file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"), row.names = FALSE)
+
+## diagnostics / checking for NAs
+identical(which(is.na(all_data$plot_lat_dd)), which(is.na(all_data$plot_lon_dd))) ## TRUE
+sum(is.na(all_data$plot_lat_dd))
