@@ -359,4 +359,9 @@ write.csv(all_data, file = file.path(outputPath, "AB", "csv", "all_mpb_site_tree
 
 ## diagnostics / checking for NAs
 identical(which(is.na(all_data$plot_lat_dd)), which(is.na(all_data$plot_lon_dd))) ## TRUE
-sum(is.na(all_data$plot_lat_dd))
+
+all_data_na_coords <- filter(all_data, is.na(plot_lat_dd))
+nrow(all_data_na_coords) ## 99
+
+all(is.na(all_data_na_coords$lat_dd)) ## TRUE
+all(is.na(all_data_na_coords$lon_dd)) ## TRUE
