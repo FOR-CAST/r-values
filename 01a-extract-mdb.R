@@ -67,6 +67,8 @@ purrr::walk(mdb_files, function(mdb) {
 
   file.copy(mdb, file.path(out_dir, "source", basename(mdb)))
 
+  cli::cli_h1(glue::glue("Processing directory {fs::path(mdb_dir)}"))
+
   if ("mpb_trees" %in% db_tbls) {
     mpb_trees <- dbReadTable(con, "mpb_trees")
     csv_file <- file.path(out_dir, "tree", paste0(tools::file_path_sans_ext(basename(mdb)), "_mpb_trees.csv")) |>
