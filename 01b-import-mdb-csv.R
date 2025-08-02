@@ -202,7 +202,7 @@ all_data <- dirname(dirname(csv_files)) |>
             plot_lat_dd2 = if_else(siteID == 6 & round(plot_lat_dd2) == 50, 51 + plot_lat_dd2 %% 1, plot_lat_dd2)
           )
       }
-if (any(is.na(plot_lat_dd) | is.na(plot_lon_dd))) browser()
+
       survey_site <- survey_site |>
         mutate(
           ## use lat/lon_dd2 (from lat/lon_dmd) where lat/lon_dd are NA
