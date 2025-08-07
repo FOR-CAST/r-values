@@ -147,7 +147,7 @@ all_data <- dirname(dirname(csv_files)) |>
       ## - btl_year;
       ## - siteID;
       ## - plot_lat_dd, plot_lon_dd (or plot_long_dd);
-      ## - nbr_infest (or nbr_trees);
+      ## - nbr_infested (or nbr_trees);
       ## - r_value;
       survey_site <- read.csv(fsite) |>
         mutate(infestation = as.character(infestation)) |>
@@ -155,14 +155,14 @@ all_data <- dirname(dirname(csv_files)) |>
           beetle_yr, siteID,
           matches("plot_(lat|lon|long)_dd"),
           matches("plot_(lat|lon|long)_dmd"),
-          matches("nbr_infest|nbr_trees"),
+          matches("nbr_infested|nbr_trees"),
           r_value
         ) |>
         rename(
           any_of(c(
             plot_lon_dd = "plot_long_dd",   ## if plot_long_dd exists, rename to plot_lon_dd
             plot_lon_dmd = "plot_long_dmd", ## if plot_long_dmd exists, rename to plot_lon_dmd
-            nbr_trees = "nbr_infest",       ## if nbr_infest exists, rename to nbr_trees
+            nbr_infested = "nbr_trees",     ## if nbr_trees exists, rename to nbr_infested
             r_value_site = "r_value"        ## if r_value exists, rename to r_value_site
           ))
         ) |>
