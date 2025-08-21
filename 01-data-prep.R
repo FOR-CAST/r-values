@@ -36,7 +36,11 @@ drive_id <- as_id("1EiproEknMuuze5c6U_1tCptB8UM4z5YI")
 all_drive_files <- drive_ls(drive_id, recursive = TRUE) ## can be used to look up file ids etc.
 
 ## NOTE: use overwrite=TRUE if e.g., data updated on Google Drive
-downloaded_files <- workflowtools::drive_download_folder(drive_id, dataPath, overwrite = FALSE)
+downloaded_files <- workflowtools::drive_download_folder(
+  drive_id,
+  dataPath,
+  overwrite = FALSE
+)
 
 ## e.g., to re-download a subdirectory only:
 # withr::with_dir(
@@ -48,7 +52,7 @@ downloaded_files <- workflowtools::drive_download_folder(drive_id, dataPath, ove
 #   )
 # )
 
-## ensure the 20111 beetle year data are present locally
+## ensure the 2011 beetle year data are present locally
 ## (they were uploaded after the initial drive upload)
 f_zip_2011 <- file.path(dataPath, "AB", "2011_Population_forecast_r-value.zip")
 d_zip_2011 <- file.path(dataPath, "AB", "mdb", "SourceData2009to2011") ## dest dir
@@ -67,7 +71,12 @@ if (!dir.exists(file.path(d_zip_2011, "Population forecast (r value)"))) {
 # Alberta administrative boundaries -----------------------------------------------------------
 
 ## Canadian provincial/territorial boundaries
-can1.latlon <- geodata::gadm(country = "CAN", level = 1, path = dataPath, version = "4.1") |>
+can1.latlon <- geodata::gadm(
+  country = "CAN",
+  level = 1,
+  path = dataPath,
+  version = "4.1"
+) |>
   st_as_sf()
 can1 <- st_transform(can1.latlon, targetCRS)
 
@@ -102,7 +111,11 @@ DEM <- Cache(
   studyArea = studyAreaReporting,
   destinationPath = dataPath
 ) |>
-  writeRaster(file.path(outputPath, "DEM_ABSK_studyArea.tif"), NAflag = -9999, overwrite = TRUE)
+  writeRaster(
+    file.path(outputPath, "DEM_ABSK_studyArea.tif"),
+    NAflag = -9999,
+    overwrite = TRUE
+  )
 
 # get pine maps -------------------------------------------------------------------------------
 
