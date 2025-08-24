@@ -312,13 +312,13 @@ all_data <- dirname(dirname(csv_files)) |>
 
       if (all(is.na(mpb_trees$lat_dd)) || all(is.na(mpb_trees$lon_dd))) {
         p <- ggplot() +
-          geom_sf(data = ab_sf) +
+          #geom_sf(data = ab_sf) +
           geom_sf(data = site_sf, aes(col = as.factor(siteID)))
       } else {
         trees_sf <- sf::st_as_sf(mpb_trees, coords = c("lon_dd", "lat_dd"), crs = sf::st_crs(4326))
 
         p <- ggplot() +
-          geom_sf(data = ab_sf) +
+          #geom_sf(data = ab_sf) +
           geom_sf(data = site_sf, aes(col = as.factor(siteID))) +
           geom_sf(data = trees_sf, aes(col = as.factor(siteID)))
       }

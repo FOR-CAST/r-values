@@ -32,3 +32,4 @@ if (!file.exists(q_map)) {
 pine_gdb <- file.path(q_map_dir, "p30", "pine.gdb") ## raster layer, so use terra
 pine_q <- terra::rast(pine_gdb)
 terra::plot(pine_q)
+

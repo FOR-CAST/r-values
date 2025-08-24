@@ -25,7 +25,7 @@ axis(2, at = pretty(log10(h$counts)), labels = 10^pretty(log10(h$counts)))
 
 table(abr$beetle_yr)
 
-his(all_abrdata$dbh[!is.na(abr$dbh)])
+hist(abr$dbh[!is.na(abr$dbh)])
 
 sum(abr$r_value_site[!is.na(abr$r_value_site)] == -999)
 sum(abr$r_value_tree[!is.na(abr$r_value_tree)] == -999)
@@ -76,6 +76,9 @@ hist(log10(abr$holes + 1))
 ## adding 1 in denominator avoids a meaningless division by zero "error",
 ## with a relatively small cost in basing the r-value low
 abr$r <- abr$live / (abr$holes + 1)
+
+write.csv(abr, file.path(outputPath, "AB", "csv", "new_r_values.csv"), row.names = FALSE)
+
 dev.new()
 hist(log10(abr$r + 1)) # lots of zero r-values: avoid log of zeroes
 
