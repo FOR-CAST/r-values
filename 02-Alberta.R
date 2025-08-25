@@ -4,6 +4,18 @@ library(DBI)
 library(odbc)
 library(ggplot2)
 library(ggspatial)
+library(dplyr) #needed for piping
+library(terra) #needed for plotting rasters
+library(sf) #needed for sptial manipulations with projection strings
+library(purrr)
+library(mgcv) #needed for gam model testing
+
+# setup ---------------------------------------------------------------------------------------
+
+## paths
+dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
+figPath <- "figures" |> fs::dir_create()
+outputPath <- "outputs" |> fs::dir_create()
 
 # check if data for modelling exists. If it doesn't, build it. ---------------------------------------------------------
 
@@ -13,14 +25,6 @@ if (!file.exists(model.data)) {
 
   # read in data from MS Access databases -------------------------------------------------------
 
-  ## TODO: see 01b-import-mdb-csv.R
-
-  # setup ---------------------------------------------------------------------------------------
-
-  ## paths
-  dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
-  figPath <- "figures" |> fs::dir_create()
-  outputPath <- "outputs" |> fs::dir_create()
 
   #Read in site/tree data to which we will append our calculations of r-value
   abr <- read.csv(file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"), header = TRUE)
@@ -497,18 +501,18 @@ summary(gam_model.l)
 Sys.setenv(R_LIBCURL_SSL_REVOKE_BEST_EFFORT=TRUE) #Needed for "several things that we do in the NRCan network"
 
 # Install j4r
-install.packages("https://sourceforge.net/projects/repiceasource/files/latest/download", repos = NULL,  type="source")
+#install.packages("https://sourceforge.net/projects/repiceasource/files/latest/download", repos = NULL,  type="source")
 
 # Note: On NRCan machines, must install Perforce OpenLogic OpnJDK 64-bit, as a replacement for Java
 Sys.setenv(PATH = paste("C:/Program Files/OpenLogic/jdk-22.0.2.9-hotspot/bin", Sys.getenv("PATH"), sep = ";"))
 options(java.home = "C:/Program Files/OpenLogic/jdk-22.0.2.9-hotspot")
 
 # Install BioSIM
-install.packages("https://sourceforge.net/projects/biosimclient.mrnfforesttools.p/files/latest/download", repos = NULL,  type="source")
+#install.packages("https://sourceforge.net/projects/biosimclient.mrnfforesttools.p/files/latest/download", repos = NULL,  type="source")
 
 #To get past NRCan firewall:
-install.packages("remotes")
-remotes::install_github("RNCan/BioSimClient_R")
+#install.packages("remotes")
+#remotes::install_github("RNCan/BioSimClient_R")
 
 # Load libraries:
 library(BioSIM)
@@ -518,3 +522,227 @@ library(BioSIM)
 # To list the models available:
 BioSIM::getModelList()
 
+BioSIM::getModelHelp("MPB_Cold_Tolerance_Annual")
+
+# Set up parameters
+
+#test
+year.start<-2006
+year.end<-2010
+names.places<-c("Grande Prairie")
+lat.GP<- 55.18
+long.GP<--118.89
+elev.GP<-669  # in m above sea level
+
+P.sim.test.out<-generateWeather(
+  models.wanted,
+  year.start,
+  year.end,
+  names.places,
+  c(lat.GP),
+  c(long.GP),
+  elevM = c(elev.GP),
+  rep = 1,
+  repModel = 1,
+  rcp = "RCP45",
+  climModel = "RCM4",
+  additionalParms = NULL
+)
+
+##Generate an elevation for every location in all_data_df
+library(elevatr)
+
+coords <- data.frame(x = all_data_df$plot_lon_dd_copy, y = all_data_df$plot_lat_dd_copy)
+names(coords) <- c("lon", "lat")
+coords_sf <- st_as_sf(coords, coords = c("lon", "lat"), crs = 4326)
+elevations <- get_elev_point(locations = coords_sf, prj = "+proj=longlat +datum=WGS84", src = "aws")
+
+all_data_df$elevation <- elevations$elevation
+
+#rename plot_lXX_dd_copy to simply lXX
+all_data_df <- all_data_df %>%
+  rename(
+    lon = plot_lon_dd_copy,
+    lat = plot_lat_dd_copy
+  )
+
+saveRDS(all_data_df, "all_data_df_clean.rds")
+
+test_df <- all_data_df[1:12, ]
+head(test_df)
+
+test_results <- map_dfr(1:nrow(test_df), function(i) {
+  row <- test_df[i, ]
+
+  tryCatch({
+    result <- BioSIM::generateWeather(
+      modelNames = "MPB_Cold_Tolerance_Annual",
+      fromYr = row$beetle_yr,
+      toYr = row$beetle_yr + 1,
+      id = paste0("site_", i),
+      latDeg = row$lat,
+      longDeg = row$lon,
+      elevM = row$elevation,
+      rep = 1,
+      repModel = 1,
+      rcp = "RCP45",
+      climModel = "RCM4"
+    )
+
+    result$MPB_Cold_Tolerance_Annual
+  }, error = function(e) {
+    message("Row ", i, " failed: ", e$message)
+    return(NULL)
+  })
+})
+
+#Test on just the unique locations
+#Generate a unique list for BioSIM
+site_year_df <- all_data_df %>%
+  select(lat, lon, beetle_yr, elevation) %>%
+  distinct()
+
+site_year__MPBwk_results <- map_dfr(1:nrow(site_year_df), function(i) {
+  row <- site_year_df[i, ]
+
+  message("Running BioSIM for row ", i, " of ", nrow(site_year_df),
+          " (lat: ", row$lat, ", lon: ", row$lon, ", year: ", row$beetle_yr, ")")
+
+  tryCatch({
+    result <- BioSIM::generateWeather(
+      modelNames = "MPB_Cold_Tolerance_Annual",
+      fromYr = row$beetle_yr,
+      toYr = row$beetle_yr + 1,
+      id = paste0("site_", i),
+      latDeg = row$lat,
+      longDeg = row$lon,
+      elevM = row$elevation,
+      rep = 1,
+      repModel = 1,
+      rcp = "RCP45",
+      climModel = "RCM4"
+    )
+
+    result$MPB_Cold_Tolerance_Annual
+  }, error = function(e) {
+    message("❌ Row ", i, " failed: ", e$message)
+    return(NULL)
+  })
+})
+
+dev.new()
+plot(site_year__MPBwk_results$Tmin,site_year__MPBwk_results$Psurv)
+
+site_year__MPBwk_results <- site_year__MPBwk_results %>%
+  mutate(Psurv_prop = Psurv / 100)
+
+library(mgcv)
+
+gam_model <- gam(Psurv_prop ~ s(Tmin), data = site_year__MPBwk_results, family = binomial(link = "logit"))
+
+library(mgcv)
+gam_model <- gam(Psurv ~ s(Tmin), data = site_year__MPBwk_results)
+plot(gam_model)
+
+#verify results by mapping
+site_year_sf <- st_as_sf(site_year__MPBwk_results,
+                         coords = c("Longitude", "Latitude"),
+                         crs = 4326)
+ggplot(site_year_sf) +
+  geom_sf(aes(color = Psurv), size = 2) +
+  scale_color_viridis_c(option = "plasma", name = "Survival (%)") +
+  facet_wrap(~ Year) +
+  theme_minimal() +
+  labs(title = "Winter Survival Probability by Site and Year",
+       subtitle = "BioSIM MPB Cold Tolerance Model",
+       caption = "Each point represents a unique site-year combination")
+
+psurv_summary <- site_year__MPBwk_results %>%
+  group_by(Year) %>%
+  summarise(
+    mean_Psurv = mean(Psurv),
+    sd_Psurv = sd(Psurv),
+    n = n()
+  )
+
+ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "blue", size = 2) +
+  geom_ribbon(aes(ymin = mean_Psurv - sd_Psurv, ymax = mean_Psurv + sd_Psurv),
+              alpha = 0.2, fill = "blue") +
+  labs(title = "Mean Winter Survival Probability Over Time",
+       y = "Mean Psurv (%)",
+       x = "Year",
+       caption = "Shaded area shows ±1 SD across sites") +
+  theme_minimal()
+
+#Run on all 13312 samples
+site_year_results <- map_dfr(1:nrow(all_data_df), function(i) {
+  row <- all_data_df[i, ]
+
+  message("Running BioSIM for row ", i, " of ", nrow(all_data_df),
+          " (lat: ", row$lat, ", lon: ", row$lon, ", year: ", row$beetle_yr, ")")
+
+  tryCatch({
+    result <- BioSIM::generateWeather(
+      modelNames = "MPB_Cold_Tolerance_Annual",
+      fromYr = row$beetle_yr,
+      toYr = row$beetle_yr + 1,
+      id = paste0("site_", i),
+      latDeg = row$lat,
+      longDeg = row$lon,
+      elevM = row$elevation,
+      rep = 1,
+      repModel = 1,
+      rcp = "RCP45",
+      climModel = "RCM4"
+    )
+
+    result$MPB_Cold_Tolerance_Annual %>%
+      mutate(row_index = i)
+  }, error = function(e) {
+    message("Row ", i, " failed: ", e$message)
+    return(NULL)
+  })
+})
+
+site_year_results_min <- site_year_results %>%
+  select(row_index, Psurv)
+
+all_data_df_join_Psurv <- all_data_df %>%
+  mutate(row_index = row_number()) %>%
+  left_join(site_year_results_min, by = "row_index")
+
+str(all_data_df_join_Psurv)
+
+write.csv(all_data_df_join_Psurv, file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P.csv"), row.names = FALSE)
+
+#build model now with Psurv
+abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= 2015)
+abr.late  <- all_data_df_join_Psurv |> filter(beetle_yr >= 2016)
+
+gam_model.e <- gam(r ~ s(dbh) + s(ht_pitch_tube) + s(log10(nbr_infested + 1)) + Q + beetle_yr + Psurv, data = abr.early)
+summary(gam_model.e)
+gam_model.l <- gam(r ~ s(dbh) + s(ht_pitch_tube) + s(log10(nbr_infested + 1)) + Q + beetle_yr + Psurv, data = abr.late)
+summary(gam_model.l)
+
+#bring the geometry back into the sf
+ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
+ssi_2008 <- get_SSI(dsn = ssi_gdb, year = 2008)
+ssi_crs <- st_crs(ssi_2008)
+
+all_data_sf <- all_data_df_join_Psurv %>%
+  filter(!is.na(lon) & !is.na(lat)) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  st_make_valid() %>%
+  st_transform(st_crs(ssi_crs))
+
+dev.new()
+ggplot(all_data_sf) +
+  geom_sf(aes(color = log10(r + 1)), size = 1.1, alpha = 0.7) +
+  facet_wrap(~ beetle_yr, ncol = 7, nrow = 2) +
+  scale_color_viridis_c(option = "plasma", name = "log₁₀(r + 1)") +
+  theme_minimal() +
+  labs(title = "Spatial Distribution of r-values by Year",
+       subtitle = "Log-scaled to handle extreme values",
+       caption = "Each point represents a tree-level estimate")
