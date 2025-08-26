@@ -511,17 +511,33 @@ HT.hist <- hist(all_data_df$ht_pitch_tube)
 dev.new()
 DBH.hist <- hist(all_data_df$dbh)
 
-library(mgcv)
 gam_model.e <- gam(
-  r ~ s(dbh) + s(ht_pitch_tube) + s(log10(nbr_infested + 1)) + Q + beetle_yr,
+  r ~
+    s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)) +
+      s(Q, bs = "gp") +
+      s(SSI_2008, bs = "gp") +
+      s(plot_lon_dd_copy, plot_lat_dd_copy, bs = "gp") +
+      beetle_yr,
   data = abr.early
 )
 summary(gam_model.e)
+plot(gam_model.e, scheme = 2)
+
 gam_model.l <- gam(
-  r ~ s(dbh) + s(ht_pitch_tube) + s(log10(nbr_infested + 1)) + Q + beetle_yr,
+  r ~
+    s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)) +
+      s(Q, bs = "gp") +
+      s(SSI_2016, bs = "gp") +
+      s(plot_lon_dd_copy, plot_lat_dd_copy, bs = "gp") +
+      beetle_yr,
   data = abr.late
 )
 summary(gam_model.l)
+plot(gam_model.l, scheme = 2)
 
 ## End of testing initial models
 
@@ -649,38 +665,63 @@ ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
   ) +
   theme_minimal()
 
-## run on all 13312 samples
-site_year_results <- mpb_cold_tol(all_data_df)
+all_data_df_join_Psurv_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P.csv")
 
-site_year_results_min <- site_year_results |>
-  select(row_index, Psurv)
+if (file.exists(all_data_df_join_Psurv_csv)) {
+  all_data_df_join_Psurv <- read.csv(all_data_df_join_Psurv_csv)
+} else {
+  ## run on all 13312 samples
+  site_year_results <- mpb_cold_tol(all_data_df)
 
-all_data_df_join_Psurv <- all_data_df |>
-  mutate(row_index = row_number()) |>
-  left_join(site_year_results_min, by = "row_index")
+  site_year_results_min <- site_year_results |>
+    select(row_index, Psurv)
 
-str(all_data_df_join_Psurv)
+  all_data_df_join_Psurv <- all_data_df |>
+    mutate(row_index = row_number()) |>
+    left_join(site_year_results_min, by = "row_index")
 
-write.csv(
-  all_data_df_join_Psurv,
-  file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P.csv"),
-  row.names = FALSE
-)
+  str(all_data_df_join_Psurv)
+
+  write.csv(
+    all_data_df_join_Psurv,
+    file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P.csv"),
+    row.names = FALSE
+  )
+}
 
 ## build model now with Psurv
 abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= 2015)
 abr.late <- all_data_df_join_Psurv |> filter(beetle_yr >= 2016)
 
 gam_model.e <- gam(
-  r ~ s(dbh) + s(ht_pitch_tube) + s(log10(nbr_infested + 1)) + Q + beetle_yr + Psurv,
+  r ~
+    s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)) +
+      s(Q, bs = "gp") +
+      s(SSI_2008, bs = "gp") +
+      s(lon, lat, bs = "gp") +
+      beetle_yr +
+      Psurv,
   data = abr.early
 )
 summary(gam_model.e)
+plot(gam_model.e)
+
 gam_model.l <- gam(
-  r ~ s(dbh) + s(ht_pitch_tube) + s(log10(nbr_infested + 1)) + Q + beetle_yr + Psurv,
+  r ~
+    s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)) +
+      s(Q, bs = "gp") +
+      s(SSI_2016, bs = "gp") +
+      s(lon, lat, bs = "gp") +
+      +beetle_yr +
+      Psurv,
   data = abr.late
 )
 summary(gam_model.l)
+plot(gam_model.l)
 
 ## bring the geometry back into the sf
 all_data_sf <- all_data_df_join_Psurv |>
