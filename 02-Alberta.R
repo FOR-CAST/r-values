@@ -19,18 +19,18 @@ dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
 figPath <- "figures" |> fs::dir_create()
 outputPath <- "outputs" |> fs::dir_create()
 
+## geospatial objects for plotting
+
+ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
+  sf::st_as_sf() |>
+  filter(NAME_1 == "Alberta") |>
+  sf::st_geometry()
+
 ## check if data for modelling exists. If it doesn't, build it.
 model.data <- file.path(outputPath, "AB", "csv", "new_r_values_w_QSSI.csv")
 
 if (!file.exists(model.data)) {
   # read in data from MS Access databases -------------------------------------------------------
-
-  ## geospatial objects for plotting
-
-  ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
-    sf::st_as_sf() |>
-    filter(NAME_1 == "Alberta") |>
-    sf::st_geometry()
 
   ## read in site/tree data to which we will append our calculations of r-value
   abr <- file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv") |>
