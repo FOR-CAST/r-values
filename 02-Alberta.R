@@ -615,6 +615,7 @@ plot(gam_model)
 site_year_sf <- st_as_sf(site_year__MPBwk_results, coords = c("Longitude", "Latitude"), crs = 4326)
 ggplot(site_year_sf) +
   geom_sf(aes(color = Psurv), size = 2) +
+  geom_sf(data = ab_sf, fill = NA) +
   scale_color_viridis_c(option = "plasma", name = "Survival (%)") +
   facet_wrap(~Year) +
   theme_minimal() +
