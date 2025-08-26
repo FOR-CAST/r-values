@@ -695,6 +695,7 @@ all_data_sf <- all_data_df_join_Psurv |>
 dev.new()
 ggplot(all_data_sf) +
   geom_sf(aes(color = log10(r + 1)), size = 1.1, alpha = 0.7) +
+  geom_sf(data = ab_sf, fill = NA) +
   facet_wrap(~beetle_yr, ncol = 7, nrow = 2) +
   scale_color_viridis_c(option = "plasma", name = "log₁₀(r + 1)") +
   theme_minimal() +
