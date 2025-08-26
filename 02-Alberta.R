@@ -584,33 +584,9 @@ saveRDS(all_data_df, file.path(outputPath, "all_data_df_clean.rds"))
 test_df <- all_data_df[1:12, ]
 head(test_df)
 
-test_results <- purrr::map_dfr(1:nrow(test_df), function(i) {
-  row <- test_df[i, ]
+source("R/mpb_cold_tol.R")
 
-  tryCatch(
-    {
-      result <- BioSIM::generateWeather(
-        modelNames = models.wanted,
-        fromYr = row$beetle_yr,
-        toYr = row$beetle_yr + 1,
-        id = paste0("site_", i),
-        latDeg = row$lat,
-        longDeg = row$lon,
-        elevM = row$elevation,
-        rep = 1,
-        repModel = 1,
-        rcp = "RCP45",
-        climModel = "RCM4"
-      )
-
-      result$MPB_Cold_Tolerance_Annual
-    },
-    error = function(e) {
-      message("❌ Row ", i, " failed: ", e$message)
-      return(NULL)
-    }
-  )
-})
+test_results <- mpb_cold_tol(test_df)
 
 ## Test on just the unique locations
 ## Generate a unique list for BioSIM
@@ -618,47 +594,7 @@ site_year_df <- all_data_df |>
   select(lat, lon, beetle_yr, elevation) |>
   distinct()
 
-site_year__MPBwk_results <- purrr::map_dfr(1:nrow(site_year_df), function(i) {
-  row <- site_year_df[i, ]
-
-  message(
-    "Running BioSIM for row ",
-    i,
-    " of ",
-    nrow(site_year_df),
-    " (lat: ",
-    row$lat,
-    ", lon: ",
-    row$lon,
-    ", year: ",
-    row$beetle_yr,
-    ")"
-  )
-
-  tryCatch(
-    {
-      result <- BioSIM::generateWeather(
-        modelNames = models.wanted,
-        fromYr = row$beetle_yr,
-        toYr = row$beetle_yr + 1,
-        id = paste0("site_", i),
-        latDeg = row$lat,
-        longDeg = row$lon,
-        elevM = row$elevation,
-        rep = 1,
-        repModel = 1,
-        rcp = "RCP45",
-        climModel = "RCM4"
-      )
-
-      result$MPB_Cold_Tolerance_Annual
-    },
-    error = function(e) {
-      message("❌ Row ", i, " failed: ", e$message)
-      return(NULL)
-    }
-  )
-})
+site_year__MPBwk_results <- mpb_cold_tol(site_year_df)
 
 dev.new()
 plot(site_year__MPBwk_results$Tmin, site_year__MPBwk_results$Psurv)
@@ -713,48 +649,7 @@ ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
   theme_minimal()
 
 ## run on all 13312 samples
-site_year_results <- map_dfr(1:nrow(all_data_df), function(i) {
-  row <- all_data_df[i, ]
-
-  message(
-    "Running BioSIM for row ",
-    i,
-    " of ",
-    nrow(all_data_df),
-    " (lat: ",
-    row$lat,
-    ", lon: ",
-    row$lon,
-    ", year: ",
-    row$beetle_yr,
-    ")"
-  )
-
-  tryCatch(
-    {
-      result <- BioSIM::generateWeather(
-        modelNames = models.wanted,
-        fromYr = row$beetle_yr,
-        toYr = row$beetle_yr + 1,
-        id = paste0("site_", i),
-        latDeg = row$lat,
-        longDeg = row$lon,
-        elevM = row$elevation,
-        rep = 1,
-        repModel = 1,
-        rcp = "RCP45",
-        climModel = "RCM4"
-      )
-
-      result$MPB_Cold_Tolerance_Annual |>
-        mutate(row_index = i)
-    },
-    error = function(e) {
-      message("❌ Row ", i, " failed: ", e$message)
-      return(NULL)
-    }
-  )
-})
+site_year_results <- mpb_cold_tol(all_data_df)
 
 site_year_results_min <- site_year_results |>
   select(row_index, Psurv)
