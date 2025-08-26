@@ -746,3 +746,53 @@ ggplot(all_data_sf) +
   labs(title = "Spatial Distribution of r-values by Year",
        subtitle = "Log-scaled to handle extreme values",
        caption = "Each point represents a tree-level estimate")
+
+yearly_summary <- all_data_df_join_Psurv %>%
+  group_by(beetle_yr) %>%
+  summarise(
+    mean_r_log = mean(log10(r + 1), na.rm = TRUE),
+    se_r_log = sd(log10(r + 1), na.rm = TRUE) / sqrt(n()),
+    mean_Psurv = mean(Psurv, na.rm = TRUE) ,
+    se_Psurv = sd(Psurv, na.rm = TRUE)  / sqrt(n())
+  )
+
+library(tidyr)
+
+plot_df <- yearly_summary %>%
+  pivot_longer(cols = c(mean_r_log, se_r_log, mean_Psurv, se_Psurv),
+               names_to = "metric",
+               values_to = "value")
+
+cor(yearly_summary$mean_r_log,yearly_summary$mean_Psurv)
+
+dev.new()
+ggplot(yearly_summary, aes(x = beetle_yr)) +
+  # Psurv line and ribbon
+  geom_ribbon(aes(ymin = mean_Psurv - se_Psurv,
+                  ymax = mean_Psurv + se_Psurv,
+                  fill = "Psurv (%)"), alpha = 0.2) +
+  geom_line(aes(y = mean_Psurv, color = "Psurv (%)"), size = 1.2) +
+  geom_point(aes(y = mean_Psurv, color = "Psurv (%)"), size = 2) +
+
+  # log(r) line and ribbon (scaled)
+  geom_ribbon(aes(ymin = (mean_r_log - se_r_log) * 200,
+                  ymax = (mean_r_log + se_r_log) * 200,
+                  fill = "log₁₀(r + 1)"), alpha = 0.2) +
+  geom_line(aes(y = mean_r_log * 200, color = "log₁₀(r + 1)"), size = 1.2) +
+  geom_point(aes(y = mean_r_log * 200, color = "log₁₀(r + 1)"), size = 2) +
+
+  # Axes and legend
+  scale_y_continuous(
+    name = "Psurv (%)",
+    limits = c(0, 100),
+    sec.axis = sec_axis(~ . / 200, name = "log₁₀(r + 1)")
+  ) +
+  scale_color_manual(values = c("Psurv (%)" = "#00BFC4", "log₁₀(r + 1)" = "#F8766D")) +
+  scale_fill_manual(values = c("Psurv (%)" = "#00BFC4", "log₁₀(r + 1)" = "#F8766D")) +
+  theme_minimal() +
+  labs(title = "Mean Psurv and log-scaled r-values Over Time",
+       subtitle = "Dual-axis plot with shaded error ribbons",
+       x = "Beetle Year",
+       color = "Metric",
+       fill = "Metric",
+       caption = "Psurv shown as percent; r-values log-transformed and scaled for visibility")
