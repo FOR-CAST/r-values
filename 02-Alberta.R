@@ -682,10 +682,6 @@ gam_model.l <- gam(
 summary(gam_model.l)
 
 ## bring the geometry back into the sf
-ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
-ssi_2008 <- get_SSI(dsn = ssi_gdb, year = 2008)
-ssi_crs <- st_crs(ssi_2008)
-
 all_data_sf <- all_data_df_join_Psurv |>
   filter(!is.na(lon) & !is.na(lat)) |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
@@ -721,7 +717,7 @@ plot_df <- yearly_summary |>
     values_to = "value"
   )
 
-cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
+stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
 
 dev.new()
 ggplot(yearly_summary, aes(x = beetle_yr)) +
