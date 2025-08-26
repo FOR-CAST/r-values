@@ -109,10 +109,10 @@ fix_coords <- function(df) {
     group_modify(
       .f = function(.x, .y) {
         .x |>
-            mutate(
-              lat_dd = if_else(lat_outlier, stat_mode(floor(lat_dd)) + lat_dd %% 1, lat_dd),
-              lon_dd = if_else(lon_outlier, stat_mode(ceiling(lon_dd)) - lon_dd %% 1, lon_dd)
-            )
+          mutate(
+            lat_dd = if_else(lat_outlier, stat_mode(floor(lat_dd)) + lat_dd %% 1, lat_dd),
+            lon_dd = if_else(lon_outlier, stat_mode(ceiling(lon_dd)) - lon_dd %% 1, lon_dd)
+          )
       }
     ) |>
     ungroup() |>
@@ -136,11 +136,16 @@ all_data <- dirname(dirname(csv_files)) |>
 
     purrr::map2(survey_site_csv, mpb_trees_csv, function(fsite, ftrees) {
       ## check the csvs are correctly paired before joining
-      stopifnot(identical(sub("(mpb_site|mpb_survey_info)", "mpb_trees", basename(fsite)), basename(ftrees)))
+      stopifnot(identical(
+        sub("(mpb_site|mpb_survey_info)", "mpb_trees", basename(fsite)),
+        basename(ftrees)
+      ))
 
       site_tbl_name <- fs::path_file(fs::path_ext_remove(fsite))
       trees_tbl_name <- fs::path_file(fs::path_ext_remove(ftrees))
-      cli::cli_alert_info(glue::glue("    joining tables: '{site_tbl_name}' and '{trees_tbl_name}'..."))
+      cli::cli_alert_info(glue::glue(
+        "    joining tables: '{site_tbl_name}' and '{trees_tbl_name}'..."
+      ))
 
       ## From the site files we only want:
       ## - btl_year;
@@ -151,7 +156,8 @@ all_data <- dirname(dirname(csv_files)) |>
       survey_site <- read.csv(fsite) |>
         mutate(infestation = as.character(infestation)) |>
         select(
-          beetle_yr, siteID,
+          beetle_yr,
+          siteID,
           matches("plot_(lat|lon|long)_dd"),
           matches("plot_(lat|lon|long)_dmd"),
           matches("nbr_infested|nbr_trees"),
@@ -159,10 +165,10 @@ all_data <- dirname(dirname(csv_files)) |>
         ) |>
         rename(
           any_of(c(
-            plot_lon_dd = "plot_long_dd",   ## if plot_long_dd exists, rename to plot_lon_dd
+            plot_lon_dd = "plot_long_dd", ## if plot_long_dd exists, rename to plot_lon_dd
             plot_lon_dmd = "plot_long_dmd", ## if plot_long_dmd exists, rename to plot_lon_dmd
-            nbr_infested = "nbr_trees",     ## if nbr_trees exists, rename to nbr_infested
-            r_value_site = "r_value"        ## if r_value exists, rename to r_value_site
+            nbr_infested = "nbr_trees", ## if nbr_trees exists, rename to nbr_infested
+            r_value_site = "r_value" ## if r_value exists, rename to r_value_site
           ))
         ) |>
         mutate(
@@ -190,23 +196,47 @@ all_data <- dirname(dirname(csv_files)) |>
         survey_site <- survey_site |>
           mutate(
             ## entered longitude -188; likely should be -118
-            plot_lon_dd = if_else(siteID == 20 & floor(abs(plot_lon_dd)) == 188, -(118 + plot_lon_dd %% 1), plot_lon_dd),
-            plot_lon_dd2 = if_else(siteID == 20 & floor(abs(plot_lon_dd2)) == 188, -(118 + plot_lon_dd2 %% 1), plot_lon_dd2)
+            plot_lon_dd = if_else(
+              siteID == 20 & floor(abs(plot_lon_dd)) == 188,
+              -(118 + plot_lon_dd %% 1),
+              plot_lon_dd
+            ),
+            plot_lon_dd2 = if_else(
+              siteID == 20 & floor(abs(plot_lon_dd2)) == 188,
+              -(118 + plot_lon_dd2 %% 1),
+              plot_lon_dd2
+            )
           )
       } else if (grepl("mpb_survey_may_01_2008", fsite)) {
         survey_site <- survey_site |>
           mutate(
             ## entered latitude 50; likely should be 51 to be in AB
-            plot_lat_dd = if_else(siteID == 6 & round(plot_lat_dd) == 50, 51 + plot_lat_dd %% 1, plot_lat_dd),
-            plot_lat_dd2 = if_else(siteID == 6 & round(plot_lat_dd2) == 50, 51 + plot_lat_dd2 %% 1, plot_lat_dd2)
+            plot_lat_dd = if_else(
+              siteID == 6 & round(plot_lat_dd) == 50,
+              51 + plot_lat_dd %% 1,
+              plot_lat_dd
+            ),
+            plot_lat_dd2 = if_else(
+              siteID == 6 & round(plot_lat_dd2) == 50,
+              51 + plot_lat_dd2 %% 1,
+              plot_lat_dd2
+            )
           )
       }
 
       survey_site <- survey_site |>
         mutate(
           ## use lat/lon_dd2 (from lat/lon_dmd) where lat/lon_dd are NA
-          plot_lat_dd = if_else(is.na(plot_lat_dd) & !is.na(plot_lat_dd2), plot_lat_dd2, plot_lat_dd),
-          plot_lon_dd = if_else(is.na(plot_lon_dd) & !is.na(plot_lon_dd2), plot_lon_dd2, plot_lon_dd)
+          plot_lat_dd = if_else(
+            is.na(plot_lat_dd) & !is.na(plot_lat_dd2),
+            plot_lat_dd2,
+            plot_lat_dd
+          ),
+          plot_lon_dd = if_else(
+            is.na(plot_lon_dd) & !is.na(plot_lon_dd2),
+            plot_lon_dd2,
+            plot_lon_dd
+          )
         ) |>
         mutate(plot_lat_dd2 = NULL, plot_lon_dd2 = NULL)
 
@@ -226,7 +256,10 @@ all_data <- dirname(dirname(csv_files)) |>
         cat(
           c(
             paste(">> ", fsite),
-            paste("    multiple beetle years:", paste(unique(survey_site$beetle_yr), collapse = ", "))
+            paste(
+              "    multiple beetle years:",
+              paste(unique(survey_site$beetle_yr), collapse = ", ")
+            )
           ),
           file = log_file,
           append = TRUE,
@@ -266,12 +299,13 @@ all_data <- dirname(dirname(csv_files)) |>
           matches("(lat|lon|long)_dd"),
           dbh,
           ht_pitch_tube,
-          starts_with("ns"), starts_with("ss"),
+          starts_with("ns"),
+          starts_with("ss"),
           matches("r_value")
         ) |>
         rename(
           any_of(c(
-            lon_dd = "long_dd",      ## if long_dd exists, rename to lon_dd
+            lon_dd = "long_dd", ## if long_dd exists, rename to lon_dd
             r_value_tree = "r_value" ## if r_value exists, rename to r_value_tree
           ))
         ) |>
@@ -312,21 +346,23 @@ all_data <- dirname(dirname(csv_files)) |>
 
       if (all(is.na(mpb_trees$lat_dd)) || all(is.na(mpb_trees$lon_dd))) {
         p <- ggplot() +
-          #geom_sf(data = ab_sf) +
+          geom_sf(data = ab_sf) +
           geom_sf(data = site_sf, aes(col = as.factor(siteID)))
       } else {
         trees_sf <- sf::st_as_sf(mpb_trees, coords = c("lon_dd", "lat_dd"), crs = sf::st_crs(4326))
 
         p <- ggplot() +
-          #geom_sf(data = ab_sf) +
+          geom_sf(data = ab_sf) +
           geom_sf(data = site_sf, aes(col = as.factor(siteID))) +
           geom_sf(data = trees_sf, aes(col = as.factor(siteID)))
       }
-      p <- p  +
+      p <- p +
         theme_bw(base_size = 20) +
         annotation_north_arrow(
-          location = "bl", which_north = "true",
-          pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+          location = "bl",
+          which_north = "true",
+          pad_x = unit(0.25, "in"),
+          pad_y = unit(0.25, "in"),
           style = north_arrow_fancy_orienteering
         ) +
         xlab("Longitude") +
@@ -351,10 +387,14 @@ all_data <- dirname(dirname(csv_files)) |>
       mpb_site_trees
     }) |>
       purrr::list_rbind()
-}) |>
+  }) |>
   purrr::list_rbind()
 
-write.csv(all_data, file = file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"), row.names = FALSE)
+write.csv(
+  all_data,
+  file = file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"),
+  row.names = FALSE
+)
 
 ## diagnostics / checking for NAs
 identical(which(is.na(all_data$plot_lat_dd)), which(is.na(all_data$plot_lon_dd))) ## TRUE
