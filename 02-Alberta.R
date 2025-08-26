@@ -666,15 +666,12 @@ plot(site_year__MPBwk_results$Tmin, site_year__MPBwk_results$Psurv)
 site_year__MPBwk_results <- site_year__MPBwk_results |>
   mutate(Psurv_prop = Psurv / 100)
 
-library(mgcv)
-
 gam_model <- gam(
   Psurv_prop ~ s(Tmin),
   data = site_year__MPBwk_results,
   family = binomial(link = "logit")
 )
 
-library(mgcv)
 gam_model <- gam(Psurv ~ s(Tmin), data = site_year__MPBwk_results)
 plot(gam_model)
 
@@ -820,8 +817,6 @@ yearly_summary <- all_data_df_join_Psurv |>
     mean_Psurv = mean(Psurv, na.rm = TRUE),
     se_Psurv = sd(Psurv, na.rm = TRUE) / sqrt(n())
   )
-
-library(tidyr)
 
 plot_df <- yearly_summary |>
   pivot_longer(
