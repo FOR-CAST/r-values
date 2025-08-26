@@ -68,54 +68,20 @@ if (!dir.exists(file.path(d_zip_2011, "Population forecast (r value)"))) {
   )
 }
 
-# Alberta administrative boundaries -----------------------------------------------------------
+# geospatial objects for plotting -------------------------------------------------------------
 
-## Canadian provincial/territorial boundaries
-can1.latlon <- geodata::gadm(
-  country = "CAN",
-  level = 1,
-  path = dataPath,
-  version = "4.1"
-) |>
-  st_as_sf()
-can1 <- st_transform(can1.latlon, targetCRS)
+ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
+  sf::st_as_sf() |>
+  filter(NAME_1 == "Alberta") |>
+  sf::st_geometry()
 
-ab.latlon <- can1.latlon[can1.latlon$NAME_1 == "Alberta", ]
-ab <- can1[can1$NAME_1 == "Alberta", ]
-
-# create DEM for use with BioSIM --------------------------------------------------------------
-
-## follows approach taken in LandR_MPB_studyArea and mpbClimateData modules
-absk <- subset(can1, NAME_1 %in% c("Alberta", "Saskatchewan"))
-
-studyAreaReporting <- mpbutils::mpbStudyArea(
-  ecoregions = c(112, 120, 122, 124, 126),
-  targetCRS = targetCRS,
-  cPath = cachePath,
-  dPath = dataPath
-) |>
-  sf::st_intersection(absk) |>
-  sf::st_union()
-
-rasterToMatchReporting <- Cache(
+rtm <- Cache(
   LandR::prepInputsLCC,
-  year = 2005, ## TODO: use 2010?
-  studyArea = studyAreaReporting,
+  year = 2010,
+  studyArea = ab_sf,
   destinationPath = dataPath,
   filename2 = NULL
 )
-
-DEM <- Cache(
-  LandR::prepInputsCanDEM,
-  rasterToMatch = rasterToMatchReporting,
-  studyArea = studyAreaReporting,
-  destinationPath = dataPath
-) |>
-  writeRaster(
-    file.path(outputPath, "DEM_ABSK_studyArea.tif"),
-    NAflag = -9999,
-    overwrite = TRUE
-  )
 
 # get pine maps -------------------------------------------------------------------------------
 
@@ -127,8 +93,8 @@ yemshanov2012 <- prepInputs(
   url = url_yemshanov2012,
   destinationPath = dataPath,
   fun = "terra::rast",
-  cropTo = ab,
-  maskTo = ab,
+  cropTo = ab_sf,
+  maskTo = ab_sf,
   targetFile = "Yemshanov_pine_map.flt"
 ) |>
   Cache() |>
@@ -143,7 +109,7 @@ beaudoin2014 <- prepSpeciesLayers_KNN(
   destinationPath = dataPath,
   outputPath = dataPath,
   url = NULL,
-  studyArea = ab,
+  studyArea = ab_sf,
   rasterToMatch = yemshanov2012,
   sppEquiv = sppEquiv,
   sppEquivCol = "KNN",
@@ -160,7 +126,7 @@ bleiker2019 <- prepInputs_ABPine(
   url = url_bleiker2019,
   destinationPath = dataPath,
   layerNames = "OVERSTOREY_PINE",
-  rasterToMatch = yemshanov2012 ## TODO: could do better than 250m
+  rasterToMatch = rtm
 ) |>
   Cache() |>
   writeRaster(file.path(dataPath, "Bleiker_pine_map.tif"), overwrite = TRUE)
