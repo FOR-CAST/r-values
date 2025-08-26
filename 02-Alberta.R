@@ -26,6 +26,22 @@ ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
   filter(NAME_1 == "Alberta") |>
   sf::st_geometry()
 
+# load MPB SSI layers ---------------------------------------------------------
+
+source("R/mpb_ssi.R")
+
+ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
+
+if (!(file.exists(ssi_gdb) || dir.exists(ssi_gdb))) {
+  archive::archive_extract(ssi_gdb, dataPath)
+}
+
+mpb_ssi_2008 <- get_SSI(dsn = ssi_gdb, year = 2008)
+mpb_ssi_2016 <- get_SSI(dsn = ssi_gdb, year = 2016)
+mpb_ssi_2023 <- get_SSI(dsn = ssi_gdb, year = 2023)
+
+ssi_crs <- sf::st_crs(mpb_ssi_2023)
+
 ## check if data for modelling exists. If it doesn't, build it.
 model.data <- file.path(outputPath, "AB", "csv", "new_r_values_w_QSSI.csv")
 
@@ -112,34 +128,6 @@ if (!file.exists(model.data)) {
 
   ## Write new dataset containing the r values
   write.csv(abr, file.path(outputPath, "AB", "csv", "new_r_values.csv"), row.names = FALSE)
-
-  # load MPB SSI layers ---------------------------------------------------------
-
-  ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
-
-  if (!(file.exists(ssi_gdb) || dir.exists(ssi_gdb))) {
-    archive::archive_extract(ssi_gdb, dataPath)
-  }
-
-  get_SSI <- function(dsn, year) {
-    ssi <- sf::st_read(dsn = dsn, layer = paste0("MPB_SSI_", year)) |>
-      sf::st_cast("MULTIPOLYGON")
-
-    ssi <- sf::st_make_valid(ssi)
-    ## keep only the SSI values and polygon geometries,
-    ## and use 'SSI' as the column/field name
-    ssi <- ssi |>
-      select(matches("^(MPB_SSI|SSI)$"), Shape) |>
-      rename(any_of(c(SSI = "MPB_SSI")))
-
-    return(ssi)
-  }
-
-  mpb_ssi_2008 <- get_SSI(dsn = ssi_gdb, year = 2008)
-  mpb_ssi_2016 <- get_SSI(dsn = ssi_gdb, year = 2016)
-  mpb_ssi_2023 <- get_SSI(dsn = ssi_gdb, year = 2023)
-
-  ssi_crs <- sf::st_crs(mpb_ssi_2023)
 
   ## use the version that has more r-values because the provincial version has too many NAs for r_value_tree
   ## keep plot_lat/lon_dd for later analysis, not just removed for geometry purposes.
@@ -391,7 +379,7 @@ abr.lm.late <- lm(
     beetle_yr +
       plot_lat_dd_copy +
       plot_lon_dd_copy +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2016,
+      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
   data = abr.late,
   na.action = na.omit
 )
@@ -403,7 +391,7 @@ abr.lm.late <- lm(
       plot_lat_dd_copy +
       plot_lon_dd_copy +
       Q +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2016,
+      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
   data = abr.late,
   na.action = na.omit
 )
@@ -444,7 +432,7 @@ summary(abr.lm.early)
 abr.lm.late <- lm(
   log10(r + 1) ~
     beetle_yr +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2016,
+      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
   data = abr.late,
   na.action = na.omit
 )
@@ -480,7 +468,7 @@ abr.lm.early <- lm(
 summary(abr.lm.early)
 
 abr.lm.late <- lm(
-  log10(r + 1) ~ beetle_yr + SSI_2016 + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
+  log10(r + 1) ~ beetle_yr + SSI_2023 + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
   data = abr.late,
   na.action = na.omit
 )
@@ -523,7 +511,7 @@ gam_model.e <- gam(
   data = abr.early
 )
 summary(gam_model.e)
-plot(gam_model.e, scheme = 2)
+plot(gam_model.e, scheme = 2, pages = 1, all.terms = TRUE)
 
 gam_model.l <- gam(
   r ~
@@ -531,13 +519,13 @@ gam_model.l <- gam(
       s(ht_pitch_tube) +
       s(log10(nbr_infested + 1)) +
       s(Q, bs = "gp") +
-      s(SSI_2016, bs = "gp") +
+      s(SSI_2023, bs = "gp") +
       s(plot_lon_dd_copy, plot_lat_dd_copy, bs = "gp") +
       beetle_yr,
   data = abr.late
 )
 summary(gam_model.l)
-plot(gam_model.l, scheme = 2)
+plot(gam_model.l, scheme = 2, pages = 1, all.terms = TRUE)
 
 ## End of testing initial models
 
@@ -545,87 +533,76 @@ plot(gam_model.l, scheme = 2)
 
 ## bring in WK (winterkill) to be computed via BioSIM API
 
-BioSIM::getModelList() ## list the models available
-
-models.wanted <- "MPB_Cold_Tolerance_Annual"
-
-BioSIM::getModelHelp(models.wanted)
-
-## Set up parameters
-
-## test
-year.start <- 2006
-year.end <- 2010
-names.places <- c("Grande Prairie")
-lat.GP <- 55.18
-long.GP <- -118.89
-elev.GP <- 669 ## in m above sea level
-
-P.sim.test.out <- BioSIM::generateWeather(
-  models.wanted,
-  year.start,
-  year.end,
-  names.places,
-  c(lat.GP),
-  c(long.GP),
-  elevM = c(elev.GP),
-  rep = 1,
-  repModel = 1,
-  rcp = "RCP45",
-  climModel = "RCM4",
-  additionalParms = NULL
-)
-
-## generate an elevation for every location in all_data_df
-coords <- data.frame(x = all_data_df$plot_lon_dd_copy, y = all_data_df$plot_lat_dd_copy)
-names(coords) <- c("lon", "lat")
-coords_sf <- st_as_sf(coords, coords = c("lon", "lat"), crs = 4326)
-elevations <- elevatr::get_elev_point(
-  locations = coords_sf,
-  prj = "+proj=longlat +datum=WGS84",
-  src = "aws"
-)
-
-all_data_df$elevation <- elevations$elevation
-
-## rename plot_lXX_dd_copy to simply lXX
-all_data_df <- all_data_df |>
-  rename(
-    lon = plot_lon_dd_copy,
-    lat = plot_lat_dd_copy
-  )
-
-saveRDS(all_data_df, file.path(outputPath, "all_data_df_clean.rds"))
-
-test_df <- all_data_df[1:12, ]
-head(test_df)
-
 source("R/mpb_cold_tol.R")
 
-test_results <- mpb_cold_tol(test_df)
+if (FALSE) {
+  BioSIM::getModelList() ## list the models available
 
-## Test on just the unique locations
-## Generate a unique list for BioSIM
+  models.wanted <- "MPB_Cold_Tolerance_Annual"
+
+  BioSIM::getModelHelp(models.wanted)
+}
+
+fall_data_rds <- file.path(outputPath, "AB", "all_data_df_clean.rds")
+
+if (file.exists(all_data_rds)) {
+  all_data_df <- readRDS(all_data_rds)
+} else {
+  ## generate an elevation for every location in all_data_df
+  coords <- data.frame(x = all_data_df$plot_lon_dd_copy, y = all_data_df$plot_lat_dd_copy)
+  names(coords) <- c("lon", "lat")
+  coords_sf <- st_as_sf(coords, coords = c("lon", "lat"), crs = 4326)
+  elevations <- elevatr::get_elev_point(
+    locations = coords_sf,
+    prj = "+proj=longlat +datum=WGS84",
+    src = "aws"
+  )
+
+  all_data_df$elevation <- elevations$elevation
+
+  ## rename plot_lat/lon_dd_copy to simply lat/lon
+  all_data_df <- all_data_df |>
+    rename(
+      lon = plot_lon_dd_copy,
+      lat = plot_lat_dd_copy
+    )
+
+  saveRDS(all_data_df, all_data_rds)
+}
+
+## Test on just the unique locations; generate a unique list for BioSIM
 site_year_df <- all_data_df |>
   select(lat, lon, beetle_yr, elevation) |>
   distinct()
 
-site_year__MPBwk_results <- mpb_cold_tol(site_year_df)
+site_year__MPBwk_rds <- file.path(outputPath, "AB", "site_year__MPBwk_results.rds")
 
-dev.new()
+if (file.exists(site_year__MPBwk_rds)) {
+  site_year__MPBwk_results <- readRDS(site_year__MPBwk_rds)
+} else {
+  site_year__MPBwk_results <- mpb_cold_tol(site_year_df)
+  site_year__MPBwk_results <- site_year__MPBwk_results |>
+    mutate(Psurv_prop = Psurv / 100)
+
+  saveRDS(site_year__MPBwk_results, site_year__MPBwk_rds)
+}
+
 plot(site_year__MPBwk_results$Tmin, site_year__MPBwk_results$Psurv)
 
-site_year__MPBwk_results <- site_year__MPBwk_results |>
-  mutate(Psurv_prop = Psurv / 100)
-
 gam_model <- gam(
-  Psurv_prop ~ s(Tmin),
+  Psurv_prop ~ s(Tmin, bs = "gp"),
   data = site_year__MPBwk_results,
   family = binomial(link = "logit")
 )
 
-gam_model <- gam(Psurv ~ s(Tmin), data = site_year__MPBwk_results)
-plot(gam_model)
+gam_model <- gam(
+  Psurv ~ s(Tmin, bs = "gp"),
+  data = site_year__MPBwk_results
+)
+summary(gam_model)
+
+gam.check(gam_model)
+plot(gam_model, residuals = TRUE)
 
 ## verify results by mapping
 site_year_sf <- st_as_sf(site_year__MPBwk_results, coords = c("Longitude", "Latitude"), crs = 4326)
@@ -649,6 +626,16 @@ psurv_summary <- site_year__MPBwk_results |>
     n = n()
   )
 
+tmin_summary <- site_year__MPBwk_results |>
+  group_by(Year) |>
+  summarise(
+    mean_Tmin = mean(Tmin),
+    sd_Tmin = sd(Tmin),
+    n = n()
+  )
+
+## plotting Psurv and Tmin over time -------------------------------------------
+
 ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
   geom_line(color = "blue", size = 1) +
   geom_point(color = "blue", size = 2) +
@@ -665,16 +652,32 @@ ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
   ) +
   theme_minimal()
 
+ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "blue", size = 2) +
+  geom_ribbon(
+    aes(ymin = mean_Tmin - sd_Tmin, ymax = mean_Tmin + sd_Tmin),
+    alpha = 0.2,
+    fill = "blue"
+  ) +
+  labs(
+    title = "Mean Minimum Winter Temperature Over Time",
+    y = "Mean Tmin",
+    x = "Year",
+    caption = "Shaded area shows ±1 SD across sites"
+  ) +
+  theme_minimal()
+
+## run on all 13312 samples
 all_data_df_join_Psurv_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P.csv")
 
 if (file.exists(all_data_df_join_Psurv_csv)) {
   all_data_df_join_Psurv <- read.csv(all_data_df_join_Psurv_csv)
 } else {
-  ## run on all 13312 samples
   site_year_results <- mpb_cold_tol(all_data_df)
 
   site_year_results_min <- site_year_results |>
-    select(row_index, Psurv)
+    select(row_index, Psurv, Tmin)
 
   all_data_df_join_Psurv <- all_data_df |>
     mutate(row_index = row_number()) |>
@@ -682,14 +685,10 @@ if (file.exists(all_data_df_join_Psurv_csv)) {
 
   str(all_data_df_join_Psurv)
 
-  write.csv(
-    all_data_df_join_Psurv,
-    file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P.csv"),
-    row.names = FALSE
-  )
+  write.csv(all_data_df_join_Psurv, all_data_df_join_Psurv_csv, row.names = FALSE)
 }
 
-## build model now with Psurv
+## build model now with Psurv and/or Tmin
 abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= 2015)
 abr.late <- all_data_df_join_Psurv |> filter(beetle_yr >= 2016)
 
@@ -701,12 +700,19 @@ gam_model.e <- gam(
       s(Q, bs = "gp") +
       s(SSI_2008, bs = "gp") +
       s(lon, lat, bs = "gp") +
+      s(Tmin, bs = "gp") +
       beetle_yr +
       Psurv,
-  data = abr.early
+  data = abr.early,
+  method = "REML",
+  family = gaussian(link = "identity")
 )
 summary(gam_model.e)
-plot(gam_model.e)
+
+gam.check(gam_model.e)
+
+dev.new()
+plot(gam_model.e, scheme = 2, pages = 1, all.terms = TRUE)
 
 gam_model.l <- gam(
   r ~
@@ -714,14 +720,21 @@ gam_model.l <- gam(
       s(ht_pitch_tube) +
       s(log10(nbr_infested + 1)) +
       s(Q, bs = "gp") +
-      s(SSI_2016, bs = "gp") +
+      s(SSI_2023, bs = "gp") +
       s(lon, lat, bs = "gp") +
-      +beetle_yr +
+      s(Tmin, bs = "gp") +
+      beetle_yr +
       Psurv,
-  data = abr.late
+  data = abr.late,
+  method = "REML",
+  family = gaussian(link = "identity")
 )
 summary(gam_model.l)
-plot(gam_model.l)
+
+gam.check(gam_model.l)
+
+dev.new()
+plot(gam_model.l, scheme = 2, pages = 1, all.terms = TRUE)
 
 ## bring the geometry back into the sf
 all_data_sf <- all_data_df_join_Psurv |>

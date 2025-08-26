@@ -1,3 +1,6 @@
+## TODO: this could be made more efficient by calling BioSIM API in batches,
+##       and by unique lat/lon by year, instead of one row at a time
+
 mpb_cold_tol <- function(df) {
   purrr::map_dfr(1:nrow(df), function(i) {
     row <- df[i, ]
