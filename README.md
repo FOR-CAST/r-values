@@ -38,6 +38,11 @@ Donec scelerisque lacus a accumsan suscipit.
 
 ## Initial project setup
 
+0. Prerequisites:
+
+  a.  install a suitable Java Runtime Environment following instructions at
+      <https://github.com/CWFC-CCFB/J4R/wiki#requirements>
+
 1. Clone the repository: 
 
     ```bash
