@@ -1,8 +1,11 @@
 # get data from google drive ------------------------------------------------------------------
 
-drive_id <- as_id("1EiproEknMuuze5c6U_1tCptB8UM4z5YI")
+drive_id <- googledrive::as_id("1EiproEknMuuze5c6U_1tCptB8UM4z5YI")
 
-all_drive_files <- drive_ls(drive_id, recursive = TRUE) ## can be used to look up file ids etc.
+if (FALSE) {
+  ## look up file ids etc. as needed
+  all_drive_files <- googledrive::drive_ls(drive_id, recursive = TRUE)
+}
 
 ## NOTE: use overwrite=TRUE if e.g., data updated on Google Drive
 downloaded_files <- workflowtools::drive_download_folder(
@@ -66,8 +69,8 @@ if (inherits(ab_sf, "try-error")) {
 ## EOSD (Yemshanov et al. 2012)
 zip_yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map.zip")
 if (!file.exists(zip_yemshanov2012)) {
-  as_id("11g02bDnEt6U_xXtcLWLmqzWLleR_c54F") |>
-    drive_download(path = zip_yemshanov2012, overwrite = TRUE)
+  googledrive::as_id("11g02bDnEt6U_xXtcLWLmqzWLleR_c54F") |>
+    googledrive::drive_download(path = zip_yemshanov2012, overwrite = TRUE)
 }
 
 tif_yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map.tif")
@@ -134,8 +137,8 @@ gdb_bleiker2019 <- file.path(dataPath, "AB_PineVolumes_Lambert.gdb")
 zip_bleiker2019 <- paste0(gdb_bleiker2019, ".zip")
 
 if (!file.exists(zip_bleiker2019)) {
-  as_id("15EzncjIR_dn5v6hruoVbsUQVF706nTEL") |>
-    drive_download(path = zip_bleiker2019, overwrite = TRUE)
+  googledrive::as_id("15EzncjIR_dn5v6hruoVbsUQVF706nTEL") |>
+    googledrive::drive_download(path = zip_bleiker2019, overwrite = TRUE)
 }
 
 if (!(file.exists(gdb_bleiker2019) || dir.exists(gdb_bleiker2019))) {
