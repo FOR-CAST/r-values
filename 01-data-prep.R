@@ -39,10 +39,25 @@ if (!dir.exists(file.path(d_zip_2011, "Population forecast (r value)"))) {
 
 # geospatial objects for plotting -------------------------------------------------------------
 
-ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
-  sf::st_as_sf() |>
-  filter(NAME_1 == "Alberta") |>
-  sf::st_geometry()
+ab_sf <- try(
+  geodata::gadm("CAN", level = 1, path = dataPath) |>
+    sf::st_as_sf() |>
+    filter(NAME_1 == "Alberta") |>
+    sf::st_geometry()
+)
+
+if (inherits(ab_sf, "try-error")) {
+  gadm_can_rds <- file.path(dataPath, "gadm", "gadm41_CAN_1_pk.rds")
+  if (!file.exists(gadm_can_rds)) {
+    as_id("1zTMd5p9jufwRVGkD2IBjeLu20nFj6MsS") |>
+      drive_download(path = gadm_can_rds)
+  }
+
+  ab_sf <- readRDS(gadm_can_rds) |>
+    sf::st_as_sf() |>
+    filter(NAME_1 == "Alberta") |>
+    sf::st_geometry()
+}
 
 # get pine maps -------------------------------------------------------------------------------
 
