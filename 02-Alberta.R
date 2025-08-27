@@ -43,7 +43,7 @@ mpb_ssi_2023 <- get_SSI(dsn = ssi_gdb, year = 2023)
 ssi_crs <- sf::st_crs(mpb_ssi_2023)
 
 ## check if data for modelling exists. If it doesn't, build it.
-model_data_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_QSSI.csv")
+model_data_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_QSSIPVOL.csv")
 
 if (!file.exists(model_data_csv)) {
   # read in data from MS Access databases -------------------------------------------------------
@@ -75,9 +75,8 @@ if (!file.exists(model_data_csv)) {
   sum(abr$r_value_site[!is.na(abr$r_value_site)] == -999)
   sum(abr$r_value_tree[!is.na(abr$r_value_tree)] == -999)
 
-  abr$r_value_site[all_data$r_value_site[!is.na(all_data$r_value_site)] == -999]
-
-  abr$r_value_site[all_data$r_value_site[!is.na(all_data$r_value_site)] == -999] <- NA
+  abr$r_value_site[abr$r_value_site[!is.na(abr$r_value_site)] == -999]
+  abr$r_value_site[abr$r_value_site[!is.na(abr$r_value_site)] == -999] <- NA
 
   abr$r_value_site == -999
 
@@ -126,13 +125,14 @@ if (!file.exists(model_data_csv)) {
   ## with a relatively small cost in basing the r-value low
   abr$r <- abr$live / (abr$holes + 1)
 
+  abr_csv <- file.path(outputPath, "AB", "csv", "new_r_values.csv")
+
   ## Write new dataset containing the r values
-  write.csv(abr, file.path(outputPath, "AB", "csv", "new_r_values.csv"), row.names = FALSE)
+  write.csv(abr, abr_csv, row.names = FALSE)
 
   ## use the version that has more r-values because the provincial version has too many NAs for r_value_tree
   ## keep plot_lat/lon_dd for later analysis, not just removed for geometry purposes.
-  all_data_sf <- file.path(outputPath, "AB", "csv", "new_r_values.csv") |>
-    read.csv() |>
+  all_data_sf <- read.csv(abr_csv) |>
     filter(!is.na(plot_lon_dd) & !is.na(plot_lat_dd)) |>
     mutate(plot_lat_dd_copy = plot_lat_dd, plot_lon_dd_copy = plot_lon_dd) |>
     sf::st_as_sf(coords = c("plot_lon_dd", "plot_lat_dd"), crs = 4326) |>
@@ -147,10 +147,9 @@ if (!file.exists(model_data_csv)) {
 
   fs::dir_create(file.path(outputPath, "AB", "gdb")) |>
     file.path("all_mpb_site_trees_cleaned_SSI.gdb") |>
-    sf::st_write(all_data_sf, dsn = _)
+    sf::st_write(all_data_sf, dsn = _, append = FALSE)
 
   ## SSI correlations
-
   all_data_sf |>
     sf::st_drop_geometry() |>
     select(starts_with("SSI")) |>
@@ -167,7 +166,7 @@ if (!file.exists(model_data_csv)) {
   ggplot(all_data_sf) +
     geom_point(aes(x = SSI_2023, y = r_value_tree))
 
-  ## using our r values
+  ## SSI vs our r values
   ggplot(all_data_sf) +
     geom_point(aes(x = SSI_2008, y = r))
 
@@ -194,7 +193,7 @@ if (!file.exists(model_data_csv)) {
 
   ## plot the three joins in one window
   ssi_long <- all_data_sf |>
-    select(geometry, SSI_2008, SSI_2016, SSI_2023) |>
+    select(geometry, starts_with("SSI")) |>
     mutate(id = row_number()) |>
     pivot_longer(cols = starts_with("SSI"), names_to = "year", values_to = "ssi") |>
     mutate(joined = !is.na(ssi))
@@ -287,14 +286,11 @@ if (!file.exists(model_data_csv)) {
     geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
     labs(title = "Distance to Nearest SSI Polygon (2008)", x = "Distance (km)", y = "Tree Count")
 
-  ############
-  # Q values #
-  ############
+  # Q values ------------------------------------------------------------------------------------
 
-  ## Borrowed from script explore_Q_maps
+  ## based on scripts/explore_Q_maps.R
 
   ## get the data
-
   q_map <- file.path(dataPath, "HybridPrediction_1000m.lpkx") ## download to here
   q_map_dir <- file.path(dataPath, fs::path_ext_remove(basename(q_map))) ## extract to here
 
@@ -313,23 +309,29 @@ if (!file.exists(model_data_csv)) {
   dev.new()
   terra::plot(pine_q)
 
-  # Extract Q-values from raster to tree points
-
+  ## Extract Q-values from raster to tree points
   all_data_sf$Q <- terra::extract(pine_q, terra::vect(all_data_sf))$pine
 
   summary(all_data_sf$Q)
   dev.new()
   hist(all_data_sf$Q, breaks = 50, col = "skyblue", main = "Distribution of Q-values")
 
-  ## Prepare data for modeling
+  ## Extract pine volume per hectare
+  all_data_sf$PineVol <- terra::extract(
+    x = bleiker2019,
+    y = terra::vect(all_data_sf)
+  )$Overstory_Raster_PineVol
+  dev.new()
+  summary(all_data_sf$PineVol)
 
+  ## Prepare data for modeling
   all_data_df <- st_drop_geometry(all_data_sf)
 
   ## Save to disk
   write.csv(all_data_df, model_data_csv, row.names = FALSE)
 } ## end of data creation step
 
-# Data exists, either in memory or on disk, so read it in.
+## Data exists, either in memory or on disk, so read it in.
 all_data_df <- read.csv(model_data_csv)
 
 ## split dataset based on pivot year
@@ -667,7 +669,7 @@ ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
   theme_minimal()
 
 ## run on all 13312 samples
-all_data_df_join_Psurv_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P.csv")
+all_data_df_join_Psurv_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P_PVOL.csv")
 
 if (file.exists(all_data_df_join_Psurv_csv)) {
   all_data_df_join_Psurv <- read.csv(all_data_df_join_Psurv_csv)
@@ -700,7 +702,8 @@ gam_model.e <- gam(
       s(SSI_2008, bs = "gp") +
       s(lon, lat, bs = "gp") +
       s(Tmin, bs = "gp") +
-      s(Psurv, bs = "gp"),
+      s(Psurv, bs = "gp") +
+      s(PineVol, bs = "gp"),
   data = abr.early,
   method = "REML",
   family = gaussian(link = "identity")
@@ -722,7 +725,8 @@ gam_model.l <- gam(
       s(SSI_2023, bs = "gp") +
       s(lon, lat, bs = "gp") +
       s(Tmin, bs = "gp") +
-      s(Psurv, bs = "gp"),
+      s(Psurv, bs = "gp") +
+      s(PineVol, bs = "gp"),
   data = abr.late,
   method = "REML",
   family = gaussian(link = "identity")

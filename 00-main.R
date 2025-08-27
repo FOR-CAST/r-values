@@ -27,6 +27,7 @@ ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
 
 # pine layers ---------------------------------------------------------------------------------
 
+## TODO: put all data download steps in this script
 source("01-data-prep.R")
 
 # MPB r-value data ----------------------------------------------------------------------------

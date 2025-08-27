@@ -127,8 +127,7 @@ if (!(file.exists(gdb_bleiker2019) || dir.exists(gdb_bleiker2019))) {
   archive::archive_extract(zip_bleiker2019, dataPath)
 }
 
-bleiker2019 <- sf::st_read(gdb_bleiker2019, layer = "OVERSTOREY_PINE") |>
-  sf::st_make_valid()
+bleiker2019 <- terra::rast(gdb_bleiker2019)
 
 ## CASFRI
 
