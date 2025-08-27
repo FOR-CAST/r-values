@@ -27,10 +27,12 @@ source("01-download-data.R")
 
 # MPB r-value data ----------------------------------------------------------------------------
 
+## mdb extraction only needs to be done once,
+## and can only be run on a Windows machine
 source("01a-extract-mdb.R")
 
+## join all the extracted data into a single table
 source("01b-import-mdb-csv.R")
-
 
 # pine layers ---------------------------------------------------------------------------------
 
