@@ -739,7 +739,7 @@ gam_model.all <- gam(
       s(ht_pitch_tube) +
       s(log10(nbr_infested + 1)) +
       s(Q, bs = "gp") +
-      s(SSI_2008, bs = "gp") +
+      s(SSI_2016, bs = "gp") +
       s(lon, lat, bs = "gp") + ## TODO: model selection; remove lon/lat
       s(Tmin, bs = "gp") +
       s(Psurv, bs = "gp") +
