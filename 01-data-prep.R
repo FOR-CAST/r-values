@@ -1,31 +1,3 @@
-# packages ------------------------------------------------------------------------------------
-
-library(archive)
-library(dplyr)
-# library(elevatr)
-# library(geodata)
-library(ggplot2)
-library(googledrive)
-library(purrr)
-# library(RCurl)
-library(sf)
-library(terra)
-# library(XML)
-
-# setup ---------------------------------------------------------------------------------------
-
-## paths
-dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
-figPath <- "figures" |> fs::dir_create()
-outputPath <- "outputs" |> fs::dir_create()
-
-## set map projection
-latlon <- crs("epsg:4326")
-targetCRS <- crs(paste(
-  "+proj=aea +lat_1=49 +lat_2=67 +lat_0=0 +lon_0=-112 +x_0=0 +y_0=0",
-  "+datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
-))
-
 # get data from google drive ------------------------------------------------------------------
 
 drive_id <- as_id("1EiproEknMuuze5c6U_1tCptB8UM4z5YI")
@@ -163,9 +135,3 @@ bleiker2019 <- sf::st_read(gdb_bleiker2019, layer = "OVERSTOREY_PINE") |>
 ## plot them
 
 ## TODO: ggplot/cowplot using tidyterra
-
-# MPB r-value data ----------------------------------------------------------------------------
-
-## TODO: see 01a-extract-mdb.R
-
-## TODO: see 01b-import-mdb-csv.R
