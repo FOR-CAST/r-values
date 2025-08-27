@@ -364,135 +364,141 @@ sapply(
   function(x) sum(is.na(x))
 )
 
-abr.lm.early <- lm(
-  log10(r + 1) ~
-    beetle_yr +
-      plot_lat_dd_copy +
-      plot_lon_dd_copy +
-      Q +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2008,
-  data = abr.early,
-  na.action = na.omit
-)
-summary(abr.lm.early)
+### try linear regression ---------------------------------------------------------------------
 
-abr.lm.late <- lm(
-  log10(r + 1) ~
-    beetle_yr +
-      plot_lat_dd_copy +
-      plot_lon_dd_copy +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
-  data = abr.late,
-  na.action = na.omit
-)
-summary(abr.lm.late)
+if (FALSE) {
+  abr.lm.early <- lm(
+    log10(r + 1) ~
+      beetle_yr +
+        plot_lat_dd_copy +
+        plot_lon_dd_copy +
+        Q +
+        log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2008,
+    data = abr.early,
+    na.action = na.omit
+  )
+  summary(abr.lm.early)
 
-abr.lm.late <- lm(
-  log10(r + 1) ~
-    beetle_yr +
-      plot_lat_dd_copy +
-      plot_lon_dd_copy +
-      Q +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
-  data = abr.late,
-  na.action = na.omit
-)
-summary(abr.lm.late)
+  abr.lm.late <- lm(
+    log10(r + 1) ~
+      beetle_yr +
+        plot_lat_dd_copy +
+        plot_lon_dd_copy +
+        log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
+    data = abr.late,
+    na.action = na.omit
+  )
+  summary(abr.lm.late)
 
-## Examine variance inflation factor associated with multi-colinearity
-car::vif(abr.lm.early)
-car::vif(abr.lm.late)
+  abr.lm.late <- lm(
+    log10(r + 1) ~
+      beetle_yr +
+        plot_lat_dd_copy +
+        plot_lon_dd_copy +
+        Q +
+        log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
+    data = abr.late,
+    na.action = na.omit
+  )
+  summary(abr.lm.late)
 
-## We are drowning in multi-colinearity due to SSI and Q and lat/lon.
-## Try dropping lat/lon
+  ## Examine variance inflation factor associated with multi-colinearity
+  car::vif(abr.lm.early)
+  car::vif(abr.lm.late)
 
-abr.lm.early <- lm(
-  log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2008,
-  data = abr.early,
-  na.action = na.omit
-)
-summary(abr.lm.early)
+  ## We are drowning in multi-colinearity due to SSI and Q and lat/lon.
+  ## Try dropping lat/lon
 
-abr.lm.late <- lm(
-  log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2016,
-  data = abr.late,
-  na.action = na.omit
-)
-summary(abr.lm.late)
+  abr.lm.early <- lm(
+    log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2008,
+    data = abr.early,
+    na.action = na.omit
+  )
+  summary(abr.lm.early)
 
-## We are still drowning in multi-colinearity due to SSI and Q.
-## Try dropping Q.
-abr.lm.early <- lm(
-  log10(r + 1) ~
-    beetle_yr +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2008,
-  data = abr.early,
-  na.action = na.omit
-)
-summary(abr.lm.early)
+  abr.lm.late <- lm(
+    log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2016,
+    data = abr.late,
+    na.action = na.omit
+  )
+  summary(abr.lm.late)
 
-abr.lm.late <- lm(
-  log10(r + 1) ~
-    beetle_yr +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
-  data = abr.late,
-  na.action = na.omit
-)
-summary(abr.lm.late)
+  ## We are still drowning in multi-colinearity due to SSI and Q.
+  ## Try dropping Q.
+  abr.lm.early <- lm(
+    log10(r + 1) ~
+      beetle_yr +
+        log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2008,
+    data = abr.early,
+    na.action = na.omit
+  )
+  summary(abr.lm.early)
 
-## We are still drowning in multi-colinearity due to 4-way interaction.
-## Try dropping SSI.
-abr.lm.early <- lm(
-  log10(r + 1) ~
-    beetle_yr +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube,
-  data = abr.early,
-  na.action = na.omit
-)
-summary(abr.lm.early)
+  abr.lm.late <- lm(
+    log10(r + 1) ~
+      beetle_yr +
+        log10(nbr_infested + 1) * dbh * ht_pitch_tube * SSI_2023,
+    data = abr.late,
+    na.action = na.omit
+  )
+  summary(abr.lm.late)
 
-abr.lm.late <- lm(
-  log10(r + 1) ~
-    beetle_yr +
-      log10(nbr_infested + 1) * dbh * ht_pitch_tube,
-  data = abr.late,
-  na.action = na.omit
-)
-summary(abr.lm.late)
+  ## We are still drowning in multi-colinearity due to 4-way interaction.
+  ## Try dropping SSI.
+  abr.lm.early <- lm(
+    log10(r + 1) ~
+      beetle_yr +
+        log10(nbr_infested + 1) * dbh * ht_pitch_tube,
+    data = abr.early,
+    na.action = na.omit
+  )
+  summary(abr.lm.early)
 
-## What if SSI affects immigration behaviour, not beetle pressure/colonization success?
-## Try including SSI not as interaction.
-abr.lm.early <- lm(
-  log10(r + 1) ~ beetle_yr + SSI_2008 + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
-  data = abr.early,
-  na.action = na.omit
-)
-summary(abr.lm.early)
+  abr.lm.late <- lm(
+    log10(r + 1) ~
+      beetle_yr +
+        log10(nbr_infested + 1) * dbh * ht_pitch_tube,
+    data = abr.late,
+    na.action = na.omit
+  )
+  summary(abr.lm.late)
 
-abr.lm.late <- lm(
-  log10(r + 1) ~ beetle_yr + SSI_2023 + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
-  data = abr.late,
-  na.action = na.omit
-)
-summary(abr.lm.late)
+  ## What if SSI affects immigration behaviour, not beetle pressure/colonization success?
+  ## Try including SSI not as interaction.
+  abr.lm.early <- lm(
+    log10(r + 1) ~ beetle_yr + SSI_2008 + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
+    data = abr.early,
+    na.action = na.omit
+  )
+  summary(abr.lm.early)
 
-## SSI ns as main effect. So remove completely and try Q.
-abr.lm.early <- lm(
-  log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
-  data = abr.early,
-  na.action = na.omit
-)
-summary(abr.lm.early)
+  abr.lm.late <- lm(
+    log10(r + 1) ~ beetle_yr + SSI_2023 + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
+    data = abr.late,
+    na.action = na.omit
+  )
+  summary(abr.lm.late)
 
-abr.lm.late <- lm(
-  log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
-  data = abr.late,
-  na.action = na.omit
-)
-summary(abr.lm.late)
+  ## SSI ns as main effect. So remove completely and try Q.
+  abr.lm.early <- lm(
+    log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
+    data = abr.early,
+    na.action = na.omit
+  )
+  summary(abr.lm.early)
 
-car::vif(abr.lm.early)
-car::vif(abr.lm.late)
+  abr.lm.late <- lm(
+    log10(r + 1) ~ beetle_yr + Q + log10(nbr_infested + 1) * dbh * ht_pitch_tube,
+    data = abr.late,
+    na.action = na.omit
+  )
+  summary(abr.lm.late)
+
+  car::vif(abr.lm.early)
+  car::vif(abr.lm.late)
+}
+
+### try non-linear models ---------------------------------------------------------------------
 
 ## Even with the simple model the VIFs are very high, especially on HT and DBH;
 ## A shame because the DBH and HT distributions are nice.
@@ -570,103 +576,109 @@ if (file.exists(all_data_rds)) {
   saveRDS(all_data_df, all_data_rds)
 }
 
-## Test on just the unique locations; generate a unique list for BioSIM
-site_year_df <- all_data_df |>
-  select(lat, lon, beetle_yr, elevation) |>
-  distinct()
+if (FALSE) {
+  ## Test on just the unique locations; generate a unique list for BioSIM
+  site_year_df <- all_data_df |>
+    select(lat, lon, beetle_yr, elevation) |>
+    distinct()
 
-site_year__MPBwk_rds <- file.path(outputPath, "AB", "site_year__MPBwk_results.rds")
+  site_year__MPBwk_rds <- file.path(outputPath, "AB", "site_year__MPBwk_results.rds")
 
-if (file.exists(site_year__MPBwk_rds)) {
-  site_year__MPBwk_results <- readRDS(site_year__MPBwk_rds)
-} else {
-  site_year__MPBwk_results <- mpb_cold_tol(site_year_df)
-  site_year__MPBwk_results <- site_year__MPBwk_results |>
-    mutate(Psurv_prop = Psurv / 100)
+  if (file.exists(site_year__MPBwk_rds)) {
+    site_year__MPBwk_results <- readRDS(site_year__MPBwk_rds)
+  } else {
+    site_year__MPBwk_results <- mpb_cold_tol(site_year_df)
+    site_year__MPBwk_results <- site_year__MPBwk_results |>
+      mutate(Psurv_prop = Psurv / 100)
 
-  saveRDS(site_year__MPBwk_results, site_year__MPBwk_rds)
+    saveRDS(site_year__MPBwk_results, site_year__MPBwk_rds)
+  }
+
+  plot(site_year__MPBwk_results$Tmin, site_year__MPBwk_results$Psurv)
+
+  gam_model <- gam(
+    Psurv_prop ~ s(Tmin, bs = "gp"),
+    data = site_year__MPBwk_results,
+    family = binomial(link = "logit")
+  )
+
+  gam_model <- gam(
+    Psurv ~ s(Tmin, bs = "gp"),
+    data = site_year__MPBwk_results
+  )
+  summary(gam_model)
+
+  gam.check(gam_model)
+  plot(gam_model, residuals = TRUE)
+
+  ## verify results by mapping
+  site_year_sf <- st_as_sf(
+    site_year__MPBwk_results,
+    coords = c("Longitude", "Latitude"),
+    crs = 4326
+  )
+  ggplot(site_year_sf) +
+    geom_sf(aes(color = Psurv), size = 2) +
+    geom_sf(data = ab_sf, fill = NA) +
+    scale_color_viridis_c(option = "plasma", name = "Survival (%)") +
+    facet_wrap(~Year) +
+    theme_minimal() +
+    labs(
+      title = "Winter Survival Probability by Site and Year",
+      subtitle = "BioSIM MPB Cold Tolerance Model",
+      caption = "Each point represents a unique site-year combination"
+    )
+
+  psurv_summary <- site_year__MPBwk_results |>
+    group_by(Year) |>
+    summarise(
+      mean_Psurv = mean(Psurv),
+      sd_Psurv = sd(Psurv),
+      n = n()
+    )
+
+  tmin_summary <- site_year__MPBwk_results |>
+    group_by(Year) |>
+    summarise(
+      mean_Tmin = mean(Tmin),
+      sd_Tmin = sd(Tmin),
+      n = n()
+    )
+
+  ## plotting Psurv and Tmin over time -------------------------------------------
+
+  ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
+    geom_line(color = "blue", size = 1) +
+    geom_point(color = "blue", size = 2) +
+    geom_ribbon(
+      aes(ymin = mean_Psurv - sd_Psurv, ymax = mean_Psurv + sd_Psurv),
+      alpha = 0.2,
+      fill = "blue"
+    ) +
+    labs(
+      title = "Mean Winter Survival Probability Over Time",
+      y = "Mean Psurv (%)",
+      x = "Year",
+      caption = "Shaded area shows ±1 SD across sites"
+    ) +
+    theme_minimal()
+
+  ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
+    geom_line(color = "blue", size = 1) +
+    geom_point(color = "blue", size = 2) +
+    geom_ribbon(
+      aes(ymin = mean_Tmin - sd_Tmin, ymax = mean_Tmin + sd_Tmin),
+      alpha = 0.2,
+      fill = "blue"
+    ) +
+    labs(
+      title = "Mean Minimum Winter Temperature Over Time",
+      y = "Mean Tmin",
+      x = "Year",
+      caption = "Shaded area shows ±1 SD across sites"
+    ) +
+    theme_minimal()
 }
-
-plot(site_year__MPBwk_results$Tmin, site_year__MPBwk_results$Psurv)
-
-gam_model <- gam(
-  Psurv_prop ~ s(Tmin, bs = "gp"),
-  data = site_year__MPBwk_results,
-  family = binomial(link = "logit")
-)
-
-gam_model <- gam(
-  Psurv ~ s(Tmin, bs = "gp"),
-  data = site_year__MPBwk_results
-)
-summary(gam_model)
-
-gam.check(gam_model)
-plot(gam_model, residuals = TRUE)
-
-## verify results by mapping
-site_year_sf <- st_as_sf(site_year__MPBwk_results, coords = c("Longitude", "Latitude"), crs = 4326)
-ggplot(site_year_sf) +
-  geom_sf(aes(color = Psurv), size = 2) +
-  geom_sf(data = ab_sf, fill = NA) +
-  scale_color_viridis_c(option = "plasma", name = "Survival (%)") +
-  facet_wrap(~Year) +
-  theme_minimal() +
-  labs(
-    title = "Winter Survival Probability by Site and Year",
-    subtitle = "BioSIM MPB Cold Tolerance Model",
-    caption = "Each point represents a unique site-year combination"
-  )
-
-psurv_summary <- site_year__MPBwk_results |>
-  group_by(Year) |>
-  summarise(
-    mean_Psurv = mean(Psurv),
-    sd_Psurv = sd(Psurv),
-    n = n()
-  )
-
-tmin_summary <- site_year__MPBwk_results |>
-  group_by(Year) |>
-  summarise(
-    mean_Tmin = mean(Tmin),
-    sd_Tmin = sd(Tmin),
-    n = n()
-  )
-
-## plotting Psurv and Tmin over time -------------------------------------------
-
-ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
-  geom_line(color = "blue", size = 1) +
-  geom_point(color = "blue", size = 2) +
-  geom_ribbon(
-    aes(ymin = mean_Psurv - sd_Psurv, ymax = mean_Psurv + sd_Psurv),
-    alpha = 0.2,
-    fill = "blue"
-  ) +
-  labs(
-    title = "Mean Winter Survival Probability Over Time",
-    y = "Mean Psurv (%)",
-    x = "Year",
-    caption = "Shaded area shows ±1 SD across sites"
-  ) +
-  theme_minimal()
-
-ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
-  geom_line(color = "blue", size = 1) +
-  geom_point(color = "blue", size = 2) +
-  geom_ribbon(
-    aes(ymin = mean_Tmin - sd_Tmin, ymax = mean_Tmin + sd_Tmin),
-    alpha = 0.2,
-    fill = "blue"
-  ) +
-  labs(
-    title = "Mean Minimum Winter Temperature Over Time",
-    y = "Mean Tmin",
-    x = "Year",
-    caption = "Shaded area shows ±1 SD across sites"
-  ) +
-  theme_minimal()
 
 ## run on all 13312 samples
 all_data_df_join_Psurv_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_Q_SSI_P_PVOL.csv")
