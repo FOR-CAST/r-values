@@ -31,8 +31,8 @@ ab_sf <- try(
 if (inherits(ab_sf, "try-error")) {
   gadm_can_rds <- file.path(dataPath, "gadm", "gadm41_CAN_1_pk.rds")
   if (!file.exists(gadm_can_rds)) {
-    as_id("1zTMd5p9jufwRVGkD2IBjeLu20nFj6MsS") |>
-      drive_download(path = gadm_can_rds)
+    googledrive::as_id("1zTMd5p9jufwRVGkD2IBjeLu20nFj6MsS") |>
+      googledrive::drive_download(path = gadm_can_rds)
   }
 
   ab_sf <- readRDS(gadm_can_rds) |>
