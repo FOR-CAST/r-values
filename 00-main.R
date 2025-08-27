@@ -18,17 +18,10 @@ library(terra)
 dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
 figPath <- "figures" |> fs::dir_create()
 outputPath <- "outputs" |> fs::dir_create()
-# geospatial objects for plotting -------------------------------------------------------------
 
-ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
-  sf::st_as_sf() |>
-  filter(NAME_1 == "Alberta") |>
-  sf::st_geometry()
+# data download -------------------------------------------------------------------------------
 
-# pine layers ---------------------------------------------------------------------------------
-
-## TODO: put all data download steps in this script
-source("01-data-prep.R")
+source("01-download-data.R")
 
 # MPB r-value data ----------------------------------------------------------------------------
 
@@ -36,6 +29,11 @@ source("01a-extract-mdb.R")
 
 source("01b-import-mdb-csv.R")
 
+
+# pine layers ---------------------------------------------------------------------------------
+
+source("01c-pine-layers.R")
+
 # MPB SSI, pine introgression (Q), and MPB winter mortality -----------------------------------
 
-source("02 - Alberta.R")
+source("02-Alberta.R")
