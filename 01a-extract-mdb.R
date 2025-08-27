@@ -1,15 +1,8 @@
-# packages ------------------------------------------------------------------------------------
+# additional packages -------------------------------------------------------------------------
 
 library(DBI)
 library(googledrive)
 library(odbc)
-
-# setup ---------------------------------------------------------------------------------------
-
-## paths
-dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
-figPath <- "figures" |> fs::dir_create()
-outputPath <- "outputs" |> fs::dir_create()
 
 # read in data from MS Access databases -------------------------------------------------------
 
@@ -39,7 +32,9 @@ dirname(mdb_files) |>
   unique() |>
   vapply(function(d) fs::path(d, c("source", "site", "tree")), character(3)) |>
   purrr::walk(function(d) {
-    if (dir.exists(d)) unlink(d, recursive = TRUE) ## from dataPath
+    if (dir.exists(d)) {
+      unlink(d, recursive = TRUE)
+    } ## from dataPath
 
     od <- file.path(outputPath, fs::path_rel(dirname(d), dataPath)) |> dirname()
     if (dir.exists(od)) unlink(od, recursive = TRUE) ## from outputPath
@@ -71,7 +66,11 @@ purrr::walk(mdb_files, function(mdb) {
 
   if ("mpb_trees" %in% db_tbls) {
     mpb_trees <- dbReadTable(con, "mpb_trees")
-    csv_file <- file.path(out_dir, "tree", paste0(tools::file_path_sans_ext(basename(mdb)), "_mpb_trees.csv")) |>
+    csv_file <- file.path(
+      out_dir,
+      "tree",
+      paste0(tools::file_path_sans_ext(basename(mdb)), "_mpb_trees.csv")
+    ) |>
       normalizePath(mustWork = FALSE)
     write.csv(mpb_trees, csv_file, row.names = FALSE)
   }
@@ -79,14 +78,22 @@ purrr::walk(mdb_files, function(mdb) {
   ## site and survey_info are equivalent, so put in the 'site/' subdir
   if ("mpb_survey_info" %in% db_tbls) {
     surv_info <- dbReadTable(con, "mpb_survey_info")
-    csv_file <- file.path(out_dir, "site", paste0(tools::file_path_sans_ext(basename(mdb)), "_mpb_survey_info.csv")) |>
+    csv_file <- file.path(
+      out_dir,
+      "site",
+      paste0(tools::file_path_sans_ext(basename(mdb)), "_mpb_survey_info.csv")
+    ) |>
       normalizePath(mustWork = FALSE)
     write.csv(surv_info, csv_file, row.names = FALSE)
   }
 
   if ("mpb_site" %in% db_tbls) {
     mpb_site <- dbReadTable(con, "mpb_site")
-    csv_file <- file.path(out_dir, "site", paste0(tools::file_path_sans_ext(basename(mdb)), "_mpb_site.csv")) |>
+    csv_file <- file.path(
+      out_dir,
+      "site",
+      paste0(tools::file_path_sans_ext(basename(mdb)), "_mpb_site.csv")
+    ) |>
       normalizePath(mustWork = FALSE)
     write.csv(mpb_site, csv_file, row.names = FALSE)
   }
@@ -98,9 +105,21 @@ purrr::walk(mdb_files, function(mdb) {
 
 ## expected outputs from previous
 csv_files <- c(
-  file.path(dirname(mdb_files), "tree", paste0(tools::file_path_sans_ext(basename(mdb_files)), "_mpb_trees.csv")),
-  file.path(dirname(mdb_files), "site", paste0(tools::file_path_sans_ext(basename(mdb_files)), "_mpb_survey_info.csv")),
-  file.path(dirname(mdb_files), "site", paste0(tools::file_path_sans_ext(basename(mdb_files)), "_mpb_site.csv"))
+  file.path(
+    dirname(mdb_files),
+    "tree",
+    paste0(tools::file_path_sans_ext(basename(mdb_files)), "_mpb_trees.csv")
+  ),
+  file.path(
+    dirname(mdb_files),
+    "site",
+    paste0(tools::file_path_sans_ext(basename(mdb_files)), "_mpb_survey_info.csv")
+  ),
+  file.path(
+    dirname(mdb_files),
+    "site",
+    paste0(tools::file_path_sans_ext(basename(mdb_files)), "_mpb_site.csv")
+  )
 )
 csv_files <- fs::path(outputPath, fs::path_rel(csv_files, dataPath))
 csv_files <- csv_files[file.exists(csv_files)] ## not all tables/files exist, so filter them out

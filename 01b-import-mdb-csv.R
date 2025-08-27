@@ -1,30 +1,3 @@
-# packages ------------------------------------------------------------------------------------
-
-# library(archive)
-# library(cli)
-library(dplyr)
-# library(fs)
-# library(geodata)
-library(ggplot2)
-library(ggspatial)
-# library(googledrive)
-# library(purrr)
-# library(sf)
-
-# setup ---------------------------------------------------------------------------------------
-
-## paths
-dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
-figPath <- "figures" |> fs::dir_create()
-outputPath <- "outputs" |> fs::dir_create()
-
-# geospatial objects for plotting -------------------------------------------------------------
-
-ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
-  sf::st_as_sf() |>
-  filter(NAME_1 == "Alberta") |>
-  sf::st_geometry()
-
 # validate and merge csv tables ---------------------------------------------------------------
 
 csv_zip <- file.path(outputPath, "extracted_mdb_tables.zip")
