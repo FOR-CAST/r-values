@@ -49,18 +49,28 @@ ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
 ## TODO: issue #3
 
 ## EOSD (Yemshanov et al. 2012)
-url_yemshanov2012 <- as_id("11g02bDnEt6U_xXtcLWLmqzWLleR_c54F")
-yemshanov2012 <- prepInputs(
-  url = url_yemshanov2012,
-  destinationPath = dataPath,
-  fun = "terra::rast",
-  cropTo = ab_sf,
-  maskTo = ab_sf,
-  targetFile = "Yemshanov_pine_map.flt"
-) |>
-  Cache() |>
-  writeRaster(file.path(dataPath, "Yemshanov_pine_map.tif"), overwrite = TRUE)
-crs_yemshanov2012 <- crs(yemshanov2012)
+zip_yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map.zip")
+if (!file.exists(zip_yemshanov2012)) {
+  as_id("11g02bDnEt6U_xXtcLWLmqzWLleR_c54F") |>
+    drive_download(path = zip_yemshanov2012, overwrite = TRUE)
+}
+
+tif_yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map.tif")
+if (file.exists(tif_yemshanov2012)) {
+  yemshanov2012 <- terra::rast(tif_yemshanov2012)
+} else {
+  archive::archive_extract(zip_yemshanov2012, dataPath)
+
+  yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map", "Yemshanov_pine_map.flt") |>
+    terra::rast()
+
+  yemshanov2012 <- terra::crop(
+    x = yemshanov2012,
+    y = terra::project(terra::vect(ab_sf), yemshanov2012),
+    mask = TRUE
+  ) |>
+    writeRaster(file.path(dataPath, "Yemshanov_pine_map.tif"), overwrite = TRUE)
+}
 
 ## kNN (Beaudoin et al. 2014)
 tif_beaudoin2014 <- file.path(dataPath, "Beaudoin_pine_map.tif")
