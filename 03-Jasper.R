@@ -42,15 +42,23 @@ if (!all(file.exists(file.path(dataPath, paste0(np_file, ".", np_fext))))) {
 natl_prks.latlon <- st_read(file.path(dataPath, paste0(np_file, ".shp")))
 natl_prks <- st_transform(natl_prks.latlon, targetCRS)
 
-np_banff.latlon <- natl_prks.latlon[natl_prks.latlon$adminAreaN == "BANFF NATIONAL PARK OF CANADA", ]
+np_banff.latlon <- natl_prks.latlon[
+  natl_prks.latlon$adminAreaN == "BANFF NATIONAL PARK OF CANADA",
+]
 np_banff <- natl_prks[natl_prks$adminAreaN == "BANFF NATIONAL PARK OF CANADA", ]
 
-np_jasper.latlon <- natl_prks.latlon[natl_prks.latlon$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
+np_jasper.latlon <- natl_prks.latlon[
+  natl_prks.latlon$adminAreaN == "JASPER NATIONAL PARK OF CANADA",
+]
 np_jasper <- natl_prks[natl_prks$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
 
 # map locations from Carroll et al. 2017 ------------------------------------------------------
 
-abr_df <- read.csv(file.path(dataPath, "FRI", "rvaluesQvalues.csv"), header = TRUE, na.strings = ".")
+abr_df <- read.csv(
+  file.path(dataPath, "FRI", "rvaluesQvalues.csv"),
+  header = TRUE,
+  na.strings = "."
+)
 abr_sf.latlon <- st_as_sf(abr_df, coords = c("PLOT_LONG", "PLOT_LAT"))
 st_crs(abr_sf.latlon) <- latlon
 
@@ -63,14 +71,21 @@ gg_abmpb <- ggplot() +
   geom_sf(data = np_jasper, col = "darkgreen") +
   theme_bw(base_size = 20) +
   annotation_north_arrow(
-    location = "bl", which_north = "true",
-    pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+    location = "bl",
+    which_north = "true",
+    pad_x = unit(0.25, "in"),
+    pad_y = unit(0.25, "in"),
     style = north_arrow_fancy_orienteering
   ) +
   xlab("Longitude") +
   ylab("Latitude")
 
-ggsave(file.path(figPath, "carroll_et_al_2017_map_banff_jasper.png"), gg_abmpb, height = 10, width = 7)
+ggsave(
+  file.path(figPath, "carroll_et_al_2017_map_banff_jasper.png"),
+  gg_abmpb,
+  height = 10,
+  width = 7
+)
 
 # infestation counts/areas for Jasper & Banff -------------------------------------------------
 
@@ -91,15 +106,28 @@ if (.Platform$OS == "windows") {
   ## counts will be squares; areas will be circles
 
   ## 100 trees to 10 000 000 trees; low end scaled so that white circle perfectly overlaps white square:
-  plot(ABMtnParksMPB$year, log10(ABMtnParksMPB$BanffCount), type = "l",
-       xlab = "year", ylab = "trees infested (log10 count)", ylim = c(1, 11.5))
+  plot(
+    ABMtnParksMPB$year,
+    log10(ABMtnParksMPB$BanffCount),
+    type = "l",
+    xlab = "year",
+    ylab = "trees infested (log10 count)",
+    ylim = c(1, 11.5)
+  )
   points(ABMtnParksMPB$year, log10(ABMtnParksMPB$BanffCount), pch = 15) # black squares
   lines(ABMtnParksMPB$year, log10(ABMtnParksMPB$JasperCount))
   points(ABMtnParksMPB$year, log10(ABMtnParksMPB$JasperCount), pch = 22, bg = "white") # white squares
 
   par(new = TRUE)
-  plot(ABMtnParksMPB$year, log10(ABMtnParksMPB$Jasperha), axes = FALSE, type = "l",
-       xlab = "", ylab = "", ylim = c(1, 6)) # 10 ha to 1 000 000 ha
+  plot(
+    ABMtnParksMPB$year,
+    log10(ABMtnParksMPB$Jasperha),
+    axes = FALSE,
+    type = "l",
+    xlab = "",
+    ylab = "",
+    ylim = c(1, 6)
+  ) # 10 ha to 1 000 000 ha
   points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Jasperha), pch = 21, bg = "white") # white circles
   lines(ABMtnParksMPB$year, log10(ABMtnParksMPB$Banffha))
   points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Banffha), pch = 19) # black circles
@@ -115,9 +143,11 @@ if (.Platform$OS == "windows") {
 
 ## ggplot version
 ABMtnParksMPB_long <- ABMtnParksMPB |>
-  tidyr::pivot_longer(cols = c(BanffCount, JasperCount, Banffha, Jasperha),
-                      names_to = c("Park", ".value"),
-                      names_pattern = "(Banff|Jasper)(Count|ha)") |>
+  tidyr::pivot_longer(
+    cols = c(BanffCount, JasperCount, Banffha, Jasperha),
+    names_to = c("Park", ".value"),
+    names_pattern = "(Banff|Jasper)(Count|ha)"
+  ) |>
   mutate(Park = as.factor(Park)) |>
   rename(Year = year, Area_ha = ha)
 
@@ -126,8 +156,8 @@ scaleFact <- 2
 gg <- ggplot(ABMtnParksMPB_long, aes(x = Year, col = Park, fill = Park)) +
   geom_point(aes(y = log10(Count)), shape = 22, size = 3) +
   geom_line(aes(y = log10(Count)), size = 1) +
-  geom_point(aes(y = log10(Area_ha)*scaleFact), shape = 21, size = 3) +
-  geom_line(aes(y = log10(Area_ha)*scaleFact), size = 1) +
+  geom_point(aes(y = log10(Area_ha) * scaleFact), shape = 21, size = 3) +
+  geom_line(aes(y = log10(Area_ha) * scaleFact), size = 1) +
   geom_vline(xintercept = 2012.5, linetype = "dotted", size = 1.5) +
   expand_limits(y = c(0, 11.5)) +
   scale_y_continuous(
@@ -135,7 +165,11 @@ gg <- ggplot(ABMtnParksMPB_long, aes(x = Year, col = Park, fill = Park)) +
     sec.axis = sec_axis(~ . / scaleFact, name = "area infested (log10 ha)")
   ) +
   geom_text(
-    data = data.frame(x = c(2005.3, 2017.5), y = c(11.5, 11.5), label = c("count infested", "area infested")),
+    data = data.frame(
+      x = c(2005.3, 2017.5),
+      y = c(11.5, 11.5),
+      label = c("count infested", "area infested")
+    ),
     aes(x = x, y = y, label = label),
     size = 5,
     inherit.aes = FALSE
