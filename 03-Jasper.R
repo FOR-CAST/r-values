@@ -11,12 +11,9 @@ library(terra)
 # setup ---------------------------------------------------------------------------------------
 
 ## paths
-cachePath <- "cache" |> fs::dir_create()
 dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
 figPath <- "figures" |> fs::dir_create()
 outputPath <- "outputs" |> fs::dir_create()
-
-# options(reproducible.cachePath = cachePath)
 
 ## set map projection
 latlon <- crs("epsg:4326")

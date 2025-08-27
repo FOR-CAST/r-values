@@ -1,24 +1,23 @@
 # packages ------------------------------------------------------------------------------------
 
 library(archive)
-library(geodata)
+library(dplyr)
+# library(elevatr)
+# library(geodata)
+library(ggplot2)
 library(googledrive)
 library(purrr)
+# library(RCurl)
 library(sf)
 library(terra)
-
-library(reproducible)
-library(LandR)
+# library(XML)
 
 # setup ---------------------------------------------------------------------------------------
 
 ## paths
-cachePath <- "cache" |> fs::dir_create()
 dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
 figPath <- "figures" |> fs::dir_create()
 outputPath <- "outputs" |> fs::dir_create()
-
-options(reproducible.cachePath = cachePath)
 
 ## set map projection
 latlon <- crs("epsg:4326")
@@ -26,8 +25,6 @@ targetCRS <- crs(paste(
   "+proj=aea +lat_1=49 +lat_2=67 +lat_0=0 +lon_0=-112 +x_0=0 +y_0=0",
   "+datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
 ))
-
-source("R/helpers.R")
 
 # get data from google drive ------------------------------------------------------------------
 
@@ -75,14 +72,6 @@ ab_sf <- geodata::gadm("CAN", level = 1, path = dataPath) |>
   filter(NAME_1 == "Alberta") |>
   sf::st_geometry()
 
-rtm <- Cache(
-  LandR::prepInputsLCC,
-  year = 2010,
-  studyArea = ab_sf,
-  destinationPath = dataPath,
-  filename2 = NULL
-)
-
 # get pine maps -------------------------------------------------------------------------------
 
 ## TODO: issue #3
@@ -102,35 +91,62 @@ yemshanov2012 <- prepInputs(
 crs_yemshanov2012 <- crs(yemshanov2012)
 
 ## kNN (Beaudoin et al. 2014)
-sppEquiv <- LandR::sppEquivalencies_CA
-sppEquiv <- sppEquiv[KNN %in% c("Pinu_Ban", "Pinu_Con"), ]
+tif_beaudoin2014 <- file.path(dataPath, "Beaudoin_pine_map.tif")
 
-beaudoin2014 <- prepSpeciesLayers_KNN(
-  destinationPath = dataPath,
-  outputPath = dataPath,
-  url = NULL,
-  studyArea = ab_sf,
-  rasterToMatch = yemshanov2012,
-  sppEquiv = sppEquiv,
-  sppEquivCol = "KNN",
-  thresh = 10, ## i.e., minimum 10% cover
-  year = 2011
-) |>
-  Cache() |>
-  writeRaster(file.path(dataPath, "Beaudoin_pine_map.tif"), overwrite = TRUE)
-crs_beaudoin2014 <- crs(beaudoin2014)
+if (file.exists(tif_beaudoin2014)) {
+  beaudoin2014 <- terra::rast(tif_beaudoin2014)
+} else {
+  url_beaudoin2014 <- paste0(
+    "https://ftp.maps.canada.ca/pub/nrcan_rncan/Forests_Foret/",
+    "canada-forests-attributes_attributs-forests-canada/2011",
+    "-attributes_attributs-2011/"
+  )
+
+  fileURLs <- RCurl::getURL(
+    url_beaudoin2014,
+    dirlistonly = TRUE,
+    .opts = list(followlocation = TRUE)
+  )
+  fileNames <- XML::getHTMLLinks(fileURLs)
+  fileNames <- grep("(Species_Pinu_Ban|Species_Pinu_Con)_.*\\.tif", fileNames, value = TRUE)
+  utils::download.file(
+    url = paste0(url_beaudoin2014, fileNames),
+    destfile = file.path(dataPath, fileNames)
+  )
+
+  beaudoin2014 <- file.path(dataPath, fileNames) |>
+    grep("[.]tif$", x = _, value = TRUE) |>
+    terra::rast()
+  beaudoin2014 <- terra::crop(
+    x = beaudoin2014,
+    y = sf::st_transform(ab_sf, terra::crs(beaudoin2014))
+  )
+  beaudoin2014 <- terra::mask(
+    x = beaudoin2014,
+    mask = sf::st_transform(ab_sf, terra::crs(beaudoin2014)) |> terra::vect()
+  )
+  terra::set.names(beaudoin2014, c("Pinu_Ban", "Pinu_Con"))
+
+  terra::plot(beaudoin2014)
+
+  beaudoin2014 <- terra::writeRaster(beaudoin2014, tif_beaudoin2014)
+}
 
 ## Bleiker 2019
-url_bleiker2019 <- as_id("15EzncjIR_dn5v6hruoVbsUQVF706nTEL")
-bleiker2019 <- prepInputs_ABPine(
-  url = url_bleiker2019,
-  destinationPath = dataPath,
-  layerNames = "OVERSTOREY_PINE",
-  rasterToMatch = rtm
-) |>
-  Cache() |>
-  writeRaster(file.path(dataPath, "Bleiker_pine_map.tif"), overwrite = TRUE)
-crs_bleiker2019 <- crs(bleiker2019)
+gdb_bleiker2019 <- file.path(dataPath, "AB_PineVolumes_Lambert.gdb")
+zip_bleiker2019 <- paste0(gdb_bleiker2019, ".zip")
+
+if (!file.exists(zip_bleiker2019)) {
+  as_id("15EzncjIR_dn5v6hruoVbsUQVF706nTEL") |>
+    drive_download(path = zip_bleiker2019, overwrite = TRUE)
+}
+
+if (!(file.exists(gdb_bleiker2019) || dir.exists(gdb_bleiker2019))) {
+  archive::archive_extract(zip_bleiker2019, dataPath)
+}
+
+bleiker2019 <- sf::st_read(gdb_bleiker2019, layer = "OVERSTOREY_PINE") |>
+  sf::st_make_valid()
 
 ## CASFRI
 
@@ -147,7 +163,3 @@ crs_bleiker2019 <- crs(bleiker2019)
 ## plot them
 
 ## TODO: ggplot/cowplot using tidyterra
-
-# get SLR values from BIOSIM ------------------------------------------------------------------
-
-## TODO: issue #2
