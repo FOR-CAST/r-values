@@ -688,7 +688,10 @@ if (file.exists(all_data_df_join_Psurv_csv)) {
   write.csv(all_data_df_join_Psurv, all_data_df_join_Psurv_csv, row.names = FALSE)
 }
 
-## build model now with Psurv and/or Tmin
+## build model now with Psurv and/or Tmin -----------------------------------------------------
+
+### split early and late beetle years ---------------------------------------------------------
+
 abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= pivot_year)
 abr.late <- all_data_df_join_Psurv |> filter(beetle_yr > pivot_year)
 
@@ -737,6 +740,32 @@ gam.check(gam_model.l)
 
 dev.new()
 plot(gam_model.l, scheme = 2, pages = 1, all.terms = TRUE)
+
+### use full dataset --------------------------------------------------------------------------
+
+gam_model.all <- gam(
+  r ~
+    s(beetle_yr) +
+      s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)) +
+      s(Q, bs = "gp") +
+      s(SSI_2008, bs = "gp") +
+      s(lon, lat, bs = "gp") + ## TODO: model selection; remove lon/lat
+      s(Tmin, bs = "gp") +
+      s(Psurv, bs = "gp") +
+      s(PineVol, bs = "gp"),
+  data = all_data_df_join_Psurv,
+  method = "REML",
+  family = gaussian(link = "identity")
+)
+summary(gam_model.all)
+
+gam.check(gam_model.all)
+
+dev.new()
+plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
+
 
 ## bring the geometry back into the sf
 all_data_sf <- all_data_df_join_Psurv |>
