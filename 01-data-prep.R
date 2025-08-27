@@ -163,3 +163,9 @@ bleiker2019 <- sf::st_read(gdb_bleiker2019, layer = "OVERSTOREY_PINE") |>
 ## plot them
 
 ## TODO: ggplot/cowplot using tidyterra
+
+# MPB r-value data ----------------------------------------------------------------------------
+
+## TODO: see 01a-extract-mdb.R
+
+## TODO: see 01b-import-mdb-csv.R

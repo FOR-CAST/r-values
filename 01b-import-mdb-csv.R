@@ -120,7 +120,7 @@ fix_coords <- function(df) {
     select(-lat_diff, -lat_outlier, -lon_diff, -lon_outlier)
 }
 
-all_data <- dirname(dirname(csv_files)) |>
+abr <- dirname(dirname(csv_files)) |>
   unique() |>
   purrr::map(function(d) {
     cli::cli_h1(glue::glue("Processing directory {fs::path(d)}"))
@@ -391,16 +391,16 @@ all_data <- dirname(dirname(csv_files)) |>
   purrr::list_rbind()
 
 write.csv(
-  all_data,
+  abr,
   file = file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"),
   row.names = FALSE
 )
 
 ## diagnostics / checking for NAs
-identical(which(is.na(all_data$plot_lat_dd)), which(is.na(all_data$plot_lon_dd))) ## TRUE
+identical(which(is.na(abr$plot_lat_dd)), which(is.na(abr$plot_lon_dd))) ## TRUE
 
-all_data_na_coords <- filter(all_data, is.na(plot_lat_dd))
-nrow(all_data_na_coords) ## 99
+abr_na_coords <- filter(abr, is.na(plot_lat_dd))
+nrow(abr_na_coords) ## 99
 
-all(is.na(all_data_na_coords$lat_dd)) ## TRUE
-all(is.na(all_data_na_coords$lon_dd)) ## TRUE
+all(is.na(abr_na_coords$lat_dd)) ## TRUE
+all(is.na(abr_na_coords$lon_dd)) ## TRUE

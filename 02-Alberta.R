@@ -43,9 +43,9 @@ mpb_ssi_2023 <- get_SSI(dsn = ssi_gdb, year = 2023)
 ssi_crs <- sf::st_crs(mpb_ssi_2023)
 
 ## check if data for modelling exists. If it doesn't, build it.
-model.data <- file.path(outputPath, "AB", "csv", "new_r_values_w_QSSI.csv")
+model_data_csv <- file.path(outputPath, "AB", "csv", "new_r_values_w_QSSI.csv")
 
-if (!file.exists(model.data)) {
+if (!file.exists(model_data_csv)) {
   # read in data from MS Access databases -------------------------------------------------------
 
   ## read in site/tree data to which we will append our calculations of r-value
@@ -326,11 +326,11 @@ if (!file.exists(model.data)) {
   all_data_df <- st_drop_geometry(all_data_sf)
 
   ## Save to disk
-  write.csv(all_data_df, model.data, row.names = FALSE)
+  write.csv(all_data_df, model_data_csv, row.names = FALSE)
 } ## end of data creation step
 
 # Data exists, either in memory or on disk, so read it in.
-all_data_df <- read.csv(model.data)
+all_data_df <- read.csv(model_data_csv)
 
 ## switch terminology from "all_data" to "abr"
 ## split dataset based on 2015-2016 as pivot
