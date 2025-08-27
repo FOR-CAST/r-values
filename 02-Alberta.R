@@ -332,10 +332,10 @@ if (!file.exists(model_data_csv)) {
 # Data exists, either in memory or on disk, so read it in.
 all_data_df <- read.csv(model_data_csv)
 
-## switch terminology from "all_data" to "abr"
-## split dataset based on 2015-2016 as pivot
-abr.early <- all_data_df |> filter(beetle_yr <= 2015)
-abr.late <- all_data_df |> filter(beetle_yr >= 2016)
+## split dataset based on pivot year
+pivot_year <- 2015
+abr.early <- all_data_df |> filter(beetle_yr <= pivot_year)
+abr.late <- all_data_df |> filter(beetle_yr > pivot_year)
 
 sapply(
   abr.early[, c(
@@ -529,9 +529,7 @@ plot(gam_model.l, scheme = 2, pages = 1, all.terms = TRUE)
 
 ## End of testing initial models
 
-## winterkill ------------
-
-## bring in WK (winterkill) to be computed via BioSIM API
+# MPB overwinter mortality/survival (winterkill) ----------------------------------------------
 
 source("R/mpb_cold_tol.R")
 
@@ -543,7 +541,7 @@ if (FALSE) {
   BioSIM::getModelHelp(models.wanted)
 }
 
-fall_data_rds <- file.path(outputPath, "AB", "all_data_df_clean.rds")
+all_data_rds <- file.path(outputPath, "AB", "all_data_df_clean.rds")
 
 if (file.exists(all_data_rds)) {
   all_data_df <- readRDS(all_data_rds)
@@ -689,20 +687,20 @@ if (file.exists(all_data_df_join_Psurv_csv)) {
 }
 
 ## build model now with Psurv and/or Tmin
-abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= 2015)
-abr.late <- all_data_df_join_Psurv |> filter(beetle_yr >= 2016)
+abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= pivot_year)
+abr.late <- all_data_df_join_Psurv |> filter(beetle_yr > pivot_year)
 
 gam_model.e <- gam(
   r ~
-    s(dbh) +
+    beetle_yr +
+      s(dbh) +
       s(ht_pitch_tube) +
       s(log10(nbr_infested + 1)) +
       s(Q, bs = "gp") +
       s(SSI_2008, bs = "gp") +
       s(lon, lat, bs = "gp") +
       s(Tmin, bs = "gp") +
-      beetle_yr +
-      Psurv,
+      s(Psurv, bs = "gp"),
   data = abr.early,
   method = "REML",
   family = gaussian(link = "identity")
@@ -716,15 +714,15 @@ plot(gam_model.e, scheme = 2, pages = 1, all.terms = TRUE)
 
 gam_model.l <- gam(
   r ~
-    s(dbh) +
+    beetle_yr +
+      s(dbh) +
       s(ht_pitch_tube) +
       s(log10(nbr_infested + 1)) +
       s(Q, bs = "gp") +
       s(SSI_2023, bs = "gp") +
       s(lon, lat, bs = "gp") +
       s(Tmin, bs = "gp") +
-      beetle_yr +
-      Psurv,
+      s(Psurv, bs = "gp"),
   data = abr.late,
   method = "REML",
   family = gaussian(link = "identity")
