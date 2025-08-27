@@ -1,18 +1,21 @@
 # packages ------------------------------------------------------------------------------------
 
-# library(archive)
-# library(cli)
-library(dplyr)
-# library(elevatr)
-# library(fs)
-# library(geodata)
-library(ggplot2)
+## data management
+library(archive)
 library(googledrive)
+
+## data wrangling
+library(dplyr)
 library(purrr)
-# library(RCurl)
+library(tidyr)
+
+## GIS packages
 library(sf)
 library(terra)
-# library(XML)
+
+## plotting
+library(ggplot2)
+library(ggspatial)
 
 # setup ---------------------------------------------------------------------------------------
 
@@ -40,4 +43,6 @@ source("01c-pine-layers.R")
 
 # MPB SSI, pine introgression (Q), and MPB winter mortality -----------------------------------
 
-source("02-Alberta.R")
+source("02a-Alberta-data-prep.R")
+source("02b-Alberta-explore.R")
+source("02c-Alberta-analyses.R")

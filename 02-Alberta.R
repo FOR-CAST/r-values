@@ -1,45 +1,7 @@
-# packages ------------------------------------------------------------------------------------
+# additional packages -------------------------------------------------------------------------
 
-# library(BioSIM)
 library(car)
-library(dplyr)
-# library(elevatr)
-library(ggplot2)
-library(ggspatial)
 library(mgcv)
-library(purrr)
-library(sf)
-library(terra)
-library(tidyr)
-
-# setup ---------------------------------------------------------------------------------------
-
-## paths
-dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
-figPath <- "figures" |> fs::dir_create()
-outputPath <- "outputs" |> fs::dir_create()
-
-## geospatial objects for plotting
-
-ab_sf <- try(
-  geodata::gadm("CAN", level = 1, path = dataPath) |>
-    sf::st_as_sf() |>
-    filter(NAME_1 == "Alberta") |>
-    sf::st_geometry()
-)
-
-if (inherits(ab_sf, "try-error")) {
-  gadm_can_rds <- file.path(dataPath, "gadm", "gadm41_CAN_1_pk.rds")
-  if (!file.exists(gadm_can_rds)) {
-    googledrive::as_id("1zTMd5p9jufwRVGkD2IBjeLu20nFj6MsS") |>
-      googledrive::drive_download(path = gadm_can_rds)
-  }
-
-  ab_sf <- readRDS(gadm_can_rds) |>
-    sf::st_as_sf() |>
-    filter(NAME_1 == "Alberta") |>
-    sf::st_geometry()
-}
 
 # load MPB SSI layers ---------------------------------------------------------
 
