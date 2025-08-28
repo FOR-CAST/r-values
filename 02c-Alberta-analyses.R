@@ -7,8 +7,8 @@ library(mgcv)
 ### split early and late beetle years ---------------------------------------------------------
 
 if (FALSE) {
-  abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= pivot_year)
-  abr.late <- all_data_df_join_Psurv |> filter(beetle_yr > pivot_year)
+  abr.early <- all_data_df_join_CMI |> filter(beetle_yr <= pivot_year)
+  abr.late <- all_data_df_join_CMI |> filter(beetle_yr > pivot_year)
 
   gam_model.e <- gam(
     r ~
@@ -30,7 +30,7 @@ if (FALSE) {
 
   gam.check(gam_model.e)
 
-  dev.new()
+  # dev.new()
   plot(gam_model.e, scheme = 2, pages = 1, all.terms = TRUE)
 
   gam_model.l <- gam(
@@ -53,28 +53,30 @@ if (FALSE) {
 
   gam.check(gam_model.l)
 
-  dev.new()
+  # dev.new()
   plot(gam_model.l, scheme = 2, pages = 1, all.terms = TRUE)
 }
 
 ### use full dataset --------------------------------------------------------------------------
 
+## below we doubled k' based on initial gam.check of model using default k-values;
+## then doubled k-values for Psurv and PineVol again.
+## (see ?mgcv::gam.check and ?mgcv::choose.k)
+
 gam_model.all <- gam(
   r ~
-    s(beetle_yr) +
+    s(lon, lat, bs = "gp", k = 64) +
+      s(beetle_yr) +
       s(dbh) +
       s(ht_pitch_tube) +
       s(log10(nbr_infested + 1)) +
-      ## below we doubled k' based on initial gam.check of doel using default k-values;
-      ## then doubled all k-values except SSI again.
-      ## (see ?mgcv::gam.check and ?mgcv::choose.k)
-      s(asin(sqrt(Q)), bs = "gp", k = 44) +
-      s(SSI_2016, bs = "gp", k = 22) +
-      s(lon, lat, bs = "gp", k = 128) +
-      s(Tmin, bs = "gp", k = 44) +
+      s(CMI, bs = "gp", k = 22) +
+      s(asin(sqrt(Q)), bs = "gp", k = 22) +
+      s(PineVol, bs = "gp", k = 44) +
       s(Psurv, bs = "gp", k = 44) +
-      s(PineVol, bs = "gp", k = 44),
-  data = all_data_df_join_Psurv,
+      s(SSI_2016, bs = "gp", k = 22) +
+      s(Tmin, bs = "gp", k = 22),
+  data = all_data_df_join_CMI,
   method = "REML",
   family = gaussian(link = "identity")
 )
@@ -82,10 +84,14 @@ summary(gam_model.all)
 
 gam.check(gam_model.all)
 
-qq.gam(gam_model.all)
+qq.gam(gam_model.all, pch = 20)
 
-dev.new()
+# dev.new()
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
+
+png(file.path(figPath, "gam_model_all.png"), height = 1600, width = 1600)
+plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
+dev.off()
 
 ### -------------------------------------------------------------------------------------------
 
@@ -93,7 +99,7 @@ plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 ssi_crs <- sf::st_crs(3400)
 
 ## bring the geometry back into the sf
-all_data_sf <- all_data_df_join_Psurv |>
+all_data_sf <- all_data_df_join_CMI |>
   filter(!is.na(lon) & !is.na(lat)) |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
   st_make_valid() |>
@@ -112,7 +118,7 @@ ggplot(all_data_sf) +
     caption = "Each point represents a tree-level estimate"
   )
 
-yearly_summary <- all_data_df_join_Psurv |>
+yearly_summary <- all_data_df_join_CMI |>
   group_by(beetle_yr) |>
   summarise(
     mean_r_log = mean(log10(r + 1), na.rm = TRUE),

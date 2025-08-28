@@ -445,19 +445,21 @@ all_data_df_join_CMI_csv <- file.path(
   "new_r_values_w_Q_SSI_P_PVOL_CMI.csv"
 )
 
-if (file.exists(all_data_df_join_CMI_csv) && !rerun_all) {
-  all_data_df_join_CMI <- read.csv(all_data_df_join_CMI_csv)
-} else {
-  site_year_results <- biosim_cmi(all_data_df)
+if (!file.exists(all_data_df_join_CMI_csv) || rerun_all) {
+  local({
+    site_year_results <- biosim_cmi(all_data_df)
 
-  site_year_results_min <- site_year_results |>
-    select(row_index, CMI)
+    site_year_results_min <- site_year_results |>
+      select(row_index, CMI)
 
-  all_data_df_join_CMI <- all_data_df |>
-    mutate(row_index = row_number()) |>
-    left_join(site_year_results_min, by = "row_index")
+    all_data_df_join_CMI <- all_data_df_join_Psurv |>
+      mutate(row_index = row_number()) |>
+      left_join(site_year_results_min, by = "row_index")
 
-  str(all_data_df_join_CMI)
+    str(all_data_df_join_CMI)
 
-  write.csv(all_data_df_join_CMI, all_data_df_join_CMI_csv, row.names = FALSE)
+    write.csv(all_data_df_join_CMI, all_data_df_join_CMI_csv, row.names = FALSE)
+  })
 }
+
+all_data_df_join_CMI <- read.csv(all_data_df_join_CMI_csv)
