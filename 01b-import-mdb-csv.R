@@ -355,17 +355,17 @@ abr <- dirname(dirname(csv_files)) |>
   }) |>
   purrr::list_rbind()
 
-write.csv(
-  abr,
-  file = file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv"),
-  row.names = FALSE
-)
+file.path(outputPath, "AB", "csv", "all_mpb_site_trees_cleaned.csv") |>
+  write.csv(abr, file = _, row.names = FALSE)
 
-## diagnostics / checking for NAs
-identical(which(is.na(abr$plot_lat_dd)), which(is.na(abr$plot_lon_dd))) ## TRUE
+## diagnostics / checking for NAs -------------------------------------------------------------
 
-abr_na_coords <- filter(abr, is.na(plot_lat_dd))
-nrow(abr_na_coords) ## 99
+if (FALSE) {
+  identical(which(is.na(abr$plot_lat_dd)), which(is.na(abr$plot_lon_dd))) ## TRUE
 
-all(is.na(abr_na_coords$lat_dd)) ## TRUE
-all(is.na(abr_na_coords$lon_dd)) ## TRUE
+  abr_na_coords <- filter(abr, is.na(plot_lat_dd))
+  nrow(abr_na_coords) ## 99
+
+  all(is.na(abr_na_coords$lat_dd)) ## TRUE
+  all(is.na(abr_na_coords$lon_dd)) ## TRUE
+}
