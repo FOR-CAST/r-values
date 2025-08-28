@@ -105,8 +105,7 @@ all_data_sf <- all_data_df_join_CMI |>
   st_make_valid() |>
   st_transform(st_crs(ssi_crs))
 
-# dev.new()
-ggplot(all_data_sf) +
+gg_r_by_year <- ggplot(all_data_sf) +
   geom_sf(aes(color = log10(r + 1)), size = 1.1, alpha = 0.7) +
   geom_sf(data = ab_sf, fill = NA) +
   facet_wrap(~beetle_yr, ncol = 7, nrow = 2) +
@@ -117,6 +116,8 @@ ggplot(all_data_sf) +
     subtitle = "Log-scaled to handle extreme values",
     caption = "Each point represents a tree-level estimate"
   )
+
+ggsave(file.path(figPath, "map_r-values_by_year.png"), gg_r_by_year, height = 16, width = 16)
 
 yearly_summary <- all_data_df_join_CMI |>
   group_by(beetle_yr) |>
@@ -140,8 +141,9 @@ stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
 
 stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Tmin)
 
-# dev.new()
-ggplot(yearly_summary, aes(x = beetle_yr)) +
+y_scale <- 200
+y_shift <- 0
+gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   ## Psurv line and ribbon
   geom_ribbon(
     aes(ymin = mean_Psurv - se_Psurv, ymax = mean_Psurv + se_Psurv, fill = "Psurv (%)"),
@@ -153,20 +155,20 @@ ggplot(yearly_summary, aes(x = beetle_yr)) +
   ## log(r) line and ribbon (scaled)
   geom_ribbon(
     aes(
-      ymin = (mean_r_log - se_r_log) * 200,
-      ymax = (mean_r_log + se_r_log) * 200,
+      ymin = (mean_r_log - se_r_log) * y_scale + y_shift,
+      ymax = (mean_r_log + se_r_log) * y_scale + y_shift,
       fill = "log₁₀(r + 1)"
     ),
     alpha = 0.2
   ) +
-  geom_line(aes(y = mean_r_log * 200, color = "log₁₀(r + 1)"), size = 1.2) +
-  geom_point(aes(y = mean_r_log * 200, color = "log₁₀(r + 1)"), size = 2) +
+  geom_line(aes(y = mean_r_log * y_scale, color = "log₁₀(r + 1)"), size = 1.2) +
+  geom_point(aes(y = mean_r_log * y_scale, color = "log₁₀(r + 1)"), size = 2) +
 
   ## axes and legend
   scale_y_continuous(
     name = "Psurv (%)",
     limits = c(0, 100),
-    sec.axis = sec_axis(~ . / 200, name = "log₁₀(r + 1)")
+    sec.axis = sec_axis(~ (. - y_shift) / y_scale, name = "log₁₀(r + 1)")
   ) +
   scale_color_manual(values = c("Psurv (%)" = "#00BFC4", "log₁₀(r + 1)" = "#F8766D")) +
   scale_fill_manual(values = c("Psurv (%)" = "#00BFC4", "log₁₀(r + 1)" = "#F8766D")) +
@@ -180,10 +182,11 @@ ggplot(yearly_summary, aes(x = beetle_yr)) +
     caption = "Psurv shown as percent; r-values log-transformed and scaled for visibility"
   )
 
-# dev.new()
-y_scale <- 50
+ggsave(file.path(figPath, "mean_Psurv_r_over_time.png"), gg_r_Psurv_ribbon)
+
+y_scale <- 75
 y_shift <- -50
-ggplot(yearly_summary, aes(x = beetle_yr)) +
+gg_r_Tmin_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   ## Tmin line and ribbon
   geom_ribbon(
     aes(ymin = mean_Tmin - se_Tmin, ymax = mean_Tmin + se_Tmin, fill = "Tmin (°C)"),
@@ -207,7 +210,7 @@ ggplot(yearly_summary, aes(x = beetle_yr)) +
   ## axes and legend
   scale_y_continuous(
     name = "Tmin (°C)",
-    limits = c(-50, -20),
+    limits = c(-45, -15),
     sec.axis = sec_axis(~ (. - y_shift) / y_scale, name = "log₁₀(r + 1)")
   ) +
   scale_color_manual(values = c("Tmin (°C)" = "#00BFC4", "log₁₀(r + 1)" = "#F8766D")) +
@@ -221,3 +224,5 @@ ggplot(yearly_summary, aes(x = beetle_yr)) +
     fill = "Metric",
     caption = "Tmin shown as percent; r-values log-transformed and scaled for visibility"
   )
+
+ggsave(file.path(figPath, "mean_Tmin_r_over_time.png"), gg_r_Tmin_ribbon)

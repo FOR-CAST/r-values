@@ -377,7 +377,7 @@ tmin_summary <- site_year__MPBwk_results |>
 
 ## plot Psurv and Tmin over time
 
-ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
+gg_psurv_summary <- ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
   geom_line(color = "blue", size = 1) +
   geom_point(color = "blue", size = 2) +
   geom_ribbon(
@@ -393,7 +393,9 @@ ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
   ) +
   theme_minimal()
 
-ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
+ggsave(file.path(figPath, "mean_Psurv_over_time.png"), gg_psurv_summary)
+
+gg_tmin_summary <- ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
   geom_line(color = "blue", size = 1) +
   geom_point(color = "blue", size = 2) +
   geom_ribbon(
@@ -408,6 +410,8 @@ ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
     caption = "Shaded area shows ±1 SD across sites"
   ) +
   theme_minimal()
+
+ggsave(file.path(figPath, "mean_Tmin_over_time.png"), gg_tmin_summary)
 
 ## run on all 13312 samples
 
