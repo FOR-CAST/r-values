@@ -19,6 +19,8 @@ library(ggspatial)
 
 # setup ---------------------------------------------------------------------------------------
 
+extract_mdb <- FALSE ## use true to re-extract from raw adta sources (Windows only!)
+
 ## paths
 dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
 figPath <- "figures" |> fs::dir_create()
@@ -59,7 +61,9 @@ bleiker2019 <- terra::rast(gdb_bleiker2019)
 
 ## mdb extraction only needs to be done once,
 ## and can only be run on a Windows machine
-source("01a-extract-mdb.R")
+if (extract_mdb) {
+  source("01a-extract-mdb.R")
+}
 
 ## join all the extracted data into a single table
 source("01b-import-mdb-csv.R")

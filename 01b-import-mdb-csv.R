@@ -1,13 +1,5 @@
 # validate and merge csv tables ---------------------------------------------------------------
 
-csv_zip <- file.path(outputPath, "extracted_mdb_tables.zip")
-
-if (!file.exists(csv_zip)) {
-  googledrive::as_id("16OK48u6g5-JdWvEFhIJ0vMxvcK-k6z5l") |>
-    googledrive::drive_download(path = csv_zip, overwrite = TRUE)
-  archive::archive_extract(csv_zip, outputPath)
-}
-
 csv_files <- outputPath |>
   list.files(pattern = "_mpb_(site|trees)[.]csv", full.names = TRUE, recursive = TRUE) |>
   fs::path_rel()

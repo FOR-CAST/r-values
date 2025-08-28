@@ -135,3 +135,16 @@ local({
     archive::archive_extract(zip_bleiker2019, dataPath)
   }
 })
+
+
+# mdb files and extracted csvs ----------------------------------------------------------------
+
+extracted_mdb_tables_zip <- file.path(outputPath, "extracted_mdb_tables.zip")
+
+local({
+  if (!file.exists(extracted_mdb_tables_zip)) {
+    googledrive::as_id("16OK48u6g5-JdWvEFhIJ0vMxvcK-k6z5l") |>
+      googledrive::drive_download(path = extracted_mdb_tables_zip, overwrite = TRUE)
+    archive::archive_extract(extracted_mdb_tables_zip, outputPath)
+  }
+})
