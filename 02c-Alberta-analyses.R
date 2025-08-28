@@ -6,54 +6,56 @@ library(mgcv)
 
 ### split early and late beetle years ---------------------------------------------------------
 
-abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= pivot_year)
-abr.late <- all_data_df_join_Psurv |> filter(beetle_yr > pivot_year)
+if (FALSE) {
+  abr.early <- all_data_df_join_Psurv |> filter(beetle_yr <= pivot_year)
+  abr.late <- all_data_df_join_Psurv |> filter(beetle_yr > pivot_year)
 
-gam_model.e <- gam(
-  r ~
-    beetle_yr +
-      s(dbh) +
-      s(ht_pitch_tube) +
-      s(log10(nbr_infested + 1)) +
-      s(Q, bs = "gp") +
-      s(asin(sqrt(Q)), bs = "gp") +
-      s(lon, lat, bs = "gp") +
-      s(Tmin, bs = "gp") +
-      s(Psurv, bs = "gp") +
-      s(PineVol, bs = "gp"),
-  data = abr.early,
-  method = "REML",
-  family = gaussian(link = "identity")
-)
-summary(gam_model.e)
+  gam_model.e <- gam(
+    r ~
+      beetle_yr +
+        s(dbh) +
+        s(ht_pitch_tube) +
+        s(log10(nbr_infested + 1)) +
+        s(Q, bs = "gp") +
+        s(asin(sqrt(Q)), bs = "gp") +
+        s(lon, lat, bs = "gp") +
+        s(Tmin, bs = "gp") +
+        s(Psurv, bs = "gp") +
+        s(PineVol, bs = "gp"),
+    data = abr.early,
+    method = "REML",
+    family = gaussian(link = "identity")
+  )
+  summary(gam_model.e)
 
-gam.check(gam_model.e)
+  gam.check(gam_model.e)
 
-dev.new()
-plot(gam_model.e, scheme = 2, pages = 1, all.terms = TRUE)
+  dev.new()
+  plot(gam_model.e, scheme = 2, pages = 1, all.terms = TRUE)
 
-gam_model.l <- gam(
-  r ~
-    beetle_yr +
-      s(dbh) +
-      s(ht_pitch_tube) +
-      s(log10(nbr_infested + 1)) +
-      s(asin(sqrt(Q)), bs = "gp") +
-      s(SSI_2023, bs = "gp") +
-      s(lon, lat, bs = "gp") +
-      s(Tmin, bs = "gp") +
-      s(Psurv, bs = "gp") +
-      s(PineVol, bs = "gp"),
-  data = abr.late,
-  method = "REML",
-  family = gaussian(link = "identity")
-)
-summary(gam_model.l)
+  gam_model.l <- gam(
+    r ~
+      beetle_yr +
+        s(dbh) +
+        s(ht_pitch_tube) +
+        s(log10(nbr_infested + 1)) +
+        s(asin(sqrt(Q)), bs = "gp") +
+        s(SSI_2023, bs = "gp") +
+        s(lon, lat, bs = "gp") +
+        s(Tmin, bs = "gp") +
+        s(Psurv, bs = "gp") +
+        s(PineVol, bs = "gp"),
+    data = abr.late,
+    method = "REML",
+    family = gaussian(link = "identity")
+  )
+  summary(gam_model.l)
 
-gam.check(gam_model.l)
+  gam.check(gam_model.l)
 
-dev.new()
-plot(gam_model.l, scheme = 2, pages = 1, all.terms = TRUE)
+  dev.new()
+  plot(gam_model.l, scheme = 2, pages = 1, all.terms = TRUE)
+}
 
 ### use full dataset --------------------------------------------------------------------------
 
