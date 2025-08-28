@@ -89,6 +89,9 @@ plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 
 ### -------------------------------------------------------------------------------------------
 
+# ssi_crs <- get_SSI(dsn = ssi_gdb, year = 2023) |> sf::st_crs() ## EPSG:3400
+ssi_crs <- sf::st_crs(3400)
+
 ## bring the geometry back into the sf
 all_data_sf <- all_data_df_join_Psurv |>
   filter(!is.na(lon) & !is.na(lat)) |>
@@ -96,7 +99,7 @@ all_data_sf <- all_data_df_join_Psurv |>
   st_make_valid() |>
   st_transform(st_crs(ssi_crs))
 
-dev.new()
+# dev.new()
 ggplot(all_data_sf) +
   geom_sf(aes(color = log10(r + 1)), size = 1.1, alpha = 0.7) +
   geom_sf(data = ab_sf, fill = NA) +
@@ -115,21 +118,25 @@ yearly_summary <- all_data_df_join_Psurv |>
     mean_r_log = mean(log10(r + 1), na.rm = TRUE),
     se_r_log = sd(log10(r + 1), na.rm = TRUE) / sqrt(n()),
     mean_Psurv = mean(Psurv, na.rm = TRUE),
-    se_Psurv = sd(Psurv, na.rm = TRUE) / sqrt(n())
+    se_Psurv = sd(Psurv, na.rm = TRUE) / sqrt(n()),
+    mean_Tmin = mean(Tmin, na.rm = TRUE),
+    se_Tmin = sd(Tmin, na.rm = TRUE) / sqrt(n())
   )
 
 plot_df <- yearly_summary |>
   pivot_longer(
-    cols = c(mean_r_log, se_r_log, mean_Psurv, se_Psurv),
+    cols = c(mean_r_log, se_r_log, mean_Psurv, se_Psurv, mean_Tmin, se_Tmin),
     names_to = "metric",
     values_to = "value"
   )
 
 stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
 
-dev.new()
+stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Tmin)
+
+# dev.new()
 ggplot(yearly_summary, aes(x = beetle_yr)) +
-  # Psurv line and ribbon
+  ## Psurv line and ribbon
   geom_ribbon(
     aes(ymin = mean_Psurv - se_Psurv, ymax = mean_Psurv + se_Psurv, fill = "Psurv (%)"),
     alpha = 0.2
@@ -137,7 +144,7 @@ ggplot(yearly_summary, aes(x = beetle_yr)) +
   geom_line(aes(y = mean_Psurv, color = "Psurv (%)"), size = 1.2) +
   geom_point(aes(y = mean_Psurv, color = "Psurv (%)"), size = 2) +
 
-  # log(r) line and ribbon (scaled)
+  ## log(r) line and ribbon (scaled)
   geom_ribbon(
     aes(
       ymin = (mean_r_log - se_r_log) * 200,
@@ -149,7 +156,7 @@ ggplot(yearly_summary, aes(x = beetle_yr)) +
   geom_line(aes(y = mean_r_log * 200, color = "log₁₀(r + 1)"), size = 1.2) +
   geom_point(aes(y = mean_r_log * 200, color = "log₁₀(r + 1)"), size = 2) +
 
-  # Axes and legend
+  ## axes and legend
   scale_y_continuous(
     name = "Psurv (%)",
     limits = c(0, 100),
@@ -165,4 +172,46 @@ ggplot(yearly_summary, aes(x = beetle_yr)) +
     color = "Metric",
     fill = "Metric",
     caption = "Psurv shown as percent; r-values log-transformed and scaled for visibility"
+  )
+
+# dev.new()
+y_scale <- 50
+y_shift <- -50
+ggplot(yearly_summary, aes(x = beetle_yr)) +
+  ## Tmin line and ribbon
+  geom_ribbon(
+    aes(ymin = mean_Tmin - se_Tmin, ymax = mean_Tmin + se_Tmin, fill = "Tmin (°C)"),
+    alpha = 0.2
+  ) +
+  geom_line(aes(y = mean_Tmin, color = "Tmin (°C)"), size = 1.2) +
+  geom_point(aes(y = mean_Tmin, color = "Tmin (°C)"), size = 2) +
+
+  ## log(r) line and ribbon (scaled)
+  geom_ribbon(
+    aes(
+      ymin = (mean_r_log - se_r_log) * y_scale + y_shift,
+      ymax = (mean_r_log + se_r_log) * y_scale + y_shift,
+      fill = "log₁₀(r + 1)"
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(aes(y = mean_r_log * y_scale + y_shift, color = "log₁₀(r + 1)"), size = 1.2) +
+  geom_point(aes(y = mean_r_log * y_scale + y_shift, color = "log₁₀(r + 1)"), size = 2) +
+
+  ## axes and legend
+  scale_y_continuous(
+    name = "Tmin (°C)",
+    limits = c(-50, -20),
+    sec.axis = sec_axis(~ (. - y_shift) / y_scale, name = "log₁₀(r + 1)")
+  ) +
+  scale_color_manual(values = c("Tmin (°C)" = "#00BFC4", "log₁₀(r + 1)" = "#F8766D")) +
+  scale_fill_manual(values = c("Tmin (°C)" = "#00BFC4", "log₁₀(r + 1)" = "#F8766D")) +
+  theme_minimal() +
+  labs(
+    title = "Mean Tmin and log-scaled r-values Over Time",
+    subtitle = "Dual-axis plot with shaded error ribbons",
+    x = "Beetle Year",
+    color = "Metric",
+    fill = "Metric",
+    caption = "Tmin shown as percent; r-values log-transformed and scaled for visibility"
   )
