@@ -19,7 +19,9 @@ library(ggspatial)
 
 # setup ---------------------------------------------------------------------------------------
 
-extract_mdb <- FALSE ## use true to re-extract from raw adta sources (Windows only!)
+extract_mdb <- FALSE ## use TRUE to re-extract from raw data sources (Windows only!)
+plot_all <- FALSE ## use TRUE to generate all plots, including exploratory/diagnostic plots
+rerun_all <- FALSE ## re-run all analyses, overwriting existing intermediate and output files
 
 ## paths
 dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
@@ -30,16 +32,39 @@ outputPath <- "outputs" |> fs::dir_create()
 
 source("01-download-data.R")
 
+# MPB r-value data ----------------------------------------------------------------------------
+
+## mdb extraction only needs to be done once,
+## and can only be run on a Windows machine
+if (extract_mdb) {
+  source("01a-extract-mdb.R")
+}
+
+## join all the extracted data into a single table
+source("01b-import-mdb-csv.R")
+
 # load pine maps ------------------------------------------------------------------------------
 
 ## EOSD (Yemshanov et al. 2012)
 yemshanov2012 <- terra::rast(tif_yemshanov2012)
 
+if (plot_all) {
+  plot(yemshanov2012)
+}
+
 ## kNN (Beaudoin et al. 2014)
 beaudoin2014 <- terra::rast(tif_beaudoin2014)
 
+if (plot_all) {
+  plot(beaudoin2014)
+}
+
 ## Bleiker 2019
 bleiker2019 <- terra::rast(gdb_bleiker2019)
+
+if (plot_all) {
+  plot(bleiker2019)
+}
 
 ## CASFRI
 
@@ -57,23 +82,21 @@ bleiker2019 <- terra::rast(gdb_bleiker2019)
 
 ## TODO: ggplot/cowplot using tidyterra
 
-# MPB r-value data ----------------------------------------------------------------------------
+# load pine introgression (Q) maps  -----------------------------------------------------------
 
-## mdb extraction only needs to be done once,
-## and can only be run on a Windows machine
-if (extract_mdb) {
-  source("01a-extract-mdb.R")
+pine_q <- terra::rast(pine_gdb)
+
+if (plot_all) {
+  terra::plot(pine_q)
 }
 
-## join all the extracted data into a single table
-source("01b-import-mdb-csv.R")
+# r-values analyses ---------------------------------------------------------------------------
 
-# pine layers ---------------------------------------------------------------------------------
-
-source("01c-pine-layers.R")
-
-# MPB SSI, pine introgression (Q), and MPB winter mortality -----------------------------------
-
+## re-calculate r-values; add BioSIM-generated components
 source("02a-Alberta-data-prep.R")
+
+## initial data and model exploration
 source("02b-Alberta-explore.R")
+
+##
 source("02c-Alberta-analyses.R")
