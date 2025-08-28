@@ -1,7 +1,7 @@
 ## TODO: this could be made more efficient by calling BioSIM API in batches,
 ##       and by unique lat/lon by year, instead of one row at a time
 
-mpb_cold_tol <- function(df) {
+biosim <- function(df, mod) {
   purrr::map_dfr(1:nrow(df), function(i) {
     row <- df[i, ]
 
@@ -22,7 +22,7 @@ mpb_cold_tol <- function(df) {
     tryCatch(
       {
         result <- BioSIM::generateWeather(
-          modelNames = "MPB_Cold_Tolerance_Annual",
+          modelNames = mod,
           fromYr = row$beetle_yr,
           toYr = row$beetle_yr + 1,
           id = paste0("site_", i),
@@ -35,7 +35,7 @@ mpb_cold_tol <- function(df) {
           climModel = "RCM4"
         )
 
-        result[["MPB_Cold_Tolerance_Annual"]] |>
+        result[[mod]] |>
           dplyr::mutate(row_index = i)
       },
       error = function(e) {
@@ -44,4 +44,12 @@ mpb_cold_tol <- function(df) {
       }
     )
   })
+}
+
+mpb_cold_tol <- function(df) {
+  biosim(df, "MPB_Cold_Tolerance_Annual")
+}
+
+biosim_cmi <- function(df) {
+  biosim(df, "Climate_Mosture_Index_Annual")
 }
