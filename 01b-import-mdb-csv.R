@@ -278,7 +278,7 @@ abr <- dirname(dirname(csv_files)) |>
           ## bounds checking + validation:
           siteID = if_else(is.na(siteID), lead(siteID), as.integer(siteID)),
           tree_nbr = as.character(tree_nbr), ## character id which is sometimes a number;
-          dbh = if_else(dbh > 60, dbh / (2 * pi), dbh), ## likely recorded circumference instead of dbh
+          dbh = if_else(dbh > 60, if_else(dbh / (2 * pi) > 60, NA, dbh / (2 * pi)), dbh), ## likely recorded circumference instead of dbh
           ht_pitch_tube = if_else(ht_pitch_tube > 25, ht_pitch_tube / 100, ht_pitch_tube) ## should be m, not cm
         )
 
