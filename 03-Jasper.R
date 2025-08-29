@@ -67,6 +67,8 @@ library(ggspatial)
 library(sf)
 library(terra)
 library(scales) #needed for log scale plotting
+library(stringr) #needed for wrangling Jasper r-values from shapefiles
+library(elevatr)
 
 # setup ---------------------------------------------------------------------------------------
 
@@ -392,14 +394,28 @@ process_year <- function(year) {
   site_file <- file.path(site_dir, paste0(base, "_mpb_site.csv"))
   tree_file <- file.path(tree_dir, paste0(base, "_mpb_trees.csv"))
 
-  site <- read_csv(site_file, show_col_types = FALSE) |> select(any_of(site_cols))
-  tree <- read_csv(tree_file, show_col_types = FALSE) |> select(any_of(tree_cols))
+  site <- read_csv(site_file, show_col_types = FALSE) |> dplyr::select(any_of(site_cols))
+  tree <- read_csv(tree_file, show_col_types = FALSE) |> dplyr::select(any_of(tree_cols))
+
+  tree_ids <- read_csv(tree_file, show_col_types = FALSE) |> distinct(siteID)
+  site_ids <- read_csv(site_file, show_col_types = FALSE) |> distinct(siteID)
 
   left_join(tree, site, by = "siteID") |> mutate(beetle_yr = year)
 }
 
 # Process all years
-jasper_rvalues.2014.2016 <- bind_rows(lapply(2014:2016, process_year))
+jasper_rvalues.2014.2016.raw <- bind_rows(lapply(2014:2016, process_year))
+
+#There is a site-tree mismatch in SiteID occurring in 2015 and 2016
+jasper_rvalues.2014.2016 <- jasper_rvalues.2014.2016.raw |>
+  filter(!is.na(siteID) & !is.na(plot_lat_dd) & !is.na(plot_long_dd))
+
+#check for missing lat/lon
+jasper_rvalues.2014.2016 |>
+  filter(is.na(plot_lat_dd) | is.na(plot_long_dd))
+
+hist(jasper_rvalues.2014.2016$plot_lat_dd)
+hist(jasper_rvalues.2014.2016$plot_long_dd)
 
 #compute our own r-values
 jasper_custom_rvalues <- jasper_rvalues.2014.2016 |>
@@ -440,7 +456,7 @@ summary(jasper_custom_rvalues$r_value)
 summary(jasper_custom_rvalues$r_tree)
 
 jasper_custom_rvalues |>
-  select(r_value, r_tree) |>
+  dplyr::select(r_value, r_tree) |>
   pivot_longer(cols = everything(), names_to = "source", values_to = "r") |>
   ggplot(aes(x = r, fill = source)) +
   geom_histogram(position = "dodge", alpha = 0.8, bins = 40) +
@@ -459,12 +475,11 @@ sd(jasper_custom_rvalues$r_tree, na.rm = TRUE)
 sd(jasper_custom_rvalues$r_value, na.rm = TRUE)
 
 #Mean:variance ratios
-print("mean-variacne ratios:")
+print("mean-variance ratios:")
 print("Custom r-value")
 sd(jasper_custom_rvalues$r_tree, na.rm = TRUE)/mean(jasper_custom_rvalues$r_tree, na.rm = TRUE)
 print("Provided r-value")
 sd(jasper_custom_rvalues$r_value, na.rm = TRUE)/mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
-
 
 #Build a preliminary gams model of r-values 2014-2016
 library(mgcv)
@@ -489,7 +504,7 @@ png(file.path(figPath, "gam_model_jasper_custom.png"), height = 1600, width = 16
 plot(gam_model.jasper_custom, scheme = 2, pages = 1, all.terms = TRUE)
 dev.off()
 
-#processing the source shapefiles
+#processing the source shapefiles 2017-2022 (survey years, beetle years are the year before)
 shp_dir <- file.path(dataPath, "Brett","MtnParksShapefiles")
 shp_files <- dir(shp_dir, pattern = "\\.shp$", full.names = TRUE)
 
@@ -507,3 +522,111 @@ walk(shp_files, function(shp) {
   write.csv(attr_table, out_file, row.names = FALSE)
 })
 
+shp_csv_files <- list.files(file.path(shp_dir, "extracted"), full.names = TRUE)
+
+#Examine column names, which are not matched
+map(shp_csv_files, ~ {
+  cat("\n---", .x, "---\n")
+  print(names(read_csv(.x, n_max = 1, show_col_types = FALSE)))
+})
+
+# Survey year to beetle attack year map (file nameing conventions switch between mdb and shp)
+survey_to_beetle <- c(
+  "2018" = 2017,
+  "2019" = 2018,
+  "2021" = 2020,
+  "2022" = 2021
+)
+
+# Skip 2017 (already processed)
+shp_csv_files <- shp_csv_files[!str_detect(shp_csv_files, "2017")]
+
+# Harmonization function. [Brett refers to the data tech who varied the archiving standard across years 2017-2022.]
+read_brett_csv <- function(path) {
+  survey_yr <- str_extract(path, "20\\d{2}")
+  beetle_yr <- survey_to_beetle[[survey_yr]]
+
+  df <- read_csv(path, show_col_types = FALSE)
+
+  lat_col <- names(df)[str_detect(names(df), regex("^lat$", ignore_case = TRUE))][1]
+  lon_col <- names(df)[str_detect(names(df), regex("^lon[g]?$", ignore_case = TRUE))][1]
+  r_col   <- names(df)[str_detect(names(df), regex("r[_ ]?val|pooled", ignore_case = TRUE))][1]
+
+  df |>
+    transmute(
+      lat = .data[[lat_col]],
+      lon = .data[[lon_col]],
+      r_value = .data[[r_col]],
+      beetle_yr = beetle_yr
+    )
+}
+
+# Combine all years
+brett_rvalues <- map_dfr(shp_csv_files, read_brett_csv)
+dev.new()
+hist(brett_rvalues$r_value)
+dev.new()
+boxplot(brett_rvalues$r_value~brett_rvalues$beetle_yr)
+
+asrd_2014.2016_locs <- jasper_custom_rvalues |>
+  dplyr::select(lat = plot_lat_dd, lon = plot_long_dd) |>
+  mutate(source = "ASRD Tree-Level Data (2014–2016)")
+
+brett_locs <- brett_rvalues |>
+  dplyr::select(lat, lon) |>
+  mutate(source = "Brett’s Site-Pooled Data (2017–2021)")
+
+Jasper_rvalue_locations <- bind_rows(asrd_2014.2016_locs, brett_locs)
+
+Jasper_rvalue_locations |>
+  filter(lon < -130) |>
+  print(width = Inf)
+
+#There was one longitude in 2017 that was -177. I changed it to -117.
+
+library(sf)
+
+jasper_rvalue_sf <- Jasper_rvalue_locations |>
+  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+jasper_rvalue_sf_lambert <- st_transform(jasper_rvalue_sf, crs = 3347)
+ab_sf_lambert     <- st_transform(ab_sf, crs = 3347)
+np_banff_lambert  <- st_transform(np_banff, crs = 3347)
+np_jasper_lambert <- st_transform(np_jasper, crs = 3347)
+
+rvalues.locs.map<-ggplot() +
+  geom_sf(data = ab_sf_lambert) +
+  geom_sf(data = np_banff_lambert, col = "blue") +
+  geom_sf(data = np_jasper_lambert, col = "darkgreen") +
+  geom_sf(data = jasper_rvalue_sf_lambert, aes(color = source), alpha = 0.7, size = 1.5) +
+  scale_color_manual(values = c(
+    "Brett’s Site-Pooled Data (2017–2021)" = "steelblue",
+    "ASRD Tree-Level Data (2014–2016)" = "darkorange"
+  )) +
+  labs(
+    title = "Spatial Distribution of Jasper R-value Sampling",
+    x = "Longitude",
+    y = "Latitude",
+    color = "Data Source"
+  ) +
+  theme_minimal(base_size = 14)
+
+ggsave(
+  file.path(figPath, "JNPBNP_r_locs.png"),
+  rvalues.locs.map,
+  height = 8,
+  width = 8
+)
+
+# Convert to sf object
+brett_sf <- brett_rvalues |>
+  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+# Get elevation (units: meters)
+brett_elev <- get_elev_point(brett_sf, src = "aws", z = 10)
+
+# Combine elevation with original data
+brett_rvalues_elev <- brett_elev |>
+  st_drop_geometry() |>
+  select(elevation = elev) |>
+  bind_cols(brett_rvalues)
