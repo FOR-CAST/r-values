@@ -1,3 +1,62 @@
+# In this script we examine three components of mountain pine beetle population
+# dynamics in two Rocky mountain parks, Jasper and Banff, where no control was undertaken.
+# There are more data for Jasper than Banff because the outbreak was more intense
+# at Banff, so the analysis is asymmetric. The three data components are:
+# 1. trends in red tree counts/area (capital "R" is the interannual rate of change in Xt+1/Xt)
+# 2. r-values (brood productivity) (lowercase "r")
+# 3. predicted winter mortality (1-Psurv) (and drought; CMI) (using BioSIM)
+#
+# Our primary question is whether (3) predicts (2) predicts (1).
+#
+# 1. Tree counts. For both Jasper and Banff we have red tree areas 2013-2021, the peak outbreak years.
+# Prior to outbreak, during 1999-2012, we have tree counts for Banff. We have them for Jasper too,
+# but 2011 and 2012 are missing, although there is a count for 2013.
+#
+# 2. r-values. These are based on 4" disks that average just 0.5 female entrance holes per disk.
+# There are no r-values for Banff. For Jasper there are r-values for beetle years
+# 2014, 2015, 2016, recorded by ASRD in .mdb files. The survey is done in the year after the "beetle year"
+# These need to be extracted, converted to .csv tables, and site and tree data merged
+# (as we did for the rest of Alberta in a companion paper). The formats of the three .mdb files are the same
+# (and very similar to the provincial files for 2006-2019 analyzed in the companion paper).
+# The r-values for beetle years 2017, 2018, 2020, 2021 are in .shp files. There are no data for 2019 because of covid
+# during the sampling year, 2020. These files are not named for beetle year, but survey year.
+# The format of the .shp attribute tables varies somewhat.
+#
+# 3. We run BioSIM winter mortality predictions for all the years and locations for which we have comparable data.
+# The output variable is called Psurv - the probability of surviving the winter. The model takes initial phenology
+# of life stages as initial conditions, but we always use the default assumptions of a stable seasonality, because
+# our population samples are so small (based on 4" disks) we can't reliably infer phenology.
+# There are two sets of simulations to be run. The first is for the townsites of Jasper and Banff, which have weather stations,
+# for the beetle years 1998-2022, which fully brackets the years of red tree counts and r-values. We expect this to show a
+# long warming trend in winter weather, followed by successive cold snaps in the last three years, when the outbreak was dying off.
+# The second is for the specific locations in JNP for which we have R-values, 2014-2021. These simulations will be used to create
+# data tables for modelling, and yearly maps for the whole Jasper NP, for presentation purposes. Those maps will likely be
+# aggregated into a single pair of maps representing the average during the rise, and the average during the collapse. BioSIM does
+# spatial cokriging efficiently, but we can't use that functionality in the web API. So we work around that here, in R,
+# by sending a high density grid of points across JNP and BNP to simulate. Maps are smoothed over the lat and lon grid.
+# We also run the Climate Moisture Index (CMI) model in BioSIM, as dryness has been fingered as a key determinant of outbreak potential,
+# and just as winter temperature is known to fluctuate severely across years, so does drought.
+#
+# For the beetle years 2014-16 the Jasper r-values data are "rich" (as they were with Alberta) as they have recorded tree DBH,
+# height of pitch tubes, and number of surrunded red attacked trees in the cluster. For 2017-2022 there is no DBH and
+# no pitch tube height. There is a vague guestimate about the number of trees in the cluater, but it's often expressed as ">100",
+# meaning so many they couldn't easily be counted.
+#
+# This paper is the first in a series of two. We mention a "companion paper", which regards the rest of Alberta, a managed
+# landscape, which is under provincial jurisdiction, not federal, and includes the commercial pine forest, and so was treated to an
+# intense progam of removing and burning infested trees. A half billion dollars was spent doing this over the study period 2006-2022.
+# The analysis here is structured as to mirror and link to that broader analysis. We hypothesize that wherease (3) predicts (2) predicts (1)
+# in the natural setting of the national parks, where no control was undertaken, the same strength of association is not seen
+# in the rest of Alberta. (It's there, just weakened.) Specifically: in the rest of Alberta there is a decoupling of r from R
+# in the period 2008-2015, and this is a direct result of control effort. The result is an intense outbreak in Jasper
+# that did not materialize in the rest of Alberta.
+#
+# There was an outbreak in Banff that emerged in that same window 2008-2015 as Japser, but it had a fraction the intensity of Jasper.
+# We suspect this is due to the broad valleys in Jasper that are rich in pine, whereas in Banff the valleys are steeper and the pine is higher
+# in elevation, and as de la Giroday et al. (2011) reported for British Columbia, low-elevation pine is a key for connecting populations
+# in mountainous terrain to get them to erupt and spread. We don't have pine data to go with the elevations, so we will not
+# explicitly test this hypothesis.
+
 # packages ------------------------------------------------------------------------------------
 
 # library(archive)
