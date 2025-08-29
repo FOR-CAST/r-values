@@ -64,6 +64,7 @@ if (inherits(ab_sf, "try-error")) {
 tif_yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map.tif")
 tif_beaudoin2014 <- file.path(dataPath, "Beaudoin_pine_map.tif")
 gdb_bleiker2019 <- file.path(dataPath, "AB_PineVolumes_Lambert.gdb")
+gdb_sbfi2020 <- file.path(dataPath, "SBFI_2020", "SBFI_2020.gdb")
 
 local({
   ## EOSD (Yemshanov et al. 2012)
@@ -133,6 +134,15 @@ local({
 
   if (!(file.exists(gdb_bleiker2019) || dir.exists(gdb_bleiker2019))) {
     archive::archive_extract(zip_bleiker2019, dataPath)
+  }
+
+  ## NTEMS SBFI (Matasci et al. 2018)
+  url_sbfi <- "https://opendata.nfis.org/downloads/forest_change/CA_Forest_Satellite_Based_Inventory_2020.zip"
+  zip_sbfi <- file.path(dataPath, basename(url_sbfi))
+
+  if (!file.exists(zip_sbfi)) {
+    download.file(url_sbfi, zip_sbfi)
+    archive::archive_extract(zip_sbfi, dataPath)
   }
 })
 
