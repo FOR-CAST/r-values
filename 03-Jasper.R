@@ -22,6 +22,31 @@ targetCRS <- crs(paste(
   "+datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
 ))
 
+
+# geospatial objects for plotting -------------------------------------------------------------
+
+ab_sf <- try(
+  geodata::gadm("CAN", level = 1, path = dataPath) |>
+    sf::st_as_sf() |>
+    filter(NAME_1 == "Alberta") |>
+    sf::st_geometry()
+)
+
+if (inherits(ab_sf, "try-error")) {
+  gadm_can_rds <- file.path(dataPath, "gadm", "gadm41_CAN_1_pk.rds")
+  if (!file.exists(gadm_can_rds)) {
+    googledrive::as_id("1zTMd5p9jufwRVGkD2IBjeLu20nFj6MsS") |>
+      googledrive::drive_download(path = gadm_can_rds)
+  }
+
+  ab_sf <- readRDS(gadm_can_rds) |>
+    sf::st_as_sf() |>
+    filter(NAME_1 == "Alberta") |>
+    sf::st_geometry()
+
+  rm(gadm_can_rds)
+}
+
 # National Parks ------------------------------------------------------------------------------
 
 ## Banff and Jasper National Parks
@@ -54,6 +79,7 @@ np_jasper <- natl_prks[natl_prks$adminAreaN == "JASPER NATIONAL PARK OF CANADA",
 
 # map locations from Carroll et al. 2017 ------------------------------------------------------
 
+## TODO: use our newly recomputed r-values
 abr_df <- read.csv(
   file.path(dataPath, "FRI", "rvaluesQvalues.csv"),
   header = TRUE,
@@ -65,7 +91,7 @@ st_crs(abr_sf.latlon) <- latlon
 abr_sf <- st_transform(abr_sf.latlon, targetCRS)
 
 gg_abmpb <- ggplot() +
-  geom_sf(data = ab) +
+  geom_sf(data = ab_sf) +
   geom_sf(data = abr_sf, size = 0.5) +
   geom_sf(data = np_banff, col = "blue") +
   geom_sf(data = np_jasper, col = "darkgreen") +
