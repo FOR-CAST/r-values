@@ -176,8 +176,15 @@ ggsave(
 )
 
 # infestation counts/areas for Jasper & Banff -------------------------------------------------
-
 ## from Unger, Roke, Thandi & Brett 1999-2022
+
+# Caption:
+# Figure 1. Infestation dynamics of mountain pine beetle in Banff and Jasper National Parks, 1999–2021.
+# The left y-axis shows the number of infested trees (log scale), and the right y-axis shows the area
+# infested in hectares (log scale). Square markers represent counts; circular markers represent
+# area estimates. blue is Banff. Pink is Jasper. The vertical dashed line at 2012 marks the
+# transition from tree count data to area-based estimates. Note the steep rise in Jasper infestation
+# post-2013, contrasting with the more subdued outbreak in Banff.
 
 ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt") |>
   read.table(header = TRUE)
@@ -287,3 +294,11 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   # Color and fill scales for consistent legend appearance
   scale_fill_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
   scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480"))
+
+ggsave(
+  file.path(figPath, "AB_mtn_parks_infested_gg.png"),
+  ABMtnParksMPB_plot,
+  height = 5,
+  width = 7
+)
+
