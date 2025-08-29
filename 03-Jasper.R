@@ -66,6 +66,7 @@ library(ggspatial)
 # library(googledrive)
 library(sf)
 library(terra)
+library(scales) #needed for log scale plotting
 
 # setup ---------------------------------------------------------------------------------------
 
@@ -149,6 +150,8 @@ st_crs(abr_sf.latlon) <- latlon
 
 abr_sf <- st_transform(abr_sf.latlon, targetCRS)
 
+#Check whether the r-values plots in the 2017 FRI report are actually outside JNP and BNP.
+#We will use this approach later to plot r-value locations in Jasper.
 gg_abmpb <- ggplot() +
   geom_sf(data = ab_sf) +
   geom_sf(data = abr_sf, size = 0.5) +
@@ -236,32 +239,51 @@ ABMtnParksMPB_long <- ABMtnParksMPB |>
   mutate(Park = as.factor(Park)) |>
   rename(Year = year, Area_ha = ha)
 
-scaleFact <- 2
+scaleFact <- 16  #scaling the second y axis
 
-gg <- ggplot(ABMtnParksMPB_long, aes(x = Year, col = Park, fill = Park)) +
-  geom_point(aes(y = log10(Count)), shape = 22, size = 3) +
-  geom_line(aes(y = log10(Count)), size = 1) +
-  geom_point(aes(y = log10(Area_ha) * scaleFact), shape = 21, size = 3) +
-  geom_line(aes(y = log10(Area_ha) * scaleFact), size = 1) +
+ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
+  # Tree count (primary axis)
+  geom_line(aes(y = Count, color = Park), size = 1) +
+  geom_point(aes(y = Count, fill = Park), shape = 22, size = 3, color = "black", stroke = 0.5) +
+
+  # Area infested (secondary axis, scaled)
+  geom_line(aes(y = Area_ha * scaleFact, color = Park), size = 1) +
+  geom_point(aes(y = Area_ha * scaleFact, fill = Park), shape = 21, size = 3, color = "black", stroke = 0.5) +
+
+  # Outbreak onset marker
   geom_vline(xintercept = 2012.5, linetype = "dotted", size = 1.5) +
-  expand_limits(y = c(0, 11.5)) +
+
+  # Log-scaled y-axis with natural tick labels
   scale_y_continuous(
-    name = "trees infested (log10 count)",
-    sec.axis = sec_axis(~ . / scaleFact, name = "area infested (log10 ha)")
+    transform = "log10",
+    name = "trees infested (count)",
+    breaks = c(10, 100, 1000, 10000, 1e5, 1e6, 1e7),
+    labels = label_number(),
+
+    sec.axis = sec_axis(
+      transform = ~ . / scaleFact,
+      name = "area infested (ha)",
+      breaks = c(10, 100, 1000, 10000, 1e5, 1e6),
+      labels = label_number()
+    )
   ) +
+  # Text labels
   geom_text(
     data = data.frame(
       x = c(2005.3, 2017.5),
-      y = c(11.5, 11.5),
+      y = c(1e7, 1e7),
       label = c("count infested", "area infested")
     ),
     aes(x = x, y = y, label = label),
     size = 5,
     inherit.aes = FALSE
   ) +
+  # Theme and legend styling
   theme_bw() +
-  theme(legend.position = "bottom")
-
-## TODO: count value for Jasper @ 2013 ends up separated from other count data on left side of fig.
-
-ggsave(file.path(figPath, "AB_mtn_parks_infested_gg.png"), gg)
+  theme(
+    legend.position = "bottom",
+    axis.title.y.right = element_text(angle = 90, vjust = 0.5)
+  ) +
+  # Color and fill scales for consistent legend appearance
+  scale_fill_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
+  scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480"))
