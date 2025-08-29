@@ -466,13 +466,28 @@ print("Provided r-value")
 sd(jasper_custom_rvalues$r_value, na.rm = TRUE)/mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
 
 
-#Build a preliminary gams model of r-value
+#Build a preliminary gams model of r-values 2014-2016
 library(mgcv)
-jasper_rvalues.2014.2016_df <- jasper_rvalues.2014.2016 |>
-  left_join(jasper_2104.2016_predictors_df, by = "siteID") |>
-  mutate(r = r_value) |>  # rename for modeling
-  filter(!is.na(r))       # drop missing r-values
 
+gam_model.jasper_custom <- gam(
+  log(r_tree + 1) ~
+    beetle_yr +
+    s(plot_long_dd, plot_lat_dd, bs = "gp", k = 16) +
+    s(dbh) +
+    s(ht_pitch_tube) +
+    s(log10(nbr_infested + 1)),
+  data = jasper_custom_rvalues,
+  method = "REML",
+  family = gaussian(link = "identity")
+)
+
+summary(gam_model.jasper_custom)
+gam.check(gam_model.jasper_custom)
+qq.gam(gam_model.jasper_custom, pch = 20)
+
+png(file.path(figPath, "gam_model_jasper_custom.png"), height = 1600, width = 1600)
+plot(gam_model.jasper_custom, scheme = 2, pages = 1, all.terms = TRUE)
+dev.off()
 
 #processing the source shapefiles
 shp_dir <- file.path(dataPath, "Brett","MtnParksShapefiles")
