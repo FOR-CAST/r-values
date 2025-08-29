@@ -175,7 +175,7 @@ ggsave(
   width = 7
 )
 
-# infestation counts/areas for Jasper & Banff -------------------------------------------------
+# Part 1. infestation counts/areas for Jasper & Banff -------------------------------------------------
 ## from Unger, Roke, Thandi & Brett 1999-2022
 
 # Caption:
@@ -301,4 +301,74 @@ ggsave(
   height = 5,
   width = 7
 )
+
+# Part 2. r-values for Jasper -------------------------------------------------
+
+# Processing the source mdb files
+
+library(DBI)
+library(odbc)
+library(sf)
+library(dplyr)
+library(fs)
+library(purrr)
+
+mdb_dir <- file.path(dataPath, "Brett","MtnParksmdb")
+mdb_files <- list.files(mdb_dir, pattern = "\\.mdb$", full.names = TRUE)
+
+output_dir <- file.path(mdb_dir, "extracted")
+dir_create(output_dir, "source")
+dir_create(output_dir, "site")
+dir_create(output_dir, "tree")
+
+walk(mdb_files, function(mdb) {
+  tmp_mdb <- tempfile(fileext = ".mdb")
+  file.copy(mdb, tmp_mdb)
+
+  con <- dbConnect(odbc::odbc(), .connection_string = paste0(
+    "Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=", tmp_mdb
+  ))
+
+  db_tbls <- dbListTables(con)
+
+  if ("mpb_trees" %in% db_tbls) {
+    write.csv(dbReadTable(con, "mpb_trees"),
+              file.path(output_dir, "tree", paste0(basename(mdb), "_mpb_trees.csv")),
+              row.names = FALSE)
+  }
+
+  if ("mpb_survey_info" %in% db_tbls) {
+    write.csv(dbReadTable(con, "mpb_survey_info"),
+              file.path(output_dir, "site", paste0(basename(mdb), "_mpb_survey_info.csv")),
+              row.names = FALSE)
+  }
+
+  if ("mpb_site" %in% db_tbls) {
+    write.csv(dbReadTable(con, "mpb_site"),
+              file.path(output_dir, "site", paste0(basename(mdb), "_mpb_site.csv")),
+              row.names = FALSE)
+  }
+
+  file.copy(mdb, file.path(output_dir, "source", basename(mdb)))
+  dbDisconnect(con)
+  unlink(tmp_mdb)
+})
+
+#processing the source shapefiles
+shp_dir <- file.path(dataPath, "Brett","MtnParksShapefiles")
+shp_files <- dir(shp_dir, pattern = "\\.shp$", full.names = TRUE)
+
+# Create output directory for extracted tables
+output_dir <- file.path(shp_dir, "extracted")
+dir_create(output_dir)
+
+walk(shp_files, function(shp) {
+  shp_data <- st_read(shp, quiet = TRUE)
+
+  # Strip geometry and write attribute table to CSV
+  attr_table <- st_drop_geometry(shp_data)
+
+  out_file <- file.path(output_dir, paste0(tools::file_path_sans_ext(basename(shp)), "_attributes.csv"))
+  write.csv(attr_table, out_file, row.names = FALSE)
+})
 
