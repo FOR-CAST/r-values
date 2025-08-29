@@ -618,6 +618,29 @@ ggsave(
   width = 8
 )
 
+#Boxplot of jasper_rvalues.2014.2016 and brett_rvalues
+
+JNPBNP_rvalues <- bind_rows(
+  jasper_rvalues.2014.2016 |> dplyr::select(beetle_yr, r_value),
+  brett_rvalues |> dplyr::select(beetle_yr, r_value)
+)
+
+JNPBNP_rvalues_boxplot<-ggplot(JNPBNP_rvalues, aes(x = factor(beetle_yr), y = log(r_value + 1))) +
+  geom_boxplot(fill = "lightblue", color = "black", outlier.color = "red", outlier.size = 2) +
+  labs(
+    title = "Distribution of log(R + 1) by Year (2014–2021)",
+    x = "Year",
+    y = "log(R + 1)"
+  ) +
+  theme_minimal(base_size = 14)
+
+ggsave(
+  file.path(figPath, "JNPBNP_rvalues_boxplot.png"),
+  JNPBNP_rvalues_boxplot,
+  height = 6,
+  width = 6
+)
+
 # Convert to sf object
 brett_sf <- brett_rvalues |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
@@ -628,5 +651,14 @@ brett_elev <- get_elev_point(brett_sf, src = "aws", z = 10)
 # Combine elevation with original data
 brett_rvalues_elev <- brett_elev |>
   st_drop_geometry() |>
-  select(elevation = elev) |>
+  dplyr::select(elevation = elevation) |>
   bind_cols(brett_rvalues)
+
+JNPBNP.locyears <- bind_rows(
+  jasper_rvalues.2014.2016 |>
+    dplyr::select(lat = plot_lat_dd, lon = plot_long_dd, beetle_yr, elevation),
+  brett_rvalues_elev |>
+    dplyr::select(lat, lon, beetle_yr, elevation)
+)
+
+
