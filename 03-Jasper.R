@@ -313,6 +313,7 @@ library(dplyr)
 library(fs)
 library(purrr)
 library(readr)
+library(tidyr)
 
 mdb_dir <- file.path(dataPath, "Brett","MtnParksmdb")
 mdb_files <- list.files(mdb_dir, pattern = "\\.mdb$", full.names = TRUE)
@@ -399,6 +400,78 @@ process_year <- function(year) {
 
 # Process all years
 jasper_rvalues.2014.2016 <- bind_rows(lapply(2014:2016, process_year))
+
+#compute our own r-values
+jasper_custom_rvalues <- jasper_rvalues.2014.2016 |>
+  mutate(
+    live_total = rowSums(across(c(
+      ns1_larvae_live, ns2_larvae_live,
+      ns1_pupae_live, ns2_pupae_live,
+      ns1_adults_live, ns2_adults_live,
+      ss1_larvae_live, ss2_larvae_live,
+      ss1_pupae_live, ss2_pupae_live,
+      ss1_adults_live, ss2_adults_live
+    ), ~ replace_na(.x, 0))),
+
+    hole_total = rowSums(across(c(
+      ns1_holes, ns2_holes, ss1_holes, ss2_holes
+    ), ~ replace_na(.x, 0))),
+
+    hole_total = rowSums(across(c(
+      ns1_holes, ns2_holes, ss1_holes, ss2_holes
+    ), ~ replace_na(.x, 0))) + 1,  # add 1 to avoid division by zero
+
+    r_tree = live_total / hole_total
+  )
+
+#Compare our computed r-values to their reported r-values
+ggplot(jasper_custom_rvalues, aes(x = r_value, y = r_tree)) +
+  geom_point(alpha = 0.5, color = "darkblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(
+    x = "Provided r-value (site-level)",
+    y = "Custom r-value (tree-level)",
+    title = "Comparison of Provided vs Custom r-values"
+  ) +
+  theme_minimal()
+
+with(jasper_custom_rvalues, cor(r_value, r_tree, use = "complete.obs"))
+summary(jasper_custom_rvalues$r_value)
+summary(jasper_custom_rvalues$r_tree)
+
+jasper_custom_rvalues |>
+  select(r_value, r_tree) |>
+  pivot_longer(cols = everything(), names_to = "source", values_to = "r") |>
+  ggplot(aes(x = r, fill = source)) +
+  geom_histogram(position = "dodge", alpha = 0.8, bins = 40) +
+  scale_fill_manual(values = c("r_value" = "steelblue", "r_tree" = "darkorange")) +
+  labs(
+    title = "Distribution of Provided vs Custom r-values",
+    x = "r-value",
+    y = "Count",
+    fill = "Source"
+  ) +
+  theme_minimal(base_size = 14)
+
+mean(jasper_custom_rvalues$r_tree, na.rm = TRUE)
+mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
+sd(jasper_custom_rvalues$r_tree, na.rm = TRUE)
+sd(jasper_custom_rvalues$r_value, na.rm = TRUE)
+
+#Mean:variance ratios
+print("mean-variacne ratios:")
+print("Custom r-value")
+sd(jasper_custom_rvalues$r_tree, na.rm = TRUE)/mean(jasper_custom_rvalues$r_tree, na.rm = TRUE)
+print("Provided r-value")
+sd(jasper_custom_rvalues$r_value, na.rm = TRUE)/mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
+
+
+#Build a preliminary gams model of r-value
+library(mgcv)
+jasper_rvalues.2014.2016_df <- jasper_rvalues.2014.2016 |>
+  left_join(jasper_2104.2016_predictors_df, by = "siteID") |>
+  mutate(r = r_value) |>  # rename for modeling
+  filter(!is.na(r))       # drop missing r-values
 
 
 #processing the source shapefiles
