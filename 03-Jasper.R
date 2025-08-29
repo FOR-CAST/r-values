@@ -312,6 +312,7 @@ library(sf)
 library(dplyr)
 library(fs)
 library(purrr)
+library(readr)
 
 mdb_dir <- file.path(dataPath, "Brett","MtnParksmdb")
 mdb_files <- list.files(mdb_dir, pattern = "\\.mdb$", full.names = TRUE)
@@ -353,6 +354,52 @@ walk(mdb_files, function(mdb) {
   dbDisconnect(con)
   unlink(tmp_mdb)
 })
+
+#Joining the site and tree data for 2014-2016 on siteID
+tree_dir<- file.path(mdb_dir,"extracted/tree")
+site_dir<- file.path(mdb_dir,"extracted/site")
+
+tree_files <- list.files(tree_dir, pattern = "_mpb_trees\\.csv$", full.names = TRUE)
+site_files <- list.files(site_dir, pattern = "_mpb_survey_info\\.csv$|_mpb_site\\.csv$", full.names = TRUE)
+
+# Check for siteID presence
+check_siteID <- function(file) {
+  df <- read_csv(file, n_max = 100, show_col_types = FALSE)
+  tibble(file = basename(file), has_siteID = "siteID" %in% names(df))
+}
+
+tree_check <- bind_rows(lapply(tree_files, check_siteID))
+site_check <- bind_rows(lapply(site_files, check_siteID))
+
+print(tree_check)
+print(site_check)
+
+# Define columns to keep
+site_cols <- c("siteID", "beetle_yr", "elevation", "nbr_infested", "plot_lat_dd",
+               "plot_long_dd", "tot_holes", "r_value", "survival")
+
+tree_cols <- c("siteID", "dbh", "ht_pitch_tube",
+               paste0(rep(c("ns1_", "ns2_"), each = 5), c("larvae_live", "larvae_dead", "pupae_live", "pupae_dead", "adults_live")[1:5]),
+               "ns1_holes", "ns2_holes",
+               paste0(rep(c("ss1_", "ss2_"), each = 5), c("larvae_live", "larvae_dead", "pupae_live", "pupae_dead", "adults_live")[1:5]),
+               "ss1_holes", "ss2_holes")
+
+# Function to process one year
+process_year <- function(year) {
+  base <- paste0("PopForecast_Jasper_BY", year, ".mdb")
+
+  site_file <- file.path(site_dir, paste0(base, "_mpb_site.csv"))
+  tree_file <- file.path(tree_dir, paste0(base, "_mpb_trees.csv"))
+
+  site <- read_csv(site_file, show_col_types = FALSE) |> select(any_of(site_cols))
+  tree <- read_csv(tree_file, show_col_types = FALSE) |> select(any_of(tree_cols))
+
+  left_join(tree, site, by = "siteID") |> mutate(beetle_yr = year)
+}
+
+# Process all years
+jasper_rvalues.2014.2016 <- bind_rows(lapply(2014:2016, process_year))
+
 
 #processing the source shapefiles
 shp_dir <- file.path(dataPath, "Brett","MtnParksShapefiles")
