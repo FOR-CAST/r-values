@@ -62,6 +62,7 @@
 # library(archive)
 library(dplyr)
 library(ggplot2)
+library(ggtext)
 library(ggspatial)
 # library(googledrive)
 library(sf)
@@ -530,7 +531,7 @@ map(shp_csv_files, ~ {
   print(names(read_csv(.x, n_max = 1, show_col_types = FALSE)))
 })
 
-# Survey year to beetle attack year map (file nameing conventions switch between mdb and shp)
+# Survey year to beetle attack year map (file naming conventions switch between mdb and shp)
 survey_to_beetle <- c(
   "2018" = 2017,
   "2019" = 2018,
@@ -668,110 +669,34 @@ comparison_df <- left_join(
 )
 
 JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
-  geom_point(size = 3, color = "darkred") +
+  geom_point(size = 3, color = "black") +
   geom_smooth(method = "lm", se = FALSE, color = "black") +
   scale_x_continuous(
-    breaks = log10(c(1 + 1, 2 + 1, 5 + 1, 10 + 1, 20 + 1)),  # positions: log10(r + 1)
-    labels = c(1, 2, 5, 10, 20),                             # labels: original r
-    name = "Mean r-value"
+    breaks = log10(c(1 + 1, 2 + 1, 5 + 1, 10 + 1, 20 + 1)),
+    labels = c(1, 2, 5, 10, 20),
+    name = expression("Mean r-value")
   ) +
   labs(
-    title = "Relationship Between r-value \n and Interannual Infestation Rate (Rt)",
-    y = "Rt (Area Infested t+1 / t)"
+    title = "Relationship Between r-value, r<sub>t</sub>,<br>and Interannual Infestation Rate, R<sub>t</sub>,<br>across Jasper and Banff",
+    y = expression(R[t] == (A[t + 1] / A[t]))
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_markdown()
+  )
 
 ggsave(
   file.path(figPath, "JNPBNP_RvsR.png"),
   JNPBNP_Rvsr,
-  height = 6,
-  width = 6
+  height = 5,
+  width = 5
 )
 
 summary(lm(Rt~log(mean_r+1),data=comparison_df))
-#marginally signficant, but partly because we lumped Jasper and Banff areas
-# because they were lumped in the r-values. Now we split the r-values to match the split areas.
-
-brett_jasper <- brett_rvalues |> filter(lat > 51.7)
-brett_banff  <- brett_rvalues |> filter(lat <= 51.7)
-
-brett_jasper_summary <- brett_jasper |>
-  group_by(beetle_yr) |>
-  summarise(mean_r = mean(r_value, na.rm = TRUE))
-
-brett_banff_summary <- brett_banff |>
-  group_by(beetle_yr) |>
-  summarise(mean_r = mean(r_value, na.rm = TRUE))
-
-jasper_area <- ABMtnParksMPB |>
-  filter(!is.na(Jasperha)) |>
-  dplyr::select(year, area = Jasperha) |>
-  mutate(Rt = lead(area) / area)
-
-banff_area <- ABMtnParksMPB |>
-  filter(!is.na(Banffha)) |>
-  dplyr::select(year, area = Banffha) |>
-  mutate(Rt = lead(area) / area)
-
-jasper_comparison <- left_join(brett_jasper_summary, jasper_area, by = c("beetle_yr" = "year"))
-banff_comparison  <- left_join(brett_banff_summary, banff_area,  by = c("beetle_yr" = "year"))
-
-asrd_jasper <- jasper_rvalues.2014.2016 |>
-  filter(beetle_yr %in% 2014:2016) |>
-  mutate(park = "Jasper")
-
-jasper_all <- bind_rows(brett_jasper, asrd_jasper)
-
-jasper_summary <- jasper_all |>
-  group_by(beetle_yr) |>
-  summarise(mean_r = mean(r_value, na.rm = TRUE))
-
-jasper_comparison <- left_join(jasper_summary, jasper_area, by = c("beetle_yr" = "year"))
-
-combined_comparison <- bind_rows(
-  jasper_comparison |> mutate(park = "Jasper"),
-  banff_comparison  |> mutate(park = "Banff")
-)
-
-lm_jasper <- lm(Rt ~ log(mean_r + 1), data = jasper_comparison)
-summary(lm_jasper)
-
-lm_combined <- lm(Rt ~ log(mean_r + 1), data = combined_comparison)
-summary(lm_combined)
-
-JNPBNP_Rvsr <- ggplot(combined_comparison, aes(x = log(mean_r + 1), y = Rt, color = park)) +
-  geom_point(size = 3) +
-  geom_smooth(
-    method = "lm",
-    se = FALSE,
-    aes(group = park),
-    linetype = "solid",
-    size = 1.2
-  ) +
-  scale_color_manual(values = c("Jasper" = "#e75480", "Banff" = "#56B4E9")) +
-  scale_y_continuous(
-    breaks = c(0.2, 0.5, 1, 2, 4),
-    labels = c("0.2", "0.5", "1", "2", "4"),
-    name = "Rt (Area Infested t+1 / t)"
-  ) +
-  scale_x_continuous(
-    breaks = log(c(0.1 + 1, 0.5 + 1, 1 + 1, 2 + 1, 5 + 1, 10 + 1, 20 + 1)),
-    labels = c("0.1", "0.5", "1", "2", "5", "10", "20"),
-    name = "Mean r-value"
-  ) +
-  labs(
-    title = "Relationship Between r-value \nand Interannual Infestation Rate (Rt)",
-    subtitle = "Jasper shows a clean coupling between rt and Rt\nBanff reflects aerial survey issues in 2018",
-    color = "Park"
-  ) +
-  theme_minimal(base_size = 14)
-
-ggsave(
-  file.path(figPath, "JNPBNP_RvsR.png"),
-  JNPBNP_Rvsr,
-  height = 6,
-  width = 6
-)
+# marginally signficant, but partly because we lumped Jasper and Banff areas
+# because they were lumped in the r-values.
+# We tried splitting the r-values to match the split areas, but the disaggregation
+# brings out an anomaly in the Banff data.
 
 # Part 3. BioSIM simulations of Psurv and CMI for Jasper and Banff -------------------------------------------------
 
