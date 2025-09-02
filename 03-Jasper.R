@@ -720,4 +720,60 @@ JNPBNP.locyears <- bind_rows(
     dplyr::select(lat, lon, beetle_yr, elevation)
 )
 
+# input tibble: JNPBNP.locyears
+# Columns: lat, lon, beetle_yr, elevation
+
+# Step 1: Add survey year (BioSIM MPBwk uses beetle year and survey year to define the winter)
+JNPBNP.locyears <- JNPBNP.locyears %>%
+  mutate(survey_yr = beetle_yr + 1)
+
+# Step 2: Create a unique ID for each location-year combo
+JNPBNP.locyears <- JNPBNP.locyears %>%
+  mutate(loc_id = paste0("loc_", row_number()))
+
+# Step 3: Reorder and rename columns for clarity
+biosim_input <- JNPBNP.locyears %>%
+  dplyr::select(loc_id, lat, lon, elevation, survey_yr)
+
+# Step 4: Export to CSV for BioSIM batch processing
+# This file can be used in BioSIM's batch mode or uploaded via its web interface
+write_csv(biosim_input, "biosim_input_JNPBNP.csv")
+
+source("R/biosim.R")
+
+MPBwkPsurv <- mpb_cold_tol(JNPBNP.locyears)
+
+#join MPB winterkill simulation results to main data table, JNPBNP
+JNPBNP <- MPBwkPsurv %>%
+  left_join(JNPBNP.locyears %>% mutate(row_index = row_number()), by = "row_index")
+
+unique_years <- sort(unique(JNPBNP$survey_yr))
+
+JNPBNP_sf <- st_as_sf(JNPBNP, coords = c("lon", "lat"), crs = 4326)
+ab_sf <- st_transform(ab_sf, st_crs(JNPBNP_sf))
+st_crs(JNPBNP_sf)==st_crs(ab_sf)
+
+JNPBNP_Psurv_map<-ggplot(JNPBNP_sf %>% filter(Year %in% unique_years)) +
+  geom_sf(data = ab_sf, fill = NA, color = "black") +
+  geom_sf(data = np_banff, color = "blue") +
+  geom_sf(data = np_jasper, color = "darkgreen") +
+  geom_sf(aes(color = Psurv), size = 1.5) +
+  scale_color_viridis_c(option = "C") +
+  facet_wrap(~Year, nrow = 2) +
+  coord_sf(xlim = c(-125, -110), ylim = c(48, 60), expand = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Predicted Overwinter Survival (Psurv) by Year",
+    subtitle = "Jasper & Banff National Parks",
+    color = "Psurv (%)"
+  )
+
+ggsave(
+  file.path(figPath, "JNPBNP_Psurv_draft.png"),
+  JNPBNP_Psurv_map,
+  height = 8,
+  width = 10
+)
+
+#Move from draft map to final version
 
