@@ -67,8 +67,8 @@ library(ggspatial)
 # library(googledrive)
 library(sf)
 library(terra)
-library(scales) #needed for log scale plotting
-library(stringr) #needed for wrangling Jasper r-values from shapefiles
+library(scales) # needed for log scale plotting
+library(stringr) # needed for wrangling Jasper r-values from shapefiles
 library(elevatr)
 library(tidyr)
 
@@ -86,8 +86,7 @@ targetCRS <- crs(paste(
   "+datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
 ))
 
-
-# geospatial objects for plotting -------------------------------------------------------------
+## geospatial objects for plotting -------------------------------------------------------------
 
 ab_sf <- try(
   geodata::gadm("CAN", level = 1, path = dataPath) |>
@@ -141,7 +140,7 @@ np_jasper.latlon <- natl_prks.latlon[
 ]
 np_jasper <- natl_prks[natl_prks$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
 
-## map locations from Carroll et al. 2017 ------------------------------------------------------
+# map locations from Carroll et al. 2017 ------------------------------------------------------
 
 ## TODO: use our newly recomputed r-values
 abr_df <- read.csv(
@@ -179,7 +178,7 @@ ggsave(
   width = 7
 )
 
-## Part 1. infestation counts/areas for Jasper & Banff -------------------------------------------------
+# Part 1. infestation counts/areas for Jasper & Banff -------------------------------------------------
 ## from Unger, Roke, Thandi & Brett 1999-2022
 
 ## Caption:
@@ -314,7 +313,7 @@ ggsave(
 
 # Part 2. r-values for Jasper -------------------------------------------------
 
-# Processing the source mdb files
+## Processing the source mdb files
 
 library(DBI)
 library(odbc)
@@ -333,6 +332,7 @@ dir_create(output_dir, "source")
 dir_create(output_dir, "site")
 dir_create(output_dir, "tree")
 
+## TODO: stopifnot on windows
 walk(mdb_files, function(mdb) {
   tmp_mdb <- tempfile(fileext = ".mdb")
   file.copy(mdb, tmp_mdb)
@@ -430,7 +430,7 @@ tree_cols <- c(
   "ss2_holes"
 )
 
-# Function to process one year
+## Function to process one year
 process_year <- function(year) {
   base <- paste0("PopForecast_Jasper_BY", year, ".mdb")
 
@@ -653,7 +653,7 @@ Jasper_rvalue_locations |>
   filter(lon < -130) |>
   print(width = Inf)
 
-#There was one longitude in 2017 that was -177. I changed it to -117.
+## There was one longitude in 2017 that was -177. I changed it to -117.
 
 library(sf)
 
@@ -773,7 +773,7 @@ summary(lm(Rt ~ log(mean_r + 1), data = comparison_df))
 ## We tried splitting the r-values to match the split areas, but the disaggregation
 ### brings out an anomaly in the Banff data.
 
-## Part 3. BioSIM simulations of Psurv and CMI for Jasper and Banff -------------------------------------------------
+# Part 3. BioSIM simulations of Psurv and CMI for Jasper and Banff -------------------------------------------------
 
 ## Convert to sf object
 brett_sf <- brett_rvalues |>
@@ -920,15 +920,15 @@ ggsave(
 
 ## Recall JNPBNP_rvalues was created as follows:
 # JNPBNP_rvalues <- bind_rows(
-#  jasper_rvalues.2014.2016 |> dplyr::select(beetle_yr, r_value),
-#  brett_rvalues |> dplyr::select(beetle_yr, r_value)
-#)
+#   jasper_rvalues.2014.2016 |> dplyr::select(beetle_yr, r_value),
+#   brett_rvalues |> dplyr::select(beetle_yr, r_value)
+# )
 ## And recall the location-years were created as follows using the same source objects:
-#JNPBNP.locyears <- bind_rows(
-#  jasper_rvalues.2014.2016 |>
-#    dplyr::select(lat = plot_lat_dd, lon = plot_long_dd, beetle_yr, elevation),
-#  brett_rvalues_elev |>
-#    dplyr::select(lat, lon, beetle_yr, elevation)
+# JNPBNP.locyears <- bind_rows(
+#   jasper_rvalues.2014.2016 |>
+#     dplyr::select(lat = plot_lat_dd, lon = plot_long_dd, beetle_yr, elevation),
+#   brett_rvalues_elev |>
+#     dplyr::select(lat, lon, beetle_yr, elevation)
 #)
 
 ## We want to join JNPBNP, which contains Psurv, to JNPBNP_rvalues. which contains nothing but beetle_yr r-values.
@@ -977,7 +977,7 @@ ggsave(
   width = 5
 )
 
-#Try aggregating the data by year:
+## try aggregating the data by year:
 JNPBNP.by.year <- JNPBNP.full |>
   group_by(beetle_yr) |>
   summarise(
@@ -1011,7 +1011,7 @@ ggsave(
 
 ## TODO: label years and put model regression confidence interval on r vs R plot
 
-#run BioSIM on the Jasper/Banff locations
+## run BioSIM on the Jasper/Banff locations
 library(tibble)
 
 two_locations <- tibble(
