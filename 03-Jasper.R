@@ -777,3 +777,155 @@ ggsave(
 
 #Move from draft map to final version
 
+#re-project to Alberta
+JNPBNP_proj <- st_transform(JNPBNP_sf, crs = 32611)
+ab_proj <- st_transform(ab_sf, crs = 32611)
+np_banff_proj <- st_transform(np_banff, crs = 32611)
+np_jasper_proj <- st_transform(np_jasper, crs = 32611)
+
+JNPBNP_Psurv_map<-ggplot(JNPBNP_proj %>% filter(Year %in% unique_years)) +
+  geom_sf(data = ab_proj, fill = NA, color = "black") +
+  geom_sf(data = np_banff_proj, color = "blue") +
+  geom_sf(data = np_jasper_proj, color = "darkgreen") +
+  geom_sf(aes(color = Psurv), size = 1.8) +
+  scale_color_viridis_c(
+    option = "C",
+    limits = c(0, 100),
+    breaks = seq(0, 100, by = 20),
+    name = "Psurv (%)"
+  )+
+  facet_wrap(~Year, nrow = 2) +
+  coord_sf(
+    xlim = c(300000, 700000),
+    ylim = c(5475000, 6000000),
+    expand = FALSE
+  ) +
+  theme_minimal() +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
+    plot.background = element_rect(color = "black", fill = NA, linewidth = 1)
+  ) +
+labs(
+    title = "Predicted Overwinter Survival (Psurv) by Year",
+    subtitle = "Jasper & Banff National Parks",
+    color = "Psurv (%)"
+  )
+
+ggsave(
+  file.path(figPath, "JNPBNP_Psurv.png"),
+  JNPBNP_Psurv_map,
+  height = 8,
+  width = 10
+)
+
+#boxplot
+JNPBNP_Psurv_boxplot<-ggplot(JNPBNP_sf %>% filter(Year %in% unique_years), aes(x = factor(Year), y = Psurv)) +
+  geom_boxplot(fill = "skyblue", color = "darkblue", outlier.color = "red") +
+  theme_minimal() +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "black")
+  ) +
+  labs(
+    title = "Distribution of Predicted Overwinter Survival (Psurv) by Survey Year",
+    x = "Year",
+    y = "Psurv (%)"
+  )
+
+ggsave(
+  file.path(figPath, "JNPBNP_Psurv_boxplot.png"),
+  JNPBNP_Psurv_boxplot,
+  height = 5,
+  width = 7
+)
+
+## Recall JNPBNP_rvalues was created as follows:
+# JNPBNP_rvalues <- bind_rows(
+#  jasper_rvalues.2014.2016 |> dplyr::select(beetle_yr, r_value),
+#  brett_rvalues |> dplyr::select(beetle_yr, r_value)
+#)
+## And recall the location-years were created as follows using the same source objects:
+#JNPBNP.locyears <- bind_rows(
+#  jasper_rvalues.2014.2016 |>
+#    dplyr::select(lat = plot_lat_dd, lon = plot_long_dd, beetle_yr, elevation),
+#  brett_rvalues_elev |>
+#    dplyr::select(lat, lon, beetle_yr, elevation)
+#)
+
+## We want to join JNPBNP, which contains Psurv, to JNPBNP_rvalues. which contains nothing but beetle_yr r-values.
+## But there is nothing to join them on. So we need to re-create the r-values tibble with some
+## simulation point id's so the tables can be joined safely, .i.e not using cbind.
+
+JNPBNP.r <- bind_rows(
+  jasper_rvalues.2014.2016 |> dplyr::select(beetle_yr, r_value, lat = plot_lat_dd, lon = plot_long_dd, beetle_yr, elevation),
+  brett_rvalues_elev |> dplyr::select(beetle_yr, r_value, lat = lat, lon = lon, beetle_yr, elevation)
+)
+
+JNPBNP.r <- JNPBNP.r %>%
+  mutate(KeyID = paste0("site_", row_number()))
+
+## JNPBNP.r now has the same row structure as JNPBNP
+nrow(JNPBNP.r) == nrow(JNPBNP)
+
+JNPBNP.r$KeyID==JNPBNP$KeyID
+all.equal(
+  as.data.frame(JNPBNP.r %>% select(lat, lon, beetle_yr) %>% distinct()),
+  as.data.frame(JNPBNP %>% select(lat, lon, beetle_yr) %>% distinct())
+)
+
+#modelling and plotting rt (in JNPBNP.r) on Psurv (in JNPBNP)
+JNPBNP.full <- JNPBNP.r %>%
+  left_join(JNPBNP %>% select(KeyID, Psurv), by = "KeyID")
+
+JNPBNP.mod <- lm(r_value ~ Psurv, data = JNPBNP.full)
+summary(JNPBNP.mod)
+
+JNPBNP.rvsPsurv<-ggplot(JNPBNP.full, aes(x = Psurv, y = r_value)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  theme_minimal() +
+  labs(
+    title = "Relationship Between Overwinter Survival (Psurv) and r-value",
+    x = "Psurv (%)",
+    y = "r-value"
+  )
+ggsave(
+  file.path(figPath, "JNPBNP_r_vs_Psurv.png"),
+  JNPBNP.rvsPsurv,
+  height = 5,
+  width = 5
+)
+
+#Try aggregating the data by year:
+JNPBNP.by.year <- JNPBNP.full %>%
+  group_by(beetle_yr) %>%
+  summarise(
+    mean_r = mean(r_value, na.rm = TRUE),
+    mean_Psurv = mean(Psurv, na.rm = TRUE),
+    sd_r = sd(r_value, na.rm = TRUE),
+    sd_Psurv = sd(Psurv, na.rm = TRUE),
+
+    .groups = "drop"
+  )
+JNPBNP.year.mod <- lm(mean_r ~ mean_Psurv, data = JNPBNP.by.year)
+summary(JNPBNP.year.mod)
+
+JNPBNP.by.year.plot<-ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
+  geom_point(size = 3, color = "black") +
+  geom_text(aes(label = beetle_yr), vjust = -1, size = 3.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "black") +
+  theme_minimal() +
+  labs(
+    title = "Yearly Aggregated Relationship Between Psurv and r-value",
+    x = "Mean Psurv (%)",
+    y = "Mean r-value"
+  )
+
+ggsave(
+  file.path(figPath, "JNPBNP_r_vs_Psurv_yearly.png"),
+  JNPBNP.by.year.plot,
+  height = 5,
+  width = 5
+)
+
