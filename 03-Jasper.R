@@ -70,6 +70,7 @@ library(terra)
 library(scales) #needed for log scale plotting
 library(stringr) #needed for wrangling Jasper r-values from shapefiles
 library(elevatr)
+library(tidyr)
 
 # setup ---------------------------------------------------------------------------------------
 
@@ -928,4 +929,60 @@ ggsave(
   height = 5,
   width = 5
 )
+
+## TODO: label years and put model regression confidence interval on r vs R plot
+
+#run BioSIM on the Jasper/Banff locations
+library(tibble)
+
+two_locations <- tibble(
+  id = c("Banff_Airport", "Jasper_Airport"),
+  lat = c(51.179, 52.990),
+  lon = c(-115.570, -118.058),
+  elevation = c(1397, 1020)
+)
+
+years <- 1998:2023
+
+biosim_input.twolocs <- two_locations %>%
+  crossing(beetle_yr = years) %>%
+  arrange(id, beetle_yr)
+
+twolocs.MPBwkPsurv <- mpb_cold_tol(biosim_input.twolocs)
+
+twolocs.MPBwkPsurv <- twolocs.MPBwkPsurv %>%
+  mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
+
+JNPBNP_1998_2023_Psurv.ts<-ggplot(twolocs.MPBwkPsurv, aes(x = Year-1, y = Psurv, color = location)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Banff" = "dodgerblue", "Jasper" = "hotpink")) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  ) +
+  labs(
+    title = "Simulated Overwinter Survival (Psurv)",
+    x = "Beetle Year",
+    y = "Overwinter Survival (%)",
+    color = "Location"
+  )
+
+ggsave(
+  file.path(figPath, "JNPBNP_2998_2023.png"),
+  JNPBNP_1998_2023_Psurv.ts,
+  height = 4,
+  width = 6
+)
+
+#compute correlation
+twolocs.wide <- twolocs.MPBwkPsurv %>%
+  select(Year, location, Psurv) %>%
+  pivot_wider(names_from = location, values_from = Psurv)
+
+cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
+
 
