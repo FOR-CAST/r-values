@@ -32,19 +32,19 @@
 # The second is for the specific locations in JNP for which we have R-values, 2014-2021. These simulations will be used to create
 # data tables for modelling, and yearly maps for the whole Jasper NP, for presentation purposes. Those maps will likely be
 # aggregated into a single pair of maps representing the average during the rise, and the average during the collapse. BioSIM does
-# spatial cokriging efficiently, but we can't use that functionality in the web API. So we work around that here, in R,
+# spatial co-kriging efficiently, but we can't use that functionality in the web API. So we work around that here, in R,
 # by sending a high density grid of points across JNP and BNP to simulate. Maps are smoothed over the lat and lon grid.
 # We also run the Climate Moisture Index (CMI) model in BioSIM, as dryness has been fingered as a key determinant of outbreak potential,
 # and just as winter temperature is known to fluctuate severely across years, so does drought.
 #
 # For the beetle years 2014-16 the Jasper r-values data are "rich" (as they were with Alberta) as they have recorded tree DBH,
-# height of pitch tubes, and number of surrunded red attacked trees in the cluster. For 2017-2022 there is no DBH and
-# no pitch tube height. There is a vague guestimate about the number of trees in the cluater, but it's often expressed as ">100",
+# height of pitch tubes, and number of surrounded red attacked trees in the cluster. For 2017-2022 there is no DBH and
+# no pitch tube height. There is a vague guesstimate about the number of trees in the cluater, but it's often expressed as ">100",
 # meaning so many they couldn't easily be counted.
 #
 # This paper is the first in a series of two. We mention a "companion paper", which regards the rest of Alberta, a managed
 # landscape, which is under provincial jurisdiction, not federal, and includes the commercial pine forest, and so was treated to an
-# intense progam of removing and burning infested trees. A half billion dollars was spent doing this over the study period 2006-2022.
+# intense program of removing and burning infested trees. A half billion dollars was spent doing this over the study period 2006-2022.
 # The analysis here is structured as to mirror and link to that broader analysis. We hypothesize that wherease (3) predicts (2) predicts (1)
 # in the natural setting of the national parks, where no control was undertaken, the same strength of association is not seen
 # in the rest of Alberta. (It's there, just weakened.) Specifically: in the rest of Alberta there is a decoupling of r from R
@@ -111,7 +111,7 @@ if (inherits(ab_sf, "try-error")) {
   rm(gadm_can_rds)
 }
 
-# National Parks ------------------------------------------------------------------------------
+## National Parks ------------------------------------------------------------------------------
 
 ## Banff and Jasper National Parks
 ## see: https://hub.arcgis.com/datasets/dd8cd91871534c9aa34310eed84fe076_1/about
@@ -141,7 +141,7 @@ np_jasper.latlon <- natl_prks.latlon[
 ]
 np_jasper <- natl_prks[natl_prks$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
 
-# map locations from Carroll et al. 2017 ------------------------------------------------------
+## map locations from Carroll et al. 2017 ------------------------------------------------------
 
 ## TODO: use our newly recomputed r-values
 abr_df <- read.csv(
@@ -154,8 +154,8 @@ st_crs(abr_sf.latlon) <- latlon
 
 abr_sf <- st_transform(abr_sf.latlon, targetCRS)
 
-#Check whether the r-values plots in the 2017 FRI report are actually outside JNP and BNP.
-#We will use this approach later to plot r-value locations in Jasper.
+## Check whether the r-values plots in the 2017 FRI report are actually outside JNP and BNP.
+## We will use this approach later to plot r-value locations in Jasper.
 gg_abmpb <- ggplot() +
   geom_sf(data = ab_sf) +
   geom_sf(data = abr_sf, size = 0.5) +
@@ -179,16 +179,16 @@ ggsave(
   width = 7
 )
 
-# Part 1. infestation counts/areas for Jasper & Banff -------------------------------------------------
+## Part 1. infestation counts/areas for Jasper & Banff -------------------------------------------------
 ## from Unger, Roke, Thandi & Brett 1999-2022
 
-# Caption:
-# Figure 1. Infestation dynamics of mountain pine beetle in Banff and Jasper National Parks, 1999–2021.
-# The left y-axis shows the number of infested trees (log scale), and the right y-axis shows the area
-# infested in hectares (log scale). Square markers represent counts; circular markers represent
-# area estimates. blue is Banff. Pink is Jasper. The vertical dashed line at 2012 marks the
-# transition from tree count data to area-based estimates. Note the steep rise in Jasper infestation
-# post-2013, contrasting with the more subdued outbreak in Banff.
+## Caption:
+## Figure 1. Infestation dynamics of mountain pine beetle in Banff and Jasper National Parks, 1999–2021.
+## The left y-axis shows the number of infested trees (log scale), and the right y-axis shows the area
+## infested in hectares (log scale). Square markers represent counts; circular markers represent
+## area estimates. blue is Banff. Pink is Jasper. The vertical dashed line at 2012 marks the
+## transition from tree count data to area-based estimates. Note the steep rise in Jasper infestation
+## post-2013, contrasting with the more subdued outbreak in Banff.
 
 ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt") |>
   read.table(header = TRUE)
@@ -213,9 +213,9 @@ if (.Platform$OS == "windows") {
     ylab = "trees infested (log10 count)",
     ylim = c(1, 11.5)
   )
-  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$BanffCount), pch = 15) # black squares
+  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$BanffCount), pch = 15) ## black squares
   lines(ABMtnParksMPB$year, log10(ABMtnParksMPB$JasperCount))
-  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$JasperCount), pch = 22, bg = "white") # white squares
+  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$JasperCount), pch = 22, bg = "white") ## white squares
 
   par(new = TRUE)
   plot(
@@ -226,10 +226,10 @@ if (.Platform$OS == "windows") {
     xlab = "",
     ylab = "",
     ylim = c(1, 6)
-  ) # 10 ha to 1 000 000 ha
-  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Jasperha), pch = 21, bg = "white") # white circles
+  ) ## 10 ha to 1 000 000 ha
+  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Jasperha), pch = 21, bg = "white") ## white circles
   lines(ABMtnParksMPB$year, log10(ABMtnParksMPB$Banffha))
-  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Banffha), pch = 19) # black circles
+  points(ABMtnParksMPB$year, log10(ABMtnParksMPB$Banffha), pch = 19) ## black circles
   axis(side = 4)
   mtext("area infested (log10 ha)", side = 4, line = 3)
 
@@ -250,21 +250,27 @@ ABMtnParksMPB_long <- ABMtnParksMPB |>
   mutate(Park = as.factor(Park)) |>
   rename(Year = year, Area_ha = ha)
 
-scaleFact <- 16  #scaling the second y axis
+scaleFact <- 16 ## scaling the second y axis
 
 ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
-  # Tree count (primary axis)
+  ## Tree count (primary axis)
   geom_line(aes(y = Count, color = Park), size = 1) +
   geom_point(aes(y = Count, fill = Park), shape = 22, size = 3, color = "black", stroke = 0.5) +
 
-  # Area infested (secondary axis, scaled)
+  ## Area infested (secondary axis, scaled)
   geom_line(aes(y = Area_ha * scaleFact, color = Park), size = 1) +
-  geom_point(aes(y = Area_ha * scaleFact, fill = Park), shape = 21, size = 3, color = "black", stroke = 0.5) +
+  geom_point(
+    aes(y = Area_ha * scaleFact, fill = Park),
+    shape = 21,
+    size = 3,
+    color = "black",
+    stroke = 0.5
+  ) +
 
-  # Outbreak onset marker
+  ## Outbreak onset marker
   geom_vline(xintercept = 2012.5, linetype = "dotted", size = 1.5) +
 
-  # Log-scaled y-axis with natural tick labels
+  ## Log-scaled y-axis with natural tick labels
   scale_y_continuous(
     transform = "log10",
     name = "trees infested (count)",
@@ -278,7 +284,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
       labels = label_number()
     )
   ) +
-  # Text labels
+  ## Text labels
   geom_text(
     data = data.frame(
       x = c(2005.3, 2017.5),
@@ -289,13 +295,13 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
     size = 5,
     inherit.aes = FALSE
   ) +
-  # Theme and legend styling
+  ## Theme and legend styling
   theme_bw() +
   theme(
     legend.position = "bottom",
     axis.title.y.right = element_text(angle = 90, vjust = 0.5)
   ) +
-  # Color and fill scales for consistent legend appearance
+  ## Color and fill scales for consistent legend appearance
   scale_fill_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
   scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480"))
 
@@ -319,7 +325,7 @@ library(purrr)
 library(readr)
 library(tidyr)
 
-mdb_dir <- file.path(dataPath, "Brett","MtnParksmdb")
+mdb_dir <- file.path(dataPath, "Brett", "MtnParksmdb")
 mdb_files <- list.files(mdb_dir, pattern = "\\.mdb$", full.names = TRUE)
 
 output_dir <- file.path(mdb_dir, "extracted")
@@ -331,28 +337,38 @@ walk(mdb_files, function(mdb) {
   tmp_mdb <- tempfile(fileext = ".mdb")
   file.copy(mdb, tmp_mdb)
 
-  con <- dbConnect(odbc::odbc(), .connection_string = paste0(
-    "Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=", tmp_mdb
-  ))
+  con <- dbConnect(
+    odbc::odbc(),
+    .connection_string = paste0(
+      "Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=",
+      tmp_mdb
+    )
+  )
 
   db_tbls <- dbListTables(con)
 
   if ("mpb_trees" %in% db_tbls) {
-    write.csv(dbReadTable(con, "mpb_trees"),
-              file.path(output_dir, "tree", paste0(basename(mdb), "_mpb_trees.csv")),
-              row.names = FALSE)
+    write.csv(
+      dbReadTable(con, "mpb_trees"),
+      file.path(output_dir, "tree", paste0(basename(mdb), "_mpb_trees.csv")),
+      row.names = FALSE
+    )
   }
 
   if ("mpb_survey_info" %in% db_tbls) {
-    write.csv(dbReadTable(con, "mpb_survey_info"),
-              file.path(output_dir, "site", paste0(basename(mdb), "_mpb_survey_info.csv")),
-              row.names = FALSE)
+    write.csv(
+      dbReadTable(con, "mpb_survey_info"),
+      file.path(output_dir, "site", paste0(basename(mdb), "_mpb_survey_info.csv")),
+      row.names = FALSE
+    )
   }
 
   if ("mpb_site" %in% db_tbls) {
-    write.csv(dbReadTable(con, "mpb_site"),
-              file.path(output_dir, "site", paste0(basename(mdb), "_mpb_site.csv")),
-              row.names = FALSE)
+    write.csv(
+      dbReadTable(con, "mpb_site"),
+      file.path(output_dir, "site", paste0(basename(mdb), "_mpb_site.csv")),
+      row.names = FALSE
+    )
   }
 
   file.copy(mdb, file.path(output_dir, "source", basename(mdb)))
@@ -360,14 +376,18 @@ walk(mdb_files, function(mdb) {
   unlink(tmp_mdb)
 })
 
-#Joining the site and tree data for 2014-2016 on siteID
-tree_dir<- file.path(mdb_dir,"extracted/tree")
-site_dir<- file.path(mdb_dir,"extracted/site")
+## Joining the site and tree data for 2014-2016 on siteID
+tree_dir <- file.path(mdb_dir, "extracted/tree")
+site_dir <- file.path(mdb_dir, "extracted/site")
 
 tree_files <- list.files(tree_dir, pattern = "_mpb_trees\\.csv$", full.names = TRUE)
-site_files <- list.files(site_dir, pattern = "_mpb_survey_info\\.csv$|_mpb_site\\.csv$", full.names = TRUE)
+site_files <- list.files(
+  site_dir,
+  pattern = "_mpb_survey_info\\.csv$|_mpb_site\\.csv$",
+  full.names = TRUE
+)
 
-# Check for siteID presence
+## Check for siteID presence
 check_siteID <- function(file) {
   df <- read_csv(file, n_max = 100, show_col_types = FALSE)
   tibble(file = basename(file), has_siteID = "siteID" %in% names(df))
@@ -379,15 +399,36 @@ site_check <- bind_rows(lapply(site_files, check_siteID))
 print(tree_check)
 print(site_check)
 
-# Define columns to keep
-site_cols <- c("siteID", "beetle_yr", "elevation", "nbr_infested", "plot_lat_dd",
-               "plot_long_dd", "tot_holes", "r_value", "survival")
+## Define columns to keep
+site_cols <- c(
+  "siteID",
+  "beetle_yr",
+  "elevation",
+  "nbr_infested",
+  "plot_lat_dd",
+  "plot_long_dd",
+  "tot_holes",
+  "r_value",
+  "survival"
+)
 
-tree_cols <- c("siteID", "dbh", "ht_pitch_tube",
-               paste0(rep(c("ns1_", "ns2_"), each = 5), c("larvae_live", "larvae_dead", "pupae_live", "pupae_dead", "adults_live")[1:5]),
-               "ns1_holes", "ns2_holes",
-               paste0(rep(c("ss1_", "ss2_"), each = 5), c("larvae_live", "larvae_dead", "pupae_live", "pupae_dead", "adults_live")[1:5]),
-               "ss1_holes", "ss2_holes")
+tree_cols <- c(
+  "siteID",
+  "dbh",
+  "ht_pitch_tube",
+  paste0(
+    rep(c("ns1_", "ns2_"), each = 5),
+    c("larvae_live", "larvae_dead", "pupae_live", "pupae_dead", "adults_live")[1:5]
+  ),
+  "ns1_holes",
+  "ns2_holes",
+  paste0(
+    rep(c("ss1_", "ss2_"), each = 5),
+    c("larvae_live", "larvae_dead", "pupae_live", "pupae_dead", "adults_live")[1:5]
+  ),
+  "ss1_holes",
+  "ss2_holes"
+)
 
 # Function to process one year
 process_year <- function(year) {
@@ -405,44 +446,66 @@ process_year <- function(year) {
   left_join(tree, site, by = "siteID") |> mutate(beetle_yr = year)
 }
 
-# Process all years
+## Process all years
 jasper_rvalues.2014.2016.raw <- bind_rows(lapply(2014:2016, process_year))
 
-#There is a site-tree mismatch in SiteID occurring in 2015 and 2016
+## There is a site-tree mismatch in SiteID occurring in 2015 and 2016
 jasper_rvalues.2014.2016 <- jasper_rvalues.2014.2016.raw |>
   filter(!is.na(siteID) & !is.na(plot_lat_dd) & !is.na(plot_long_dd))
 
-#check for missing lat/lon
+## check for missing lat/lon
 jasper_rvalues.2014.2016 |>
   filter(is.na(plot_lat_dd) | is.na(plot_long_dd))
 
 hist(jasper_rvalues.2014.2016$plot_lat_dd)
 hist(jasper_rvalues.2014.2016$plot_long_dd)
 
-#compute our own r-values
+## compute our own r-values
 jasper_custom_rvalues <- jasper_rvalues.2014.2016 |>
   mutate(
-    live_total = rowSums(across(c(
-      ns1_larvae_live, ns2_larvae_live,
-      ns1_pupae_live, ns2_pupae_live,
-      ns1_adults_live, ns2_adults_live,
-      ss1_larvae_live, ss2_larvae_live,
-      ss1_pupae_live, ss2_pupae_live,
-      ss1_adults_live, ss2_adults_live
-    ), ~ replace_na(.x, 0))),
+    live_total = rowSums(across(
+      c(
+        ns1_larvae_live,
+        ns2_larvae_live,
+        ns1_pupae_live,
+        ns2_pupae_live,
+        ns1_adults_live,
+        ns2_adults_live,
+        ss1_larvae_live,
+        ss2_larvae_live,
+        ss1_pupae_live,
+        ss2_pupae_live,
+        ss1_adults_live,
+        ss2_adults_live
+      ),
+      ~ replace_na(.x, 0)
+    )),
 
-    hole_total = rowSums(across(c(
-      ns1_holes, ns2_holes, ss1_holes, ss2_holes
-    ), ~ replace_na(.x, 0))),
+    hole_total = rowSums(across(
+      c(
+        ns1_holes,
+        ns2_holes,
+        ss1_holes,
+        ss2_holes
+      ),
+      ~ replace_na(.x, 0)
+    )),
 
-    hole_total = rowSums(across(c(
-      ns1_holes, ns2_holes, ss1_holes, ss2_holes
-    ), ~ replace_na(.x, 0))) + 1,  # add 1 to avoid division by zero
+    hole_total = rowSums(across(
+      c(
+        ns1_holes,
+        ns2_holes,
+        ss1_holes,
+        ss2_holes
+      ),
+      ~ replace_na(.x, 0)
+    )) +
+      1, ## add 1 to avoid division by zero
 
     r_tree = live_total / hole_total
   )
 
-#Compare our computed r-values to their reported r-values
+## Compare our computed r-values to their reported r-values
 ggplot(jasper_custom_rvalues, aes(x = r_value, y = r_tree)) +
   geom_point(alpha = 0.5, color = "darkblue") +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
@@ -476,23 +539,23 @@ mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
 sd(jasper_custom_rvalues$r_tree, na.rm = TRUE)
 sd(jasper_custom_rvalues$r_value, na.rm = TRUE)
 
-#Mean:variance ratios
+## Mean:variance ratios
 print("mean-variance ratios:")
 print("Custom r-value")
-sd(jasper_custom_rvalues$r_tree, na.rm = TRUE)/mean(jasper_custom_rvalues$r_tree, na.rm = TRUE)
+sd(jasper_custom_rvalues$r_tree, na.rm = TRUE) / mean(jasper_custom_rvalues$r_tree, na.rm = TRUE)
 print("Provided r-value")
-sd(jasper_custom_rvalues$r_value, na.rm = TRUE)/mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
+sd(jasper_custom_rvalues$r_value, na.rm = TRUE) / mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
 
-#Build a preliminary gams model of r-values 2014-2016
+## Build a preliminary gams model of r-values 2014-2016
 library(mgcv)
 
 gam_model.jasper_custom <- gam(
   log(r_tree + 1) ~
     beetle_yr +
-    s(plot_long_dd, plot_lat_dd, bs = "gp", k = 16) +
-    s(dbh) +
-    s(ht_pitch_tube) +
-    s(log10(nbr_infested + 1)),
+      s(plot_long_dd, plot_lat_dd, bs = "gp", k = 16) +
+      s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)),
   data = jasper_custom_rvalues,
   method = "REML",
   family = gaussian(link = "identity")
@@ -506,33 +569,39 @@ png(file.path(figPath, "gam_model_jasper_custom.png"), height = 1600, width = 16
 plot(gam_model.jasper_custom, scheme = 2, pages = 1, all.terms = TRUE)
 dev.off()
 
-#processing the source shapefiles 2017-2022 (survey years, beetle years are the year before)
-shp_dir <- file.path(dataPath, "Brett","MtnParksShapefiles")
+## processing the source shapefiles 2017-2022 (survey years, beetle years are the year before)
+shp_dir <- file.path(dataPath, "Brett", "MtnParksShapefiles")
 shp_files <- dir(shp_dir, pattern = "\\.shp$", full.names = TRUE)
 
-# Create output directory for extracted tables
+## Create output directory for extracted tables
 output_dir <- file.path(shp_dir, "extracted")
 dir_create(output_dir)
 
 walk(shp_files, function(shp) {
   shp_data <- st_read(shp, quiet = TRUE)
 
-  # Strip geometry and write attribute table to CSV
+  ## Strip geometry and write attribute table to CSV
   attr_table <- st_drop_geometry(shp_data)
 
-  out_file <- file.path(output_dir, paste0(tools::file_path_sans_ext(basename(shp)), "_attributes.csv"))
+  out_file <- file.path(
+    output_dir,
+    paste0(tools::file_path_sans_ext(basename(shp)), "_attributes.csv")
+  )
   write.csv(attr_table, out_file, row.names = FALSE)
 })
 
 shp_csv_files <- list.files(file.path(shp_dir, "extracted"), full.names = TRUE)
 
-#Examine column names, which are not matched
-map(shp_csv_files, ~ {
-  cat("\n---", .x, "---\n")
-  print(names(read_csv(.x, n_max = 1, show_col_types = FALSE)))
-})
+## Examine column names, which are not matched
+map(
+  shp_csv_files,
+  ~ {
+    cat("\n---", .x, "---\n")
+    print(names(read_csv(.x, n_max = 1, show_col_types = FALSE)))
+  }
+)
 
-# Survey year to beetle attack year map (file naming conventions switch between mdb and shp)
+## Survey year to beetle attack year map (file naming conventions switch between mdb and shp)
 survey_to_beetle <- c(
   "2018" = 2017,
   "2019" = 2018,
@@ -540,10 +609,10 @@ survey_to_beetle <- c(
   "2022" = 2021
 )
 
-# Skip 2017 (already processed)
+## Skip 2017 (already processed)
 shp_csv_files <- shp_csv_files[!str_detect(shp_csv_files, "2017")]
 
-# Harmonization function. [Brett refers to the data tech who varied the archiving standard across years 2017-2022.]
+## Harmonization function. [Brett refers to the data tech who varied the archiving standard across years 2017-2022.]
 read_brett_csv <- function(path) {
   survey_yr <- str_extract(path, "20\\d{2}")
   beetle_yr <- survey_to_beetle[[survey_yr]]
@@ -552,7 +621,7 @@ read_brett_csv <- function(path) {
 
   lat_col <- names(df)[str_detect(names(df), regex("^lat$", ignore_case = TRUE))][1]
   lon_col <- names(df)[str_detect(names(df), regex("^lon[g]?$", ignore_case = TRUE))][1]
-  r_col   <- names(df)[str_detect(names(df), regex("r[_ ]?val|pooled", ignore_case = TRUE))][1]
+  r_col <- names(df)[str_detect(names(df), regex("r[_ ]?val|pooled", ignore_case = TRUE))][1]
 
   df |>
     transmute(
@@ -563,12 +632,12 @@ read_brett_csv <- function(path) {
     )
 }
 
-# Combine all years
+## Combine all years
 brett_rvalues <- map_dfr(shp_csv_files, read_brett_csv)
 dev.new()
 hist(brett_rvalues$r_value)
 dev.new()
-boxplot(brett_rvalues$r_value~brett_rvalues$beetle_yr)
+boxplot(brett_rvalues$r_value ~ brett_rvalues$beetle_yr)
 
 asrd_2014.2016_locs <- jasper_custom_rvalues |>
   dplyr::select(lat = plot_lat_dd, lon = plot_long_dd) |>
@@ -592,19 +661,21 @@ jasper_rvalue_sf <- Jasper_rvalue_locations |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
 jasper_rvalue_sf_lambert <- st_transform(jasper_rvalue_sf, crs = 3347)
-ab_sf_lambert     <- st_transform(ab_sf, crs = 3347)
-np_banff_lambert  <- st_transform(np_banff, crs = 3347)
+ab_sf_lambert <- st_transform(ab_sf, crs = 3347)
+np_banff_lambert <- st_transform(np_banff, crs = 3347)
 np_jasper_lambert <- st_transform(np_jasper, crs = 3347)
 
-rvalues.locs.map<-ggplot() +
+rvalues.locs.map <- ggplot() +
   geom_sf(data = ab_sf_lambert) +
   geom_sf(data = np_banff_lambert, col = "blue") +
   geom_sf(data = np_jasper_lambert, col = "darkgreen") +
   geom_sf(data = jasper_rvalue_sf_lambert, aes(color = source), alpha = 0.7, size = 1.5) +
-  scale_color_manual(values = c(
-    "Brett’s Site-Pooled Data (2017–2021)" = "steelblue",
-    "ASRD Tree-Level Data (2014–2016)" = "darkorange"
-  )) +
+  scale_color_manual(
+    values = c(
+      "Brett’s Site-Pooled Data (2017–2021)" = "steelblue",
+      "ASRD Tree-Level Data (2014–2016)" = "darkorange"
+    )
+  ) +
   labs(
     title = "Spatial Distribution of Jasper R-value Sampling",
     x = "Longitude",
@@ -620,18 +691,21 @@ ggsave(
   width = 8
 )
 
-#Boxplot of jasper_rvalues.2014.2016 and brett_rvalues
+## Boxplot of jasper_rvalues.2014.2016 and brett_rvalues
 
 JNPBNP_rvalues <- bind_rows(
   jasper_rvalues.2014.2016 |> dplyr::select(beetle_yr, r_value),
   brett_rvalues |> dplyr::select(beetle_yr, r_value)
 )
 
-JNPBNP_rvalues_boxplot <- ggplot(JNPBNP_rvalues, aes(x = factor(beetle_yr), y = log10(r_value + 1))) +
+JNPBNP_rvalues_boxplot <- ggplot(
+  JNPBNP_rvalues,
+  aes(x = factor(beetle_yr), y = log10(r_value + 1))
+) +
   geom_boxplot(fill = "lightblue", color = "black", outlier.color = "red", outlier.size = 2) +
   scale_y_continuous(
-    breaks = log10(c(2, 3, 6, 11, 21, 51)),  # r + 1
-    labels = c(1, 2, 5, 10, 20, 50),         # original r
+    breaks = log10(c(2, 3, 6, 11, 21, 51)), ## r + 1
+    labels = c(1, 2, 5, 10, 20, 50), ## original r
     name = "r-value"
   ) +
   labs(
@@ -647,7 +721,7 @@ ggsave(
   width = 6
 )
 
-#compare r-value in year t with interannual rate of change in area infested Rt=At+1/At
+## compare r-value in year t with interannual rate of change in area infested Rt=At+1/At
 
 ABMtnParksMPB <- ABMtnParksMPB |>
   mutate(
@@ -693,19 +767,19 @@ ggsave(
   width = 5
 )
 
-summary(lm(Rt~log(mean_r+1),data=comparison_df))
-# marginally signficant, but partly because we lumped Jasper and Banff areas
-# because they were lumped in the r-values.
-# We tried splitting the r-values to match the split areas, but the disaggregation
-# brings out an anomaly in the Banff data.
+summary(lm(Rt ~ log(mean_r + 1), data = comparison_df))
+## marginally signficant, but partly because we lumped Jasper and Banff areas
+## because they were lumped in the r-values.
+## We tried splitting the r-values to match the split areas, but the disaggregation
+### brings out an anomaly in the Banff data.
 
-# Part 3. BioSIM simulations of Psurv and CMI for Jasper and Banff -------------------------------------------------
+## Part 3. BioSIM simulations of Psurv and CMI for Jasper and Banff -------------------------------------------------
 
-# Convert to sf object
+## Convert to sf object
 brett_sf <- brett_rvalues |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
-# Get elevation (units: meters)
+## Get elevation (units: meters)
 brett_elev <- get_elev_point(brett_sf, src = "aws", z = 10)
 
 # Combine elevation with original data
@@ -721,40 +795,40 @@ JNPBNP.locyears <- bind_rows(
     dplyr::select(lat, lon, beetle_yr, elevation)
 )
 
-# input tibble: JNPBNP.locyears
-# Columns: lat, lon, beetle_yr, elevation
+## input tibble: JNPBNP.locyears
+## Columns: lat, lon, beetle_yr, elevation
 
-# Step 1: Add survey year (BioSIM MPBwk uses beetle year and survey year to define the winter)
-JNPBNP.locyears <- JNPBNP.locyears %>%
+## Step 1: Add survey year (BioSIM MPBwk uses beetle year and survey year to define the winter)
+JNPBNP.locyears <- JNPBNP.locyears |>
   mutate(survey_yr = beetle_yr + 1)
 
-# Step 2: Create a unique ID for each location-year combo
-JNPBNP.locyears <- JNPBNP.locyears %>%
+## Step 2: Create a unique ID for each location-year combo
+JNPBNP.locyears <- JNPBNP.locyears |>
   mutate(loc_id = paste0("loc_", row_number()))
 
-# Step 3: Reorder and rename columns for clarity
-biosim_input <- JNPBNP.locyears %>%
+## Step 3: Reorder and rename columns for clarity
+biosim_input <- JNPBNP.locyears |>
   dplyr::select(loc_id, lat, lon, elevation, survey_yr)
 
-# Step 4: Export to CSV for BioSIM batch processing
-# This file can be used in BioSIM's batch mode or uploaded via its web interface
+## Step 4: Export to CSV for BioSIM batch processing
+## This file can be used in BioSIM's batch mode or uploaded via its web interface
 write_csv(biosim_input, "biosim_input_JNPBNP.csv")
 
 source("R/biosim.R")
 
 MPBwkPsurv <- mpb_cold_tol(JNPBNP.locyears)
 
-#join MPB winterkill simulation results to main data table, JNPBNP
-JNPBNP <- MPBwkPsurv %>%
-  left_join(JNPBNP.locyears %>% mutate(row_index = row_number()), by = "row_index")
+## join MPB winterkill simulation results to main data table, JNPBNP
+JNPBNP <- MPBwkPsurv |>
+  left_join(mutate(JNPBNP.locyears, row_index = row_number()), by = "row_index")
 
 unique_years <- sort(unique(JNPBNP$survey_yr))
 
 JNPBNP_sf <- st_as_sf(JNPBNP, coords = c("lon", "lat"), crs = 4326)
 ab_sf <- st_transform(ab_sf, st_crs(JNPBNP_sf))
-st_crs(JNPBNP_sf)==st_crs(ab_sf)
+st_crs(JNPBNP_sf) == st_crs(ab_sf)
 
-JNPBNP_Psurv_map<-ggplot(JNPBNP_sf %>% filter(Year %in% unique_years)) +
+JNPBNP_Psurv_map <- ggplot(JNPBNP_sf |> filter(Year %in% unique_years)) +
   geom_sf(data = ab_sf, fill = NA, color = "black") +
   geom_sf(data = np_banff, color = "blue") +
   geom_sf(data = np_jasper, color = "darkgreen") +
@@ -776,15 +850,15 @@ ggsave(
   width = 10
 )
 
-#Move from draft map to final version
+## Move from draft map to final version
 
-#re-project to Alberta
+## re-project to Alberta
 JNPBNP_proj <- st_transform(JNPBNP_sf, crs = 32611)
 ab_proj <- st_transform(ab_sf, crs = 32611)
 np_banff_proj <- st_transform(np_banff, crs = 32611)
 np_jasper_proj <- st_transform(np_jasper, crs = 32611)
 
-JNPBNP_Psurv_map<-ggplot(JNPBNP_proj %>% filter(Year %in% unique_years)) +
+JNPBNP_Psurv_map <- ggplot(JNPBNP_proj |> filter(Year %in% unique_years)) +
   geom_sf(data = ab_proj, fill = NA, color = "black") +
   geom_sf(data = np_banff_proj, color = "blue") +
   geom_sf(data = np_jasper_proj, color = "darkgreen") +
@@ -794,7 +868,7 @@ JNPBNP_Psurv_map<-ggplot(JNPBNP_proj %>% filter(Year %in% unique_years)) +
     limits = c(0, 100),
     breaks = seq(0, 100, by = 20),
     name = "Psurv (%)"
-  )+
+  ) +
   facet_wrap(~Year, nrow = 2) +
   coord_sf(
     xlim = c(300000, 700000),
@@ -806,7 +880,7 @@ JNPBNP_Psurv_map<-ggplot(JNPBNP_proj %>% filter(Year %in% unique_years)) +
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
     plot.background = element_rect(color = "black", fill = NA, linewidth = 1)
   ) +
-labs(
+  labs(
     title = "Predicted Overwinter Survival (Psurv) by Year",
     subtitle = "Jasper & Banff National Parks",
     color = "Psurv (%)"
@@ -819,8 +893,11 @@ ggsave(
   width = 10
 )
 
-#boxplot
-JNPBNP_Psurv_boxplot<-ggplot(JNPBNP_sf %>% filter(Year %in% unique_years), aes(x = factor(Year), y = Psurv)) +
+## boxplot
+JNPBNP_Psurv_boxplot <- ggplot(
+  JNPBNP_sf |> filter(Year %in% unique_years),
+  aes(x = factor(Year), y = Psurv)
+) +
   geom_boxplot(fill = "skyblue", color = "darkblue", outlier.color = "red") +
   theme_minimal() +
   theme(
@@ -859,30 +936,32 @@ ggsave(
 ## simulation point id's so the tables can be joined safely, .i.e not using cbind.
 
 JNPBNP.r <- bind_rows(
-  jasper_rvalues.2014.2016 |> dplyr::select(beetle_yr, r_value, lat = plot_lat_dd, lon = plot_long_dd, beetle_yr, elevation),
-  brett_rvalues_elev |> dplyr::select(beetle_yr, r_value, lat = lat, lon = lon, beetle_yr, elevation)
+  jasper_rvalues.2014.2016 |>
+    dplyr::select(beetle_yr, r_value, lat = plot_lat_dd, lon = plot_long_dd, beetle_yr, elevation),
+  brett_rvalues_elev |>
+    dplyr::select(beetle_yr, r_value, lat = lat, lon = lon, beetle_yr, elevation)
 )
 
-JNPBNP.r <- JNPBNP.r %>%
+JNPBNP.r <- JNPBNP.r |>
   mutate(KeyID = paste0("site_", row_number()))
 
 ## JNPBNP.r now has the same row structure as JNPBNP
 nrow(JNPBNP.r) == nrow(JNPBNP)
 
-JNPBNP.r$KeyID==JNPBNP$KeyID
+JNPBNP.r$KeyID == JNPBNP$KeyID
 all.equal(
-  as.data.frame(JNPBNP.r %>% select(lat, lon, beetle_yr) %>% distinct()),
-  as.data.frame(JNPBNP %>% select(lat, lon, beetle_yr) %>% distinct())
+  as.data.frame(JNPBNP.r |> select(lat, lon, beetle_yr) |> distinct()),
+  as.data.frame(JNPBNP |> select(lat, lon, beetle_yr) |> distinct())
 )
 
-#modelling and plotting rt (in JNPBNP.r) on Psurv (in JNPBNP)
-JNPBNP.full <- JNPBNP.r %>%
-  left_join(JNPBNP %>% select(KeyID, Psurv), by = "KeyID")
+## modelling and plotting rt (in JNPBNP.r) on Psurv (in JNPBNP)
+JNPBNP.full <- JNPBNP.r |>
+  left_join(JNPBNP |> select(KeyID, Psurv), by = "KeyID")
 
 JNPBNP.mod <- lm(r_value ~ Psurv, data = JNPBNP.full)
 summary(JNPBNP.mod)
 
-JNPBNP.rvsPsurv<-ggplot(JNPBNP.full, aes(x = Psurv, y = r_value)) +
+JNPBNP.rvsPsurv <- ggplot(JNPBNP.full, aes(x = Psurv, y = r_value)) +
   geom_point(color = "black") +
   geom_smooth(method = "lm", se = TRUE, color = "black") +
   theme_minimal() +
@@ -899,8 +978,8 @@ ggsave(
 )
 
 #Try aggregating the data by year:
-JNPBNP.by.year <- JNPBNP.full %>%
-  group_by(beetle_yr) %>%
+JNPBNP.by.year <- JNPBNP.full |>
+  group_by(beetle_yr) |>
   summarise(
     mean_r = mean(r_value, na.rm = TRUE),
     mean_Psurv = mean(Psurv, na.rm = TRUE),
@@ -912,7 +991,7 @@ JNPBNP.by.year <- JNPBNP.full %>%
 JNPBNP.year.mod <- lm(mean_r ~ mean_Psurv, data = JNPBNP.by.year)
 summary(JNPBNP.year.mod)
 
-JNPBNP.by.year.plot<-ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
+JNPBNP.by.year.plot <- ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
   geom_point(size = 3, color = "black") +
   geom_text(aes(label = beetle_yr), vjust = -1, size = 3.5) +
   geom_smooth(method = "lm", se = TRUE, color = "black") +
@@ -953,7 +1032,10 @@ twolocs.MPBwkPsurv <- mpb_cold_tol(biosim_input.twolocs)
 twolocs.MPBwkPsurv <- twolocs.MPBwkPsurv %>%
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
 
-JNPBNP_1998_2023_Psurv.ts<-ggplot(twolocs.MPBwkPsurv, aes(x = Year-1, y = Psurv, color = location)) +
+JNPBNP_1998_2023_Psurv.ts <- ggplot(
+  twolocs.MPBwkPsurv,
+  aes(x = Year - 1, y = Psurv, color = location)
+) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Banff" = "dodgerblue", "Jasper" = "hotpink")) +
@@ -984,5 +1066,3 @@ twolocs.wide <- twolocs.MPBwkPsurv %>%
   pivot_wider(names_from = location, values_from = Psurv)
 
 cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
-
-
