@@ -851,13 +851,13 @@ biosim_input <- JNPBNP.locyears |>
 
 ## Export to CSV for BioSIM batch processing
 ## This file can be used in BioSIM's batch mode or uploaded via its web interface
-write.csv(biosim_input, "biosim_input_JNPBNP.csv")
+write.csv(biosim_input, file.path(outputPath,"biosim_input_JNPBNP.csv"))
 
 source("R/biosim.R")
 
 if (!file_exists("MPBwkPsurv.csv")) {
   MPBwkPsurv <- mpb_cold_tol(JNPBNP.locyears)
-  write.csv(MPBwkPsurv, "MPBwkPsurv.csv")
+  write.csv(MPBwkPsurv, file.path(outputPath,"MPBwkPsurv.csv"))
 }
 MPBwkPsurv <- read.csv("MPBwkPsurv.csv")
 
@@ -1085,7 +1085,7 @@ biosim_input.JNPBNP <- two_locations %>%
 
 if(!fileExists("JNPBNP.MPBwkPsurv.csv")) {
   JNPBNP.MPBwkPsurv <- mpb_cold_tol(biosim_input.JNPBNP)
-  write.csv(JNPBNP.MPBwkPsurv,"JNPBNP.MPBwkPsurv.csv")
+  write.csv(JNPBNP.MPBwkPsurv,file.path(outputPath,"JNPBNP.MPBwkPsurv.csv"))
 }
 JNPBNP.MPBwkPsurv <- read.csv("JNPBNP.MPBwkPsurv.csv")
 
@@ -1131,7 +1131,7 @@ cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
 if(!file_exists("JNPBNPCMI.csv"))
 {
   JNPBNP.CMI <- biosim_cmi(biosim_input.JNPBNP)
-  write.csv(JNPBNP.CMI,"JNPBNPCMI.csv")
+  write.csv(JNPBNP.CMI,file.path(outputPath,"JNPBNPCMI.csv"))
 }
 JNPBNP.CMI <- read.csv("JNPBNPCMI.csv")
 
@@ -1239,6 +1239,7 @@ Rt_model_data <- Rt_model_data |>
 Rt_lm_pooled <- lm(Rt ~ CMI + CMI_lag + Psurv_lag, data = Rt_model_data)
 summary(Rt_lm_pooled)
 
+#Try a thresholded model
 Rt_model_data_thresh <- Rt_model_data |>
   mutate(CMI_thresh = CMI_lag < -20)
 
@@ -1255,6 +1256,79 @@ Rt_gam_interact <- gam(Rt ~ s(CMI_lag, by = location) + location + Psurv_lag,
                        data = Rt_model_data,
                        method = "REML")
 summary(Rt_gam_interact)
+
+#Come back to the threshold model using segmentation
+library(segmented)
+
+# Start with a linear model
+lm_base <- lm(Rt ~ CMI_lag + Psurv_lag, data = Rt_model_data)
+
+# Fit segmented model with estimated breakpoint in CMI_lag
+seg_model <- segmented(lm_base, seg.Z = ~CMI_lag)
+summary(seg_model)
+
+#estimates the segmentation at CMI = -12.5
+
+#revisit the threshold model
+Rt_model_data_thresh <- Rt_model_data |>
+  mutate(CMI_thresh = CMI_lag < -22)
+
+Rt_thresh_model <- lm(Rt ~ CMI_thresh + Psurv_lag, data = Rt_model_data_thresh)
+summary(Rt_thresh_model)
+
+grid <- expand.grid(
+  CMI_lag = seq(min(Rt_model_data$CMI_lag, na.rm = TRUE),
+                max(Rt_model_data$CMI_lag, na.rm = TRUE), length.out = 100),
+  Psurv_lag = seq(min(Rt_model_data$Psurv_lag, na.rm = TRUE),
+                  max(Rt_model_data$Psurv_lag, na.rm = TRUE), length.out = 100)
+)
+
+grid <- grid |>
+  mutate(CMI_thresh = CMI_lag < -22)
+
+grid <- grid |>
+  mutate(Rt_pred = predict(Rt_thresh_model, newdata = grid))
+
+library(plotly)
+
+library(reshape2)
+
+
+# Reshape grid into a matrix for z-values
+z_matrix <- matrix(grid$Rt_pred,
+                   nrow = length(unique(grid$Psurv_lag)),
+                   ncol = length(unique(grid$CMI_lag)),
+                   byrow = TRUE)
+
+# Extract x and y axes
+x_vals <- sort(unique(grid$CMI_lag))
+y_vals <- sort(unique(grid$Psurv_lag))
+
+# Create the surface plot
+Rt.threhold.model.plot<-plot_ly(x = x_vals, y = y_vals, z = z_matrix, type = "surface") |>
+  plotly::layout(
+    scene = list(
+      xaxis = list(title = "CMI"),
+      yaxis = list(title = "Psurv"),
+      zaxis = list(title = "Predicted Rt")
+    ),
+    title = list(text = "Predicted Rt Surface with CMI Threshold at –22")
+  )
+
+install.packages("webshot")
+webshot::install_phantomjs()
+
+
+# Save the plot as a PNG
+fig1<-file.path(figPath, "Rt_threshold_surface.htm")
+htmlwidgets::saveWidget(Rt.threhold.model.plot, fig1)
+
+# Use webshot2 (which uses headless Chrome)
+install.packages("webshot2")
+library(webshot2)
+fig2<-file.path(figPath, "Rt_threshold_surface.png")
+webshot2::webshot(fig1, fig2, vwidth = 1200, vheight = 900)
+
 
 ## Generating Final Figures
 
