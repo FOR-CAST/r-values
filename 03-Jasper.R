@@ -45,13 +45,13 @@
 # This paper is the first in a series of two. We mention a "companion paper", which regards the rest of Alberta, a managed
 # landscape, which is under provincial jurisdiction, not federal, and includes the commercial pine forest, and so was treated to an
 # intense program of removing and burning infested trees. A half billion dollars was spent doing this over the study period 2006-2022.
-# The analysis here is structured as to mirror and link to that broader analysis. We hypothesize that wherease (3) predicts (2) predicts (1)
+# The analysis here is structured as to mirror and link to that broader analysis. We hypothesize that whereas (3) predicts (2) predicts (1)
 # in the natural setting of the national parks, where no control was undertaken, the same strength of association is not seen
 # in the rest of Alberta. (It's there, just weakened.) Specifically: in the rest of Alberta there is a decoupling of r from R
 # in the period 2008-2015, and this is a direct result of control effort. The result is an intense outbreak in Jasper
 # that did not materialize in the rest of Alberta.
 #
-# There was an outbreak in Banff that emerged in that same window 2008-2015 as Japser, but it had a fraction the intensity of Jasper.
+# There was an outbreak in Banff that emerged in that same window 2008-2015 as Jasper, but it had a fraction the intensity of Jasper.
 # We suspect this is due to the broad valleys in Jasper that are rich in pine, whereas in Banff the valleys are steeper and the pine is higher
 # in elevation, and as de la Giroday et al. (2011) reported for British Columbia, low-elevation pine is a key for connecting populations
 # in mountainous terrain to get them to erupt and spread. We don't have pine data to go with the elevations, so we will not
@@ -61,15 +61,15 @@
 
 # library(archive)
 library(dplyr)
+# library(elevatr)
 library(ggplot2)
 library(ggtext)
 library(ggspatial)
 # library(googledrive)
-library(sf)
-library(terra)
 library(scales) # needed for log scale plotting
+library(sf)
 library(stringr) # needed for wrangling Jasper r-values from shapefiles
-library(elevatr)
+library(terra)
 library(tidyr)
 
 # setup ---------------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ ggsave(
   width = 7
 )
 
-# Part 1. infestation counts/areas for Jasper & Banff -------------------------------------------------
+# Part 1. infestation counts/areas for Jasper & Banff ----------------------------------------------
 ## from Unger, Roke, Thandi & Brett 1999-2022
 
 ## Caption:
@@ -311,7 +311,7 @@ ggsave(
   width = 7
 )
 
-# Part 2. r-values for Jasper -------------------------------------------------
+# Part 2. r-values for Jasper ----------------------------------------------------------------------
 
 ## Processing the source mdb files
 
@@ -443,7 +443,7 @@ process_year <- function(year) {
   tree_ids <- read_csv(tree_file, show_col_types = FALSE) |> distinct(siteID)
   site_ids <- read_csv(site_file, show_col_types = FALSE) |> distinct(siteID)
 
-  left_join(tree, site, by = "siteID") |> mutate(beetle_yr = year)
+  left_join(tree, site, by = "siteID") |> mutate(beetle_yr = as.integer(year))
 }
 
 ## Process all years
@@ -786,7 +786,7 @@ brett_sf <- brett_rvalues |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
 ## Get elevation (units: meters)
-brett_elev <- get_elev_point(brett_sf, src = "aws", z = 10)
+brett_elev <- elevatr::get_elev_point(brett_sf, src = "aws", z = 10)
 
 # Combine elevation with original data
 brett_rvalues_elev <- brett_elev |>
