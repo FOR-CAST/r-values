@@ -1108,3 +1108,9 @@ ggsave(
   width = 6
 )
 
+JNPBNP.CMI %>%
+  filter(Year %in% 2013:2016) %>%
+  group_by(location) %>%
+  summarise(mean_CMI = mean(CMI, na.rm = TRUE)) %>%
+  summarise(diff_CMI = diff(mean_CMI))
+
