@@ -1060,7 +1060,7 @@ JNPBNP_1998_2023_Psurv.ts <- ggplot(
   )
 
 ggsave(
-  file.path(figPath, "JNPBNP_2998_2023.png"),
+  file.path(figPath, "JNPBNP_1998_2023.png"),
   JNPBNP_1998_2023_Psurv.ts,
   height = 4,
   width = 6
@@ -1072,3 +1072,39 @@ twolocs.wide <- twolocs.MPBwkPsurv %>%
   pivot_wider(names_from = location, values_from = Psurv)
 
 cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
+
+#CMI
+JNPBNP.CMI <- biosim_cmi(biosim_input.twolocs)
+
+JNPBNP.CMI <- JNPBNP.CMI %>%
+  mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
+
+JNPBNP.CMI.plot<-ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("Jasper" = "hotpink", "Banff" = "dodgerblue")) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  ) +
+  labs(
+    title = "Climate Moisture Index (CMI) Over Time",
+    x = "Beetle Year",
+    y = "CMI",
+    color = "Location"
+  )
+
+JNPBNP.CMI %>%
+  group_by(location) %>%
+  summarise(mean_CMI = mean(CMI, na.rm = TRUE))
+
+ggsave(
+  file.path(figPath, "JNPBNP_CMI_ts.png"),
+  JNPBNP.CMI.plot,
+  height = 4,
+  width = 6
+)
+
