@@ -1359,6 +1359,8 @@ plot_ly() |>
     )
   )
 
+## TODO:
+
 ## Generating Final Figures
 
 ## Figure 1: map of infested areas over DEM
@@ -1379,5 +1381,8 @@ plot_ly() |>
 
 ## Figure 5
 # GAMS model output
+
+## Figure 6
+# surface plot of Rt ~ Psurv + CMI
 
 ## Figure SI1: annual maps of Psurv in areas where r-values were measured
