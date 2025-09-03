@@ -893,7 +893,7 @@ ggsave(
   width = 10
 )
 
-## Move from draft map to final version
+## Move from draft map to a more final version
 
 ## re-project to Alberta
 JNPBNP_proj <- st_transform(JNPBNP_sf, crs = 32611)
@@ -1065,9 +1065,6 @@ ggsave(
   width = 5
 )
 
-## TODO: label years and put model regression confidence interval on r vs R plot
-## Also, better axes
-
 ## run BioSIM on the Jasper/Banff locations
 
 two_locations <- tibble(
@@ -1227,6 +1224,9 @@ psurv_summary <- JNPBNP.MPBwkPsurv |>
 climate_drivers <- left_join(cmi_summary, psurv_summary, by = c("Year", "location")) |>
   rename(year = Year)
 
+Rt_model_data <- JB.Rt.long |>
+  left_join(climate_drivers, by = c("year", "location"))
+
 Rt_model_data <- Rt_model_data |>
   arrange(location, year) |>
   group_by(location) |>
@@ -1293,7 +1293,6 @@ library(plotly)
 
 library(reshape2)
 
-
 # Reshape grid into a matrix for z-values
 z_matrix <- matrix(grid$Rt_pred,
                    nrow = length(unique(grid$Psurv_lag)),
@@ -1315,20 +1314,50 @@ Rt.threhold.model.plot<-plot_ly(x = x_vals, y = y_vals, z = z_matrix, type = "su
     title = list(text = "Predicted Rt Surface with CMI Threshold at –22")
   )
 
-install.packages("webshot")
 webshot::install_phantomjs()
-
 
 # Save the plot as a PNG
 fig1<-file.path(figPath, "Rt_threshold_surface.htm")
 htmlwidgets::saveWidget(Rt.threhold.model.plot, fig1)
 
 # Use webshot2 (which uses headless Chrome)
-install.packages("webshot2")
 library(webshot2)
 fig2<-file.path(figPath, "Rt_threshold_surface.png")
 webshot2::webshot(fig1, fig2, vwidth = 1200, vheight = 900)
 
+# Create surface plot
+plot_ly() |>
+  add_surface(
+    x = x_vals,
+    y = y_vals,
+    z = z_matrix,
+    showscale = FALSE,
+    opacity = 0.75
+  ) |>
+  add_markers(
+    data = Rt_model_data_thresh |> filter(location == "Jasper"),
+    x = ~CMI_lag,
+    y = ~Psurv_lag,
+    z = ~Rt,
+    marker = list(size = 4, color = '#e75480'),
+    name = "Jasper"
+  ) |>
+  add_markers(
+    data = Rt_model_data_thresh |> filter(location == "Banff"),
+    x = ~CMI_lag,
+    y = ~Psurv_lag,
+    z = ~Rt,
+    marker = list(size = 4, color = '#56B4E9'),
+    name = "Banff"
+  ) |>
+  layout(
+    title = list(text = "Predicted Rt Surface with Observed Data Points"),
+    scene = list(
+      xaxis = list(title = "CMI"),
+      yaxis = list(title = "Psurv"),
+      zaxis = list(title = "Rt")
+    )
+  )
 
 ## Generating Final Figures
 
