@@ -745,7 +745,7 @@ comparison_df <- left_join(
 
 JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
   geom_point(size = 3, color = "black") +
-  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  geom_smooth(method = "lm", se = TRUE, color = "black", fill = "grey70", alpha = 0.4) +
   scale_x_continuous(
     breaks = log10(c(1 + 1, 2 + 1, 5 + 1, 10 + 1, 20 + 1)),
     labels = c(1, 2, 5, 10, 20),
@@ -757,7 +757,13 @@ JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
   ) +
   theme_minimal(base_size = 14) +
   theme(
-    plot.title = element_markdown()
+    plot.title = element_markdown(),
+    panel.border = element_blank(),  # optional: removes full box
+    axis.line.x = element_line(color = "black", linewidth = 0.8),
+    axis.line.y = element_line(color = "black", linewidth = 0.8),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
   )
 
 ggsave(
