@@ -1076,8 +1076,8 @@ two_locations <- tibble(
 
 years <- 1998:2023
 
-biosim_input.JNPBNP <- two_locations %>%
-  crossing(beetle_yr = years) %>%
+biosim_input.JNPBNP <- two_locations |>
+  crossing(beetle_yr = years) |>
   arrange(id, beetle_yr)
 
 if(!fileExists("JNPBNP.MPBwkPsurv.csv")) {
@@ -1086,7 +1086,7 @@ if(!fileExists("JNPBNP.MPBwkPsurv.csv")) {
 }
 JNPBNP.MPBwkPsurv <- read.csv("JNPBNP.MPBwkPsurv.csv")
 
-JNPBNP.MPBwkPsurv <- JNPBNP.MPBwkPsurv %>%
+JNPBNP.MPBwkPsurv <- JNPBNP.MPBwkPsurv |>
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
 
 JNPBNP_1998_2023_Psurv.ts <- ggplot(
@@ -1118,8 +1118,8 @@ ggsave(
 )
 
 #compute correlation
-twolocs.wide <- JNPBNP.MPBwkPsurv %>%
-  select(Year, location, Psurv) %>%
+twolocs.wide <- JNPBNP.MPBwkPsurv |>
+  select(Year, location, Psurv) |>
   pivot_wider(names_from = location, values_from = Psurv)
 
 cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
@@ -1132,7 +1132,7 @@ if(!file_exists("JNPBNPCMI.csv"))
 }
 JNPBNP.CMI <- read.csv("JNPBNPCMI.csv")
 
-JNPBNP.CMI <- JNPBNP.CMI %>%
+JNPBNP.CMI <- JNPBNP.CMI |>
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
 
 JNPBNP.CMI.plot<-ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) +
@@ -1160,10 +1160,10 @@ ggsave(
   width = 6
 )
 
-JNPBNP.CMI %>%
-  filter(Year %in% 2013:2016) %>%
-  group_by(location) %>%
-  summarise(mean_CMI = mean(CMI, na.rm = TRUE)) %>%
+JNPBNP.CMI |>
+  filter(Year %in% 2013:2016) |>
+  group_by(location) |>
+  summarise(mean_CMI = mean(CMI, na.rm = TRUE)) |>
   summarise(diff_CMI = diff(mean_CMI))
 
 jasper.cmi <- subset(JNPBNP.CMI, location == "Jasper")
