@@ -340,7 +340,7 @@ JB.Rt <- tibble(
 )
 
 JB.Rt.cor<-cor(JB.Rt$Rt_Jasper,JB.Rt$Rt_Banff,use="pairwise.complete.obs")
-cat("The Jasper-Banff correlation in Rt is:",JB.Rt.cor)
+cat("The Jasper-Banff correlation in Rt 1999-2023 is:",JB.Rt.cor)
 cor.test(JB.Rt$Rt_Jasper, JB.Rt$Rt_Banff)
 
 # Part 2. r-values for Jasper ----------------------------------------------------------------------
@@ -850,11 +850,15 @@ biosim_input <- JNPBNP.locyears |>
 
 ## Step 4: Export to CSV for BioSIM batch processing
 ## This file can be used in BioSIM's batch mode or uploaded via its web interface
-write_csv(biosim_input, "biosim_input_JNPBNP.csv")
+write.csv(biosim_input, "biosim_input_JNPBNP.csv")
 
 source("R/biosim.R")
 
-MPBwkPsurv <- mpb_cold_tol(JNPBNP.locyears)
+if (!file_exists("MPBwkPsurv.csv")) {
+  MPBwkPsurv <- mpb_cold_tol(JNPBNP.locyears)
+  write.csv(MPBwkPsurv, "MPBwkPsurv.csv")
+}
+MPBwkPsurv <- read.csv("MPBwkPsurv.csv")
 
 ## join MPB winterkill simulation results to main data table, JNPBNP
 JNPBNP <- MPBwkPsurv |>
@@ -1003,11 +1007,18 @@ JNPBNP.rvsPsurv <- ggplot(JNPBNP.full, aes(x = Psurv, y = r_value)) +
   geom_point(color = "black") +
   geom_smooth(method = "lm", se = TRUE, color = "black") +
   theme_minimal() +
+  theme(
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  ) +
   labs(
     title = "Relationship Between Overwinter Survival (Psurv) and r-value",
     x = "Psurv (%)",
     y = "r-value"
   )
+
 ggsave(
   file.path(figPath, "JNPBNP_r_vs_Psurv.png"),
   JNPBNP.rvsPsurv,
@@ -1034,6 +1045,12 @@ JNPBNP.by.year.plot <- ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
   geom_text(aes(label = beetle_yr), vjust = -1, size = 3.5) +
   geom_smooth(method = "lm", se = TRUE, color = "black") +
   theme_minimal() +
+  theme(
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  ) +
   labs(
     title = "Yearly Aggregated Relationship Between Psurv and r-value",
     x = "Mean Psurv (%)",
@@ -1048,6 +1065,7 @@ ggsave(
 )
 
 ## TODO: label years and put model regression confidence interval on r vs R plot
+## Also, better axes
 
 ## run BioSIM on the Jasper/Banff locations
 library(tibble)
@@ -1065,7 +1083,11 @@ biosim_input.twolocs <- two_locations %>%
   crossing(beetle_yr = years) %>%
   arrange(id, beetle_yr)
 
-twolocs.MPBwkPsurv <- mpb_cold_tol(biosim_input.twolocs)
+if(!fileExists("twolocs.MPBwkPsurv.csv")) {
+  twolocs.MPBwkPsurv <- mpb_cold_tol(biosim_input.twolocs)
+  write.csv(twolocs.MPBwkPsurv,"twolocs.MPBwkPsurv.csv")
+}
+twolocs.MPBwkPsurv <- read.csv("twolocs.MPBwkPsurv.csv")
 
 twolocs.MPBwkPsurv <- twolocs.MPBwkPsurv %>%
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
@@ -1106,7 +1128,12 @@ twolocs.wide <- twolocs.MPBwkPsurv %>%
 cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
 
 #CMI
-JNPBNP.CMI <- biosim_cmi(biosim_input.twolocs)
+if(!file_exists("JNPBNPCMI.csv"))
+{
+  JNPBNP.CMI <- biosim_cmi(biosim_input.twolocs)
+  write.csv(JNPBNP.CMI,"JNPBNPCMI.csv")
+}
+JNPBNP.CMI <- read.csv("JNPBNPCMI.csv")
 
 JNPBNP.CMI <- JNPBNP.CMI %>%
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
@@ -1129,10 +1156,6 @@ JNPBNP.CMI.plot<-ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) +
     color = "Location"
   )
 
-JNPBNP.CMI %>%
-  group_by(location) %>%
-  summarise(mean_CMI = mean(CMI, na.rm = TRUE))
-
 ggsave(
   file.path(figPath, "JNPBNP_CMI_ts.png"),
   JNPBNP.CMI.plot,
@@ -1151,4 +1174,48 @@ banff.cmi <- subset(JNPBNP.CMI, location == "Banff")
 cor.jb <- cor(banff.cmi$CMI, jasper.cmi$CMI, use = "complete.obs")
 cat("The Jasper-Banff CMI correlation is:", cor.jb, "\n")
 
+#Re-visit the r vs Psurv regression relationship (JNPBNP.year.mod) and include CMI (aggregated by year)
+# data = JNPBNP.by.year
+JNPBNP.by.year
+summary(JNPBNP.year.mod)
+JNPBNP.by.year.plot
 
+JNPBNP.by.year$beetle_yr
+
+jasper_cmi_subset <- jasper.cmi |>
+  filter(Year %in% JNPBNP.by.year$beetle_yr) |>
+  select(Year, CMI)
+banff_cmi_subset <- banff.cmi |>
+  filter(Year %in% JNPBNP.by.year$beetle_yr) |>
+  select(Year, CMI)
+
+mean_cmi <- tibble(
+  Year = jasper_cmi_subset$Year,
+  CMI_mean = (jasper_cmi_subset$CMI + banff_cmi_subset$CMI) / 2
+)
+JNPBNP.by.year <- JNPBNP.by.year |>
+  left_join(mean_cmi, by = c("beetle_yr" = "Year"))
+
+JNPBNP.year.mod <- lm(mean_r ~ mean_Psurv+CMI_mean, data = JNPBNP.by.year)
+summary(JNPBNP.year.mod)
+
+## Generating Final Figures
+
+## Figure 1: map of infested areas over DEM
+
+## Figure 2: 3-panel time-series
+# (a) counts and areas infested 1999-2023
+# (b) Psurv 1999-2024
+# (c) CMI 1999-2024
+
+## Figure 3: 2-panel boxplot in time (2014-2022) of
+# (a) r-value
+# (b) Psurv (at plots)
+
+## Figure 4: 3-panel plot of:
+# (a) r-value vs Psurv (scatter)
+# (b) r-value vs. Psurv (aggregated by year)
+# (c) Rt vs rt (aggregated by year)
+
+## Figure 5
+# GAMS model output
