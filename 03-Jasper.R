@@ -71,6 +71,8 @@ library(sf)
 library(stringr) # needed for wrangling Jasper r-values from shapefiles
 library(terra)
 library(tidyr)
+library(tibble)
+library(mgcv) #needed for gams
 
 # setup ---------------------------------------------------------------------------------------
 
@@ -579,7 +581,6 @@ print("Provided r-value")
 sd(jasper_custom_rvalues$r_value, na.rm = TRUE) / mean(jasper_custom_rvalues$r_value, na.rm = TRUE)
 
 ## Build a preliminary gams model of r-values 2014-2016
-library(mgcv)
 
 gam_model.jasper_custom <- gam(
   log(r_tree + 1) ~
@@ -836,19 +837,19 @@ JNPBNP.locyears <- bind_rows(
 ## input tibble: JNPBNP.locyears
 ## Columns: lat, lon, beetle_yr, elevation
 
-## Step 1: Add survey year (BioSIM MPBwk uses beetle year and survey year to define the winter)
+## Add survey year (BioSIM MPBwk uses beetle year and survey year to define the winter)
 JNPBNP.locyears <- JNPBNP.locyears |>
   mutate(survey_yr = beetle_yr + 1)
 
-## Step 2: Create a unique ID for each location-year combo
+## Create a unique ID for each location-year combo
 JNPBNP.locyears <- JNPBNP.locyears |>
   mutate(loc_id = paste0("loc_", row_number()))
 
-## Step 3: Reorder and rename columns for clarity
+## Reorder and rename columns for clarity
 biosim_input <- JNPBNP.locyears |>
   dplyr::select(loc_id, lat, lon, elevation, survey_yr)
 
-## Step 4: Export to CSV for BioSIM batch processing
+## Export to CSV for BioSIM batch processing
 ## This file can be used in BioSIM's batch mode or uploaded via its web interface
 write.csv(biosim_input, "biosim_input_JNPBNP.csv")
 
@@ -1068,7 +1069,6 @@ ggsave(
 ## Also, better axes
 
 ## run BioSIM on the Jasper/Banff locations
-library(tibble)
 
 two_locations <- tibble(
   id = c("Banff_Airport", "Jasper_Airport"),
@@ -1079,21 +1079,21 @@ two_locations <- tibble(
 
 years <- 1998:2023
 
-biosim_input.twolocs <- two_locations %>%
+biosim_input.JNPBNP <- two_locations %>%
   crossing(beetle_yr = years) %>%
   arrange(id, beetle_yr)
 
-if(!fileExists("twolocs.MPBwkPsurv.csv")) {
-  twolocs.MPBwkPsurv <- mpb_cold_tol(biosim_input.twolocs)
-  write.csv(twolocs.MPBwkPsurv,"twolocs.MPBwkPsurv.csv")
+if(!fileExists("JNPBNP.MPBwkPsurv.csv")) {
+  JNPBNP.MPBwkPsurv <- mpb_cold_tol(biosim_input.JNPBNP)
+  write.csv(JNPBNP.MPBwkPsurv,"JNPBNP.MPBwkPsurv.csv")
 }
-twolocs.MPBwkPsurv <- read.csv("twolocs.MPBwkPsurv.csv")
+JNPBNP.MPBwkPsurv <- read.csv("JNPBNP.MPBwkPsurv.csv")
 
-twolocs.MPBwkPsurv <- twolocs.MPBwkPsurv %>%
+JNPBNP.MPBwkPsurv <- JNPBNP.MPBwkPsurv %>%
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
 
 JNPBNP_1998_2023_Psurv.ts <- ggplot(
-  twolocs.MPBwkPsurv,
+  JNPBNP.MPBwkPsurv,
   aes(x = Year - 1, y = Psurv, color = location)
 ) +
   geom_line(linewidth = 1.2) +
@@ -1121,7 +1121,7 @@ ggsave(
 )
 
 #compute correlation
-twolocs.wide <- twolocs.MPBwkPsurv %>%
+twolocs.wide <- JNPBNP.MPBwkPsurv %>%
   select(Year, location, Psurv) %>%
   pivot_wider(names_from = location, values_from = Psurv)
 
@@ -1130,7 +1130,7 @@ cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
 #CMI
 if(!file_exists("JNPBNPCMI.csv"))
 {
-  JNPBNP.CMI <- biosim_cmi(biosim_input.twolocs)
+  JNPBNP.CMI <- biosim_cmi(biosim_input.JNPBNP)
   write.csv(JNPBNP.CMI,"JNPBNPCMI.csv")
 }
 JNPBNP.CMI <- read.csv("JNPBNPCMI.csv")
@@ -1199,6 +1199,63 @@ JNPBNP.by.year <- JNPBNP.by.year |>
 JNPBNP.year.mod <- lm(mean_r ~ mean_Psurv+CMI_mean, data = JNPBNP.by.year)
 summary(JNPBNP.year.mod)
 
+# Part 4. Modeling Rt directly from Psurv and CMI for Jasper and Banff -------------------------------------------------
+# Recall JB.Rt is the rate of change from year t to t+1 in either tree count or area
+# JNPBNP.CMI is the CMI object 1999-2024
+
+JB.Rt
+head(JNPBNP.CMI)
+head(JNPBNP.MPBwkPsurv)
+
+JB.Rt.long <- JB.Rt |>
+  pivot_longer(cols = c(Rt_Jasper, Rt_Banff),
+               names_to = "location",
+               values_to = "Rt") |>
+  mutate(location = ifelse(location == "Rt_Jasper", "Jasper", "Banff"))
+
+# Summarize CMI by year and location
+cmi_summary <- JNPBNP.CMI |>
+  group_by(Year, location) |>
+  summarise(CMI = mean(CMI, na.rm = TRUE), .groups = "drop")
+
+# Summarize Psurv by year and location
+psurv_summary <- JNPBNP.MPBwkPsurv |>
+  group_by(Year, location) |>
+  summarise(Psurv = mean(Psurv, na.rm = TRUE), .groups = "drop")
+
+# Join the two summaries into one tibble
+climate_drivers <- left_join(cmi_summary, psurv_summary, by = c("Year", "location")) |>
+  rename(year = Year)
+
+Rt_model_data <- Rt_model_data |>
+  arrange(location, year) |>
+  group_by(location) |>
+  mutate(
+    CMI_lag = lag(CMI),
+    Psurv_lag = lag(Psurv)
+  ) |>
+  ungroup()
+
+Rt_lm_pooled <- lm(Rt ~ CMI + CMI_lag + Psurv_lag, data = Rt_model_data)
+summary(Rt_lm_pooled)
+
+Rt_model_data_thresh <- Rt_model_data |>
+  mutate(CMI_thresh = CMI_lag < -20)
+
+Rt_thresh_model <- lm(Rt ~ CMI_thresh + Psurv_lag, data = Rt_model_data_thresh)
+summary(Rt_thresh_model)
+
+Rt_gam <- gam(Rt ~ s(CMI_lag) + Psurv_lag, data = Rt_model_data, method = "REML")
+summary(Rt_gam)
+
+Rt_model_data <- Rt_model_data |>
+  mutate(location = factor(location))
+
+Rt_gam_interact <- gam(Rt ~ s(CMI_lag, by = location) + location + Psurv_lag,
+                       data = Rt_model_data,
+                       method = "REML")
+summary(Rt_gam_interact)
+
 ## Generating Final Figures
 
 ## Figure 1: map of infested areas over DEM
@@ -1219,3 +1276,5 @@ summary(JNPBNP.year.mod)
 
 ## Figure 5
 # GAMS model output
+
+## Figure SI1: annual maps of Psurv in areas where r-values were measured
