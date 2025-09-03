@@ -311,6 +311,38 @@ ggsave(
   width = 7
 )
 
+## Compute Rt interannual rate of change in area infested Rt=At+1/At for each area
+## Note the index Rt is unitless, so we can treat tree counts and areas identically.
+
+# Helper function to compute Rt
+compute_rt <- function(x) {
+  c(NA, x[-1] / x[-length(x)])
+}
+
+# Helper function to compute Rt
+compute_rt <- function(x) {
+  c(NA, x[-1] / x[-length(x)])
+}
+
+# Compute Rt for Banff using area if available, else count
+banff_values <- coalesce(ABMtnParksMPB$Banffha, ABMtnParksMPB$BanffCount)
+Rt_Banff <- compute_rt(banff_values)
+
+# Compute Rt for Jasper using area if available, else count
+jasper_values <- coalesce(ABMtnParksMPB$Jasperha, ABMtnParksMPB$JasperCount)
+Rt_Jasper <- compute_rt(jasper_values)
+
+# Combine into a clean tibble
+JB.Rt <- tibble(
+  year = ABMtnParksMPB$year,
+  Rt_Jasper = Rt_Jasper,
+  Rt_Banff = Rt_Banff
+)
+
+JB.Rt.cor<-cor(JB.Rt$Rt_Jasper,JB.Rt$Rt_Banff,use="pairwise.complete.obs")
+cat("The Jasper-Banff correlation in Rt is:",JB.Rt.cor)
+cor.test(JB.Rt$Rt_Jasper, JB.Rt$Rt_Banff)
+
 # Part 2. r-values for Jasper ----------------------------------------------------------------------
 
 ## Processing the source mdb files
@@ -1044,7 +1076,7 @@ JNPBNP_1998_2023_Psurv.ts <- ggplot(
 ) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
-  scale_color_manual(values = c("Banff" = "dodgerblue", "Jasper" = "hotpink")) +
+  scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
   theme_minimal(base_size = 14) +
   theme(
     axis.line = element_line(color = "black"),
@@ -1082,7 +1114,7 @@ JNPBNP.CMI <- JNPBNP.CMI %>%
 JNPBNP.CMI.plot<-ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
-  scale_color_manual(values = c("Jasper" = "hotpink", "Banff" = "dodgerblue")) +
+  scale_color_manual(values = c("Jasper" = "#e75480", "Banff" = "#56B4E9")) +
   theme_minimal(base_size = 14) +
   theme(
     axis.line = element_line(color = "black"),
