@@ -1114,3 +1114,9 @@ JNPBNP.CMI %>%
   summarise(mean_CMI = mean(CMI, na.rm = TRUE)) %>%
   summarise(diff_CMI = diff(mean_CMI))
 
+jasper.cmi <- subset(JNPBNP.CMI, location == "Jasper")
+banff.cmi <- subset(JNPBNP.CMI, location == "Banff")
+cor.jb <- cor(banff.cmi$CMI, jasper.cmi$CMI, use = "complete.obs")
+cat("The Jasper-Banff CMI correlation is:", cor.jb, "\n")
+
+
