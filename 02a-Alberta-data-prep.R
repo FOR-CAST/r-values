@@ -378,7 +378,7 @@ tmin_summary <- site_year__MPBwk_results |>
 ## plot Psurv and Tmin over time
 
 gg_psurv_summary <- ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
-  geom_line(color = "blue", size = 1) +
+  geom_line(color = "blue", linewidth = 1) +
   geom_point(color = "blue", size = 2) +
   geom_ribbon(
     aes(ymin = mean_Psurv - sd_Psurv, ymax = mean_Psurv + sd_Psurv),
@@ -396,7 +396,7 @@ gg_psurv_summary <- ggplot(psurv_summary, aes(x = Year, y = mean_Psurv)) +
 ggsave(file.path(figPath, "mean_Psurv_over_time.png"), gg_psurv_summary)
 
 gg_tmin_summary <- ggplot(tmin_summary, aes(x = Year, y = mean_Tmin)) +
-  geom_line(color = "blue", size = 1) +
+  geom_line(color = "blue", linewidth = 1) +
   geom_point(color = "blue", size = 2) +
   geom_ribbon(
     aes(ymin = mean_Tmin - sd_Tmin, ymax = mean_Tmin + sd_Tmin),
