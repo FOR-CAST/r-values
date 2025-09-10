@@ -371,7 +371,7 @@ local({
       }) |>
       purrr::list_rbind()
 
-    write.csv(abr, file = _, row.names = FALSE)
+    write.csv(abr, file = all_mpb_site_trees_cleaned_csv, row.names = FALSE)
   }
 })
 

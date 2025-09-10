@@ -57,6 +57,42 @@ if (inherits(ab_sf, "try-error")) {
   rm(gadm_can_rds)
 }
 
+## National Parks ------------------------------------------------------------------------------
+
+latlon <- crs("epsg:4326")
+targetCRS <- crs(paste(
+  "+proj=aea +lat_1=49 +lat_2=67 +lat_0=0 +lon_0=-112 +x_0=0 +y_0=0",
+  "+datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"
+))
+
+## Banff and Jasper National Parks
+## see: https://hub.arcgis.com/datasets/dd8cd91871534c9aa34310eed84fe076_1/about
+np_url <- "https://drive.google.com/file/d/1Rz8BzyWtirXuCbAxx8MqeJs2KlNYO9eh/"
+np_file <- "National_Parks_and_National_Park_Reserves_of_Canada_Legislative_Boundaries"
+np_fext <- c("cpg", "dbf", "prj", "shp", "shx")
+np_zip <- file.path(dataPath, paste0(np_file, ".zip"))
+
+if (!file.exists(np_zip)) {
+  googledrive::drive_download(googledrive::as_id(np_url), np_zip)
+}
+
+if (!all(file.exists(file.path(dataPath, paste0(np_file, ".", np_fext))))) {
+  archive::archive_extract(np_zip, dataPath)
+}
+
+natl_prks.latlon <- st_read(file.path(dataPath, paste0(np_file, ".shp")))
+natl_prks <- st_transform(natl_prks.latlon, targetCRS)
+
+np_banff.latlon <- natl_prks.latlon[
+  natl_prks.latlon$adminAreaN == "BANFF NATIONAL PARK OF CANADA",
+]
+np_banff <- natl_prks[natl_prks$adminAreaN == "BANFF NATIONAL PARK OF CANADA", ]
+
+np_jasper.latlon <- natl_prks.latlon[
+  natl_prks.latlon$adminAreaN == "JASPER NATIONAL PARK OF CANADA",
+]
+np_jasper <- natl_prks[natl_prks$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
+
 # pine maps -----------------------------------------------------------------------------------
 
 ## TODO: issue #3

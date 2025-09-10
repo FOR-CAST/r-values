@@ -1,3 +1,9 @@
+# prerequisites -------------------------------------------------------------------------------
+
+if (FALSE) {
+  webshot::install_phantomjs() ## first time only
+}
+
 # packages ------------------------------------------------------------------------------------
 
 ## data management
@@ -7,6 +13,7 @@ library(googledrive)
 ## data wrangling
 library(dplyr)
 library(purrr)
+library(stringr)
 library(tidyr)
 
 ## GIS packages
@@ -16,6 +23,8 @@ library(terra)
 ## plotting
 library(ggplot2)
 library(ggspatial)
+library(ggtext)
+library(scales) ## used for log-scale plotting
 
 # setup ---------------------------------------------------------------------------------------
 
@@ -100,3 +109,6 @@ source("02b-Alberta-explore.R")
 
 ##
 source("02c-Alberta-analyses.R")
+
+##
+source("03-Jasper.R")
