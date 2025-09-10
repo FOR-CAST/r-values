@@ -1283,6 +1283,26 @@ plot_ly() |>
 
 ## Figure 1: map of infested areas over DEM
 
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(elevatr)
+library(raster)
+library(ggspatial)
+library(purrr)
+
+MPB.shpfilesdir<-file.path(dataPath,"Brett/MtnParksShapefiles")
+shp_files <- list.files(MPB.shpfilesdir, pattern = "\\.shp$", full.names = TRUE)
+
+lapply(shp_files, function(f) {
+  cat("\n---", basename(f), "---\n")
+  shp <- st_read(f, quiet = TRUE)
+  print(names(shp))
+})
+
+#These are r-values attribute tables, not At infestation polygons.
+
+
 ## Figure 2: 3-panel time-series
 # (a) counts and areas infested 1999-2023
 # (b) Psurv 1999-2024
