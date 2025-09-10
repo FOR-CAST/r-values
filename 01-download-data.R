@@ -139,10 +139,12 @@ local({
     )
     fileNames <- XML::getHTMLLinks(fileURLs)
     fileNames <- grep("(Species_Pinu_Ban|Species_Pinu_Con)_.*\\.tif", fileNames, value = TRUE)
-    utils::download.file(
-      url = paste0(url_beaudoin2014, fileNames),
-      destfile = file.path(dataPath, fileNames)
-    )
+    lapply(fileNames, function(f) {
+      utils::download.file(
+        url = paste0(url_beaudoin2014, f),
+        destfile = file.path(dataPath, f)
+      )
+    })
 
     beaudoin2014 <- file.path(dataPath, fileNames) |>
       grep("[.]tif$", x = _, value = TRUE) |>
