@@ -118,9 +118,10 @@ ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAr
   read.table(header = TRUE)
 
 
-ABMtnParksMPB <- ABMtnParksMPB %>%
+ABMtnParksMPB <- ABMtnParksMPB |>
   mutate(
-    Jasperha = ifelse(year == 2013, 1123, Jasperha)  # Adjusted from 123 to 1123 due to likely underestimation at outbreak start
+    ## Adjusted from 123 to 1123 due to likely underestimation at outbreak start
+    Jasperha = ifelse(year == 2013, 1123, Jasperha)
   )
 
 if (.Platform$OS == "windows") {

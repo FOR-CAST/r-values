@@ -55,6 +55,12 @@ Donec scelerisque lacus a accumsan suscipit.
     renv::restore()
     ```
 
+3. Install PhantomJS:
+
+    ```r
+    webshot::install_phantomjs()
+    ```
+
 ## Running the code
 
-*TODO*
+Open the primary script (`00-main.R`) and run the lines sequentially.
