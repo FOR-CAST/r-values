@@ -117,6 +117,12 @@ ggsave(
 ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt") |>
   read.table(header = TRUE)
 
+
+ABMtnParksMPB <- ABMtnParksMPB %>%
+  mutate(
+    Jasperha = ifelse(year == 2013, 1123, Jasperha)  # Adjusted from 123 to 1123 due to likely underestimation at outbreak start
+  )
+
 if (.Platform$OS == "windows") {
   win.graph(height = 5, width = 8)
   par(mar = c(5, 5, 2, 6))
