@@ -1357,9 +1357,9 @@ ggplot() +
   geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
   scale_fill_gradientn(colors = terrain.colors(10)) +
   geom_sf(data = parks, fill = NA, color = "black") +
-  geom_sf(data = mpb_jb, fill = "red", alpha = 0.6) +
+  geom_sf(data = mpb_jb, fill = "red", color = "red") +
   theme_minimal() +
-  labs(title = "MPB in Japser & Banff, 2013-2023",
+  labs(title = "MPB in Jasper & Banff National Parks, 2013-2023",
        fill = "Elevation (m)") +
   coord_sf()
 
