@@ -93,6 +93,63 @@ np_jasper.latlon <- natl_prks.latlon[
 ]
 np_jasper <- natl_prks[natl_prks$adminAreaN == "JASPER NATIONAL PARK OF CANADA", ]
 
+## Combine parks
+parks <- rbind(np_banff, np_jasper)
+
+## Get bounding box and convert to sf polygon
+bbox_parks <- st_bbox(parks) |> st_as_sfc() |> st_sf()
+
+## highways and roads -------------------------------------------------------------------------
+
+nrn_dir <- file.path(dataPath, "NRCan") |> fs::dir_create()
+nrn_url <- "https://geo.statcan.gc.ca/nrn_rrn/ab/nrn_rrn_ab_SHAPE.zip"
+nrn_zip <- file.path(dirname(nrn_dir), basename(nrn_url))
+
+if (!file.exists(nrn_zip)) {
+  download.file(nrn_url, destfile = nrn_zip)
+  archive::archive_extract(nrn_zip, nrn_dir)
+}
+
+ab_roads <- file.path(
+  nrn_dir,
+  "NRN_RRN_AB_SHAPE",
+  "NRN_AB_17_0_SHAPE_en",
+  "NRN_AB_17_0_ROADSEG.shp"
+) |>
+  st_read() |>
+  st_transform(st_crs(parks))
+
+## Filter for major highways only
+ab_roads_clipped <- ab_roads |>
+  filter(
+    RTNUMBER1 %in%
+      c("1", "16", "93") |
+      grepl("Highway 1|Highway 16|Highway 93", R_STNAME_C, ignore.case = TRUE)
+  ) |>
+  st_intersection(bbox_parks)
+
+## water bodies -------------------------------------------------------------------------------
+
+## see https://ftp.maps.canada.ca/pub/nrcan_rncan/vector/canvec/fgdb/Hydro/
+ab_hydro_dir <- file.path(dataPath, "NRCan", "canvec_250K_AB_Hydro") |> fs::dir_create()
+ab_hydro_url <- "https://ftp.maps.canada.ca/pub/nrcan_rncan/vector/canvec/fgdb/Hydro/canvec_250K_AB_Hydro_fgdb.zip"
+
+ab_hydro_zip <- file.path(dirname(ab_hydro_dir), basename(ab_hydro_url))
+ab_hydro_gdb <- file.path(ab_hydro_dir, "canvec_250K_AB_Hydro.gdb")
+
+if (!file.exists(ab_hydro_zip)) {
+  download.file(ab_hydro_url, destfile = ab_hydro_zip)
+}
+
+if (!file.exists(ab_hydro_gdb)) {
+  archive::archive_extract(ab_hydro_zip, dir = ab_hydro_dir)
+}
+
+ab_hydro <- sf::st_read(ab_hydro_gdb, layer = "waterbody_2") |>
+  sf::st_transform(st_crs(parks))
+
+ab_hydro_clipped <- st_intersection(ab_hydro, bbox_parks)
+
 # pine maps -----------------------------------------------------------------------------------
 
 ## TODO: issue #3
