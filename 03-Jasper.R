@@ -1378,9 +1378,9 @@ ggsave(
   width = 10
 )
 
-## TODO:
+# Generate Final Figures ----------------------------------------------------------------------
 
-## Generating Final Figures
+## TODO:
 
 ## Figure 1: map of infested areas over DEM
 
