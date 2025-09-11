@@ -1355,7 +1355,6 @@ mpb.map <- ggplot() +
 mpb.map <- mpb.map +
   geom_sf(data = roads_clipped, color = "gray40", size = 0.3)
 
-
 # Create park label points
 townsites <- data.frame(
   name = c("Banff", "Jasper"),
@@ -1388,6 +1387,71 @@ mpb.map <- mpb.map +
     plot.background = element_rect(fill = "white")
   )
 
+## Note: Areas outside the Mountain Parks are shaded to emphasize the scope of the outbreak
+## within park boundaries. MPB spread into BC occurred prior to 2013 and is
+## not the focus of this analysis.
+# Create a mask polygon
+elev_extent <- st_as_sfc(st_bbox(elev))
+mask <- st_difference(elev_extent, st_union(parks))
+
+# Add to map
+mpb.map <- mpb.map +
+  geom_sf(data = mask, fill = "white", alpha = 0.6, color = NA)
+
+#Add water to the plot
+index_url <- "https://ftp.maps.canada.ca/pub/nrcan_rncan/vector/geobase_nhn_rhn/index/NHN_INDEX_WORKUNIT_LIMIT_2.zip"
+index_zip <- file.path(dataPath, "NHN_INDEX_WORKUNIT_LIMIT_2.zip")
+download.file(index_url, destfile = index_zip, mode = "wb", method = "curl")
+unzip(index_zip, exdir = file.path(dataPath, "NHN_INDEX"))
+
+index_path <- file.path(dataPath, "NHN_INDEX", "NHN_INDEX_22_INDEX_WORKUNIT_LIMIT_2.shp")
+nhn_index <- st_read(index_path)
+
+elev_extent <- st_as_sfc(st_bbox(elev))
+elev_extent_ll <- st_transform(elev_extent, st_crs(nhn_index))
+
+bbox <- st_bbox(elev)
+
+nhn_hits <- nhn_index[
+  nhn_index$WEST_LONGITUDE <= bbox$xmax &
+    nhn_index$EAST_LONGITUDE >= bbox$xmin &
+    nhn_index$SOUTH_LATITUDE <= bbox$ymax &
+    nhn_index$NORTH_LATITUDE >= bbox$ymin, ]
+
+# Initialize empty list to collect water features
+water_list <- list()
+
+# Loop through all NHN units
+for (i in seq_len(nrow(nhn_hits))) {
+  nhn_file <- nhn_hits$DATASETNAM[i]
+  nhn_zip <- paste0(nhn_file, ".zip")
+  nhn_url <- paste0("https://ftp.maps.canada.ca/pub/nrcan_rncan/vector/geobase_nhn_rhn/shp_en/", nhn_zip)
+  dest_file <- file.path(dataPath, nhn_zip)
+  unzip_dir <- file.path(dataPath, nhn_file)
+
+  # Download and unzip
+  download.file(nhn_url, destfile = dest_file, mode = "wb", method = "curl")
+  unzip(dest_file, exdir = unzip_dir)
+
+  # Load and transform waterbody layer
+  water_path <- file.path(unzip_dir, paste0(nhn_file, "_WATERBODY.shp"))
+  if (file.exists(water_path)) {
+    water <- st_read(water_path, quiet = TRUE)
+    water <- st_transform(water, st_crs(elev))
+
+    # Clip to elevation extent
+    water_clipped <- st_intersection(water, elev_extent)
+    water_list[[length(water_list) + 1]] <- water_clipped
+  }
+}
+
+# Combine all water features
+all_water <- do.call(rbind, water_list)
+
+# Add to map
+mpb.map <- mpb.map +
+  geom_sf(data = all_water, fill = "lightblue", alpha = 0.4, color = NA)
+
 ggsave(
   file.path(figPath, "MPB_map_banff_jasper_2013-23.png"),
   mpb.map,
@@ -1400,6 +1464,10 @@ ggsave(
 ## Generating Final Figures
 
 ## Figure 1: map of infested areas over DEM
+
+ggsave(
+  file.path(figPath, "Fig1_MPB_map_banff_jasper_2013-23.png"),
+  mpb.map,  height = 12, width = 12, dpi=300)
 
 ## Figure 2: 3-panel time-series
 # (a) counts and areas infested 1999-2023
