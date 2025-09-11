@@ -1287,58 +1287,12 @@ library(raster)
 library(ggspatial)
 library(purrr)
 
-MPB.shpfilesdir<-file.path(dataPath,"Brett/MtnParksShapefiles")
-shp_files <- list.files(MPB.shpfilesdir, pattern = "\\.shp$", full.names = TRUE)
-
-lapply(shp_files, function(f) {
-  cat("\n---", basename(f), "---\n")
-  shp <- st_read(f, quiet = TRUE)
-  print(names(shp))
-})
-
-#These are r-values attribute tables, not At infestation polygons.
-
-MPB.gdbfiledir<-file.path(dataPath,"MPB_AerialSurvey_2011toCurrent/Data")
-gdb_file <- list.files(MPB.gdbfiledir, pattern = "\\.gdb$", full.names = TRUE)
-
-mpb.gdb<- "C:/Users/bcooke/Documents/Barry/Git/r-values/data/MPB_AerialSurvey_2011toCurrent/Data/MPB_AerialSurvey_2011toCurrent.gdb"
-st_layers(mpb.gdb)
-
-mpb_2014 <- st_read(gdb_file, layer = "ab_0ufohn14p")
-plot(st_geometry(mpb_2014))
-
-ggplot() +
-  geom_sf(data = ab_sf) +  # Alberta boundary or base layer
-  geom_sf(data = np_banff, col = "blue") +  # Banff National Park
-  geom_sf(data = np_jasper, col = "darkgreen") +  # Jasper National Park
-  geom_sf(data = mpb_2014, aes(fill = "2014"), alpha = 0.6) +  # MPB polygons
-  theme_minimal() +
-  labs(title = "Mountain Pine Beetle Infestation - 2014",
-       fill = "Year") +
-  coord_sf()
-
-MPB.mxdfiledir2013<-file.path(dataPath,"NationalParks/2013 report maps")
-mxd_file2013 <- list.files(MPB.mxdfiledir2013, pattern = "\\.mxd", full.names = TRUE)
-
 MPB.shpdir<-file.path(dataPath,"Olesinski/")
 JP.shpfile<- list.files(MPB.shpdir, pattern = "\\.shp", full.names = TRUE)
-
 mpb_jb <- st_read(JP.shpfile[1])
 glimpse(mpb_jb)
 
-ggplot() +
-  geom_sf(data = ab_sf) +  # Alberta boundary or base layer
-  geom_sf(data = np_banff, col = "blue") +  # Banff National Park
-  geom_sf(data = np_jasper, col = "darkgreen") +  # Jasper National Park
-  geom_sf(data = mpb_jb, fill = "red", alpha = 0.6) +  # MPB polygons in red
-  theme_minimal() +
-  labs(title = "Mountain Pine Beetle 2012–2023") +
-  coord_sf()
-
 # Get elevations
-library(elevatr)
-library(raster)
-
 # Combine parks
 parks <- rbind(np_banff, np_jasper)
 
@@ -1353,7 +1307,7 @@ elev <- get_elev_raster(locations = bbox_poly, z = 9, clip = "bbox")
 elev_df <- as.data.frame(rasterToPoints(elev))
 colnames(elev_df) <- c("x", "y", "elevation")
 
-ggplot() +
+mpb.map<-ggplot() +
   geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
   scale_fill_gradientn(colors = terrain.colors(10)) +
   geom_sf(data = parks, fill = NA, color = "black") +
@@ -1363,7 +1317,12 @@ ggplot() +
        fill = "Elevation (m)") +
   coord_sf()
 
-
+ggsave(
+  file.path(figPath, "MPB_map_banff_jasper_2013-23.png"),
+  mpb.map,
+  height = 10,
+  width = 10
+)
 
 ## TODO:
 
