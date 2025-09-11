@@ -1280,18 +1280,6 @@ plot_ly() |>
 
 ## Figure 1: map of infested areas over DEM
 
-MPB.shpfilesdir <- file.path(dataPath, "Brett/MtnParksShapefiles")
-shp_files <- list.files(MPB.shpfilesdir, pattern = "\\.shp$", full.names = TRUE)
-
-lapply(shp_files, function(f) {
-  cat("\n---", basename(f), "---\n")
-  shp <- st_read(f, quiet = TRUE)
-  print(names(shp))
-})
-
-MPB.mxdfiledir2013 <- file.path(dataPath, "NationalParks/2013 report maps")
-mxd_file2013 <- list.files(MPB.mxdfiledir2013, pattern = "\\.mxd", full.names = TRUE)
-
 mpb_jb <- st_read(MPB_Jasper_Banff_2012_2023_shp) |>
   st_zm() |>
   st_transform(targetCRS)
@@ -1322,18 +1310,23 @@ elev <- elevatr::get_elev_raster(locations = bbox_poly, z = 9, clip = "bbox")
 elev_df <- as.data.frame(raster::rasterToPoints(elev))
 colnames(elev_df) <- c("x", "y", "elevation")
 
-if (plot_all) {
-  ggplot() +
-    geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
-    scale_fill_gradientn(colors = terrain.colors(10)) +
-    geom_sf(data = parks, fill = NA, color = "black") +
-    geom_sf(data = mpb_jb, fill = "red", color = "red") +
-    theme_minimal() +
-    labs(title = "MPB in Jasper & Banff National Parks, 2013-2023", fill = "Elevation (m)") +
-    xlab("Longitude") +
-    ylab("Latitude") +
-    coord_sf()
-}
+mpb.map <- ggplot() +
+  geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
+  scale_fill_gradientn(colors = terrain.colors(10)) +
+  geom_sf(data = parks, fill = NA, color = "black") +
+  geom_sf(data = mpb_jb, fill = "red", color = "red") +
+  theme_minimal() +
+  labs(title = "MPB in Jasper & Banff National Parks, 2013-2023", fill = "Elevation (m)") +
+  xlab("Longitude") +
+  ylab("Latitude") +
+  coord_sf()
+
+ggsave(
+  file.path(figPath, "MPB_map_banff_jasper_2013-23.png"),
+  mpb.map,
+  height = 10,
+  width = 10
+)
 
 ## TODO:
 
