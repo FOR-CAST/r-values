@@ -1310,16 +1310,83 @@ elev <- elevatr::get_elev_raster(locations = bbox_poly, z = 9, clip = "bbox")
 elev_df <- as.data.frame(raster::rasterToPoints(elev))
 colnames(elev_df) <- c("x", "y", "elevation")
 
+# Define download URL and destination
+nrn_url <- "https://geo.statcan.gc.ca/nrn_rrn/ab/nrn_rrn_ab_SHAPE.zip"
+nrn_zip <- file.path(dataPath, "NRCan", "NRN_AB_roads.zip")
+nrn_dir <- file.path(dataPath, "NRCan", "NRN_AB_roads")
+
+# Create directory if needed
+dir.create(nrn_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Download and unzip
+download.file(nrn_url, destfile = nrn_zip, mode = "wb")
+unzip(nrn_zip, exdir = nrn_dir)
+
+# Read shapefile
+shp_dir <- file.path(nrn_dir,"NRN_RRN_AB_SHAPE/NRN_AB_17_0_SHAPE_en/")
+roads_path <- file.path(shp_dir, "NRN_AB_17_0_ROADSEG.shp")
+roads_ab <- st_read(roads_path)
+roads_ab <- st_transform(roads_ab, st_crs(parks))
+# Filter for major highways only
+major_highways <- roads_ab %>%
+  filter(RTNUMBER1 %in% c("1", "16", "93") |
+           grepl("Highway 1|Highway 16|Highway 93", R_STNAME_C, ignore.case = TRUE))
+
+roads_clipped <- st_intersection(major_highways, bbox_poly)
+
+mpb_jb$MPB <- "MPB" #add an item for the legend
+
 mpb.map <- ggplot() +
   geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
-  scale_fill_gradientn(colors = terrain.colors(10)) +
+  scale_fill_gradientn(colors = terrain.colors(10), name = "Elevation (m") +
   geom_sf(data = parks, fill = NA, color = "black") +
-  geom_sf(data = mpb_jb, fill = "red", color = "red") +
+  geom_sf(data = mpb_jb, aes(color = MPB), fill = "red") +
+  scale_color_manual(
+    name = NULL,
+    values = c("MPB" = "red"),
+    guide = guide_legend(override.aes = list(fill = "red"))
+  ) +
   theme_minimal() +
-  labs(title = "MPB in Jasper & Banff National Parks, 2013-2023", fill = "Elevation (m)") +
+  labs(title = "MPB in Jasper & Banff National Parks, 2013–2023") +
   xlab("Longitude") +
   ylab("Latitude") +
   coord_sf()
+
+mpb.map <- mpb.map +
+  geom_sf(data = roads_clipped, color = "gray40", size = 0.3)
+
+
+# Create park label points
+townsites <- data.frame(
+  name = c("Banff", "Jasper"),
+  x = c(-115.57, -118.08),
+  y = c(51.176, 52.873)
+)
+
+# Convert to sf object
+townsites_sf <- st_as_sf(townsites, coords = c("x", "y"), crs = 4326)
+townsites_sf <- st_transform(townsites_sf, st_crs(roads_ab))
+
+# Add to map
+mpb.map <- mpb.map +
+  # White dot with black outline
+  geom_sf(data = townsites_sf, shape = 21, fill = "white", color = "black", size = 3, stroke = 1) +
+  geom_sf_text(data = townsites_sf, aes(label = name),
+               nudge_y = 10000,  # adjust as needed for spacing
+               size = 5, fontface = "bold", color = "black") +
+  annotation_north_arrow(
+    location = "tr",  # top right corner
+    which_north = "true",  # geographic north
+    style = north_arrow_fancy_orienteering,
+    height = unit(1.5, "cm"),
+    width = unit(1.5, "cm")
+  ) +
+  annotation_scale(location = "bl", width_hint = 0.3) +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white")
+  )
 
 ggsave(
   file.path(figPath, "MPB_map_banff_jasper_2013-23.png"),
