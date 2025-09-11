@@ -212,3 +212,21 @@ local({
     archive::archive_extract(extracted_mdb_tables_zip, outputPath)
   }
 })
+
+
+# Olesinski Jasper Banff 2012-2023 ------------------------------------------------------------
+
+MPB_Jasper_Banff_2012_2023_zip <- file.path(dataPath, "MPB_Jasper_Banff_2012_2023.zip")
+MPB_Jasper_Banff_2012_2023_shp <- file.path(
+  dataPath,
+  "MPB_Jasper_Banff_2012_2023",
+  "MPB_Jasper_Banff_2012_2023.shp"
+)
+
+local({
+  if (!file.exists(MPB_Jasper_Banff_2012_2023_zip)) {
+    googledrive::as_id("1TwBJyv-7lgR2GJEN098yYQuflRO5hw_D") |>
+      googledrive::drive_download(path = MPB_Jasper_Banff_2012_2023_zip)
+    archive::archive_extract(MPB_Jasper_Banff_2012_2023_zip, dataPath)
+  }
+})

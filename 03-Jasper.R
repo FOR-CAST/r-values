@@ -199,7 +199,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ) +
 
   ## Outbreak onset marker
-  geom_vline(xintercept = 2012.5, linetype = "dotted", size = 1.5) +
+  geom_vline(xintercept = 2012.5, linetype = "dotted", linewidth = 1.5) +
 
   ## Log-scaled y-axis with natural tick labels
   scale_y_continuous(
@@ -912,14 +912,14 @@ stopifnot(
   nrow(JNPBNP.r) == nrow(JNPBNP),
   all(JNPBNP.r$KeyID %in% JNPBNP$KeyID),
   all.equal(
-    as.data.frame(JNPBNP.r |> select(lat, lon, beetle_yr) |> distinct()),
-    as.data.frame(JNPBNP |> select(lat, lon, beetle_yr) |> distinct())
+    as.data.frame(JNPBNP.r |> dplyr::select(lat, lon, beetle_yr) |> distinct()),
+    as.data.frame(JNPBNP |> dplyr::select(lat, lon, beetle_yr) |> distinct())
   )
 )
 
 ## modelling and plotting rt (in JNPBNP.r) on Psurv (in JNPBNP)
 JNPBNP.full <- JNPBNP.r |>
-  left_join(JNPBNP |> select(KeyID, Psurv), by = "KeyID")
+  left_join(JNPBNP |> dplyr::select(KeyID, Psurv), by = "KeyID")
 
 JNPBNP.mod <- lm(r_value ~ Psurv, data = JNPBNP.full)
 summary(JNPBNP.mod)
@@ -1039,7 +1039,7 @@ ggsave(
 
 ## compute correlation
 twolocs.wide <- JNPBNP.MPBwkPsurv |>
-  select(Year, location, Psurv) |>
+  dplyr::select(Year, location, Psurv) |>
   pivot_wider(names_from = location, values_from = Psurv)
 
 cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
@@ -1099,11 +1099,11 @@ JNPBNP.by.year.plot
 JNPBNP.by.year$beetle_yr
 
 jasper_cmi_subset <- jasper.cmi |>
-  filter(Year %in% JNPBNP.by.year$beetle_yr) |>
-  select(Year, CMI)
+  dplyr::filter(Year %in% JNPBNP.by.year$beetle_yr) |>
+  dplyr::select(Year, CMI)
 banff_cmi_subset <- banff.cmi |>
-  filter(Year %in% JNPBNP.by.year$beetle_yr) |>
-  select(Year, CMI)
+  dplyr::filter(Year %in% JNPBNP.by.year$beetle_yr) |>
+  dplyr::select(Year, CMI)
 
 mean_cmi <- tibble(
   Year = jasper_cmi_subset$Year,
@@ -1279,15 +1279,8 @@ plot_ly() |>
   )
 
 ## Figure 1: map of infested areas over DEM
-library(sf)
-library(dplyr)
-library(ggplot2)
-library(elevatr)
-library(raster)
-library(ggspatial)
-library(purrr)
 
-MPB.shpfilesdir<-file.path(dataPath,"Brett/MtnParksShapefiles")
+MPB.shpfilesdir <- file.path(dataPath, "Brett/MtnParksShapefiles")
 shp_files <- list.files(MPB.shpfilesdir, pattern = "\\.shp$", full.names = TRUE)
 
 lapply(shp_files, function(f) {
@@ -1296,74 +1289,51 @@ lapply(shp_files, function(f) {
   print(names(shp))
 })
 
-#These are r-values attribute tables, not At infestation polygons.
-
-MPB.gdbfiledir<-file.path(dataPath,"MPB_AerialSurvey_2011toCurrent/Data")
-gdb_file <- list.files(MPB.gdbfiledir, pattern = "\\.gdb$", full.names = TRUE)
-
-mpb.gdb<- "C:/Users/bcooke/Documents/Barry/Git/r-values/data/MPB_AerialSurvey_2011toCurrent/Data/MPB_AerialSurvey_2011toCurrent.gdb"
-st_layers(mpb.gdb)
-
-mpb_2014 <- st_read(gdb_file, layer = "ab_0ufohn14p")
-plot(st_geometry(mpb_2014))
-
-ggplot() +
-  geom_sf(data = ab_sf) +  # Alberta boundary or base layer
-  geom_sf(data = np_banff, col = "blue") +  # Banff National Park
-  geom_sf(data = np_jasper, col = "darkgreen") +  # Jasper National Park
-  geom_sf(data = mpb_2014, aes(fill = "2014"), alpha = 0.6) +  # MPB polygons
-  theme_minimal() +
-  labs(title = "Mountain Pine Beetle Infestation - 2014",
-       fill = "Year") +
-  coord_sf()
-
-MPB.mxdfiledir2013<-file.path(dataPath,"NationalParks/2013 report maps")
+MPB.mxdfiledir2013 <- file.path(dataPath, "NationalParks/2013 report maps")
 mxd_file2013 <- list.files(MPB.mxdfiledir2013, pattern = "\\.mxd", full.names = TRUE)
 
-MPB.shpdir<-file.path(dataPath,"Olesinski/")
-JP.shpfile<- list.files(MPB.shpdir, pattern = "\\.shp", full.names = TRUE)
-
-mpb_jb <- st_read(JP.shpfile[1])
+mpb_jb <- st_read(MPB_Jasper_Banff_2012_2023_shp) |>
+  st_zm() |>
+  st_transform(targetCRS)
 glimpse(mpb_jb)
 
-ggplot() +
-  geom_sf(data = ab_sf) +  # Alberta boundary or base layer
-  geom_sf(data = np_banff, col = "blue") +  # Banff National Park
-  geom_sf(data = np_jasper, col = "darkgreen") +  # Jasper National Park
-  geom_sf(data = mpb_jb, fill = "red", alpha = 0.6) +  # MPB polygons in red
-  theme_minimal() +
-  labs(title = "Mountain Pine Beetle 2012–2023") +
-  coord_sf()
+if (plot_all) {
+  ggplot() +
+    geom_sf(data = st_transform(ab_sf, targetCRS)) + ## Alberta boundary or base layer
+    geom_sf(data = np_banff, col = "blue") + ## Banff National Park
+    geom_sf(data = np_jasper, col = "darkgreen") + # #Jasper National Park
+    geom_sf(data = mpb_jb, fill = "red", alpha = 0.6) + ## MPB polygons in red
+    theme_minimal() +
+    labs(title = "Mountain Pine Beetle 2012–2023") +
+    coord_sf()
+}
 
-# Get elevations
-library(elevatr)
-library(raster)
-
-# Combine parks
+## Combine parks
 parks <- rbind(np_banff, np_jasper)
 
-# Get bounding box and convert to sf polygon
+## Get bounding box and convert to sf polygon
 bbox <- st_bbox(parks)
 bbox_poly <- st_as_sfc(bbox) |> st_sf()
 
-# Get elevation raster
-elev <- get_elev_raster(locations = bbox_poly, z = 9, clip = "bbox")
+## Get elevation raster
+elev <- elevatr::get_elev_raster(locations = bbox_poly, z = 9, clip = "bbox")
 
-# Convert elevation raster to data frame for ggplot
-elev_df <- as.data.frame(rasterToPoints(elev))
+## Convert elevation raster to data frame for ggplot
+elev_df <- as.data.frame(raster::rasterToPoints(elev))
 colnames(elev_df) <- c("x", "y", "elevation")
 
-ggplot() +
-  geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
-  scale_fill_gradientn(colors = terrain.colors(10)) +
-  geom_sf(data = parks, fill = NA, color = "black") +
-  geom_sf(data = mpb_jb, fill = "red", color = "red") +
-  theme_minimal() +
-  labs(title = "MPB in Jasper & Banff National Parks, 2013-2023",
-       fill = "Elevation (m)") +
-  coord_sf()
-
-
+if (plot_all) {
+  ggplot() +
+    geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
+    scale_fill_gradientn(colors = terrain.colors(10)) +
+    geom_sf(data = parks, fill = NA, color = "black") +
+    geom_sf(data = mpb_jb, fill = "red", color = "red") +
+    theme_minimal() +
+    labs(title = "MPB in Jasper & Banff National Parks, 2013-2023", fill = "Elevation (m)") +
+    xlab("Longitude") +
+    ylab("Latitude") +
+    coord_sf()
+}
 
 ## TODO:
 

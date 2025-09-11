@@ -28,6 +28,9 @@ library(scales) ## used for log-scale plotting
 
 # setup ---------------------------------------------------------------------------------------
 
+sf::sf_proj_network(TRUE)
+sf::sf_use_s2(TRUE)
+
 extract_mdb <- FALSE ## use TRUE to re-extract from raw data sources (Windows only!)
 plot_all <- FALSE ## use TRUE to generate all plots, including exploratory/diagnostic plots
 rerun_all <- FALSE ## re-run all analyses, overwriting existing intermediate and output files
