@@ -1338,7 +1338,7 @@ mpb_jb$MPB <- "MPB" #add an item for the legend
 
 mpb.map <- ggplot() +
   geom_raster(data = elev_df, aes(x = x, y = y, fill = elevation)) +
-  scale_fill_gradientn(colors = terrain.colors(10), name = "Elevation (m") +
+  scale_fill_gradientn(colors = terrain.colors(10), name = "Elevation (m)") +
   geom_sf(data = parks, fill = NA, color = "black") +
   geom_sf(data = mpb_jb, aes(color = MPB), fill = "red") +
   scale_color_manual(
