@@ -1461,7 +1461,7 @@ JNPBNP_Psurv_boxplot.b <- JNPBNP_Psurv_boxplot +
   custom_theme +
   scale_x_discrete(labels = as.character(c(c(2014:2018),c(2020:2021)))) +
   xlab("Year Winter Starts") +
-  ylab("Overwintering Mortality (%)") +
+  ylab("Overwintering Survival (%)") +
   geom_text(data = data.frame(x = 0.75, y = 100),
             aes(x = x, y = y, label = "(b)"),
             inherit.aes = FALSE,
