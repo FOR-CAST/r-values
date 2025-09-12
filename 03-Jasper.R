@@ -996,8 +996,10 @@ two_locations <- tibble(
 
 years <- 1998:2023
 
-biosim_input.JNPBNP <- two_locations |>
-  crossing(beetle_yr = years) |>
+biosim_input.JNPBNP <- tidyr::crossing(
+  two_locations,
+  beetle_yr = years
+) |>
   arrange(id, beetle_yr)
 
 f_JNPBNP.MPBwkPsurv <- file.path(outputPath, "JNPBNP.MPBwkPsurv.csv")
@@ -1381,6 +1383,7 @@ ggsave(
 # Generate Final Figures ----------------------------------------------------------------------
 
 ## TODO:
+library(patchwork)
 
 ## Figure 1: map of infested areas over DEM
 
@@ -1397,9 +1400,34 @@ ggsave(
 # (b) Psurv 1999-2024
 # (c) CMI 1999-2024
 
-AB_mtn_parks_infested_gg
-JNPBNP_1998_2023
-JNPBNP_CMI_ts
+#panel(a) ABMtnParksMPB_plot
+ABMtnParksMPB_plot.a<- ABMtnParksMPB_plot +
+  annotate("text",
+           x = min(ABMtnParksMPB_plot$data$Year),
+           y = max(ABMtnParksMPB_plot$data$Count, na.rm = TRUE) * 400,
+           label = "(a)",
+           hjust = 0, vjust = 1.2, size = 6)
+
+#panel(b) JNPBNP_1998_2023_Psurv.ts
+#remove the title off panel (b)
+JNPBNP_1998_2023_Psurv.ts.b <- JNPBNP_1998_2023_Psurv.ts + labs(title = NULL)
+#insert frame label on (b)
+JNPBNP_1998_2023_Psurv.ts.b <- JNPBNP_1998_2023_Psurv.ts.b +
+  annotate("text", x = min(JNPBNP.MPBwkPsurv$Year) - 1, y = max(JNPBNP.MPBwkPsurv$Psurv),
+           label = "(b)", hjust = 0, vjust = 1.2, size = 6)
+
+#panel(c) JNPBNP_CMI
+JNPBNP.CMI.plot.c <- JNPBNP.CMI.plot + labs(title = NULL)
+JNPBNP.CMI.plot.c<-JNPBNP.CMI.plot.c +
+  annotate("text", x = min(JNPBNP.CMI$Year) - 1, y = max(JNPBNP.CMI$CMI),
+           label = "(c)", hjust = 0, vjust = 1.2, size = 6)
+
+Fig2_three_panel_plot <- ABMtnParksMPB_plot.a /
+  JNPBNP_1998_2023_Psurv.ts.b /
+  JNPBNP.CMI.plot.c
+
+ggsave(file.path(figPath,"Fig2_JNPBNP_ts.png"), plot = Fig2_three_panel_plot, width = 7, height = 9, units = "in", dpi = 300)
+ggsave(file.path(figPath,"Fig2_JNPBNP_ts.pdf"), plot = Fig2_three_panel_plot, width = 7, height = 9, units = "in")
 
 ## Figure 3: 2-panel boxplot in time (2014-2022) of
 # (a) r-value
