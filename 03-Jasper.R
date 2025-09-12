@@ -1437,8 +1437,42 @@ ggsave(file.path(figPath,"Fig2_JNPBNP_ts.png"), plot = Fig2_three_panel_plot, wi
 ggsave(file.path(figPath,"Fig2_JNPBNP_ts.pdf"), plot = Fig2_three_panel_plot, width = 7, height = 9, units = "in")
 
 ## Figure 3: 2-panel boxplot in time (2014-2022) of
-# (a) r-value
-# (b) Psurv (at plots)
+# (a) r-value: JNPBNP_rvalues_boxplot
+# (b) Psurv (at plots): JNPBNP_Psurv_boxplot
+JNPBNP_rvalues_boxplot
+JNPBNP_Psurv_boxplot
+
+custom_theme <- theme(
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.line = element_line(color = "black"),
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 14),
+  plot.title = element_blank(),
+)
+
+#panel (a)
+JNPBNP_rvalues_boxplot.a <- JNPBNP_rvalues_boxplot + custom_theme +
+  xlab("Year of Beetle Attack") +
+  annotate("text", x = "2014", y = Inf, label = "(a)", hjust = -0.2, vjust = 2, size = 5)
+
+#panel (b)
+JNPBNP_Psurv_boxplot.b <- JNPBNP_Psurv_boxplot +
+  custom_theme +
+  scale_x_discrete(labels = as.character(c(c(2014:2018),c(2020:2021)))) +
+  xlab("Year Winter Starts") +
+  ylab("Overwintering Mortality (%)") +
+  geom_text(data = data.frame(x = 0.75, y = 100),
+            aes(x = x, y = y, label = "(b)"),
+            inherit.aes = FALSE,
+            hjust = 0, vjust = 1, size = 5)
+
+
+Fig3_two_panel_plot <- JNPBNP_rvalues_boxplot.a /
+  JNPBNP_Psurv_boxplot.b
+
+ggsave(file.path(figPath,"Fig3_boxplot.png"), plot = Fig3_two_panel_plot, width = 6, height = 6, units = "in", dpi = 300)
+ggsave(file.path(figPath,"Fig3_boxplot.pdf"), plot = Fig3_two_panel_plot, width = 6, height = 6, units = "in")
 
 ## Figure 4: 3-panel plot of:
 # (a) r-value vs Psurv (scatter)
