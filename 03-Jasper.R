@@ -1394,6 +1394,13 @@ ggsave(
   width = 12,
   dpi = 300
 )
+ggsave(
+  file.path(figPath, "Fig1_MPB_map_banff_jasper_2013-23.pdf"),
+  mpb.map,
+  height = 12,
+  width = 12,
+  units = "in"
+)
 
 ## Figure 2: 3-panel time-series
 # (a) counts and areas infested 1999-2023
