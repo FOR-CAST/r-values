@@ -181,7 +181,7 @@ ABMtnParksMPB_long <- ABMtnParksMPB |>
   mutate(Park = as.factor(Park)) |>
   rename(Year = year, Area_ha = ha)
 
-scaleFact <- 16 ## scaling the second y axis
+scaleFact <- 1.7 ## scaling the second y axis #This should be 16 if 2013 JasperHa is 123 ha; 1.7 if it's 1123 ha
 
 ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ## Tree count (primary axis)
@@ -205,7 +205,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   scale_y_continuous(
     transform = "log10",
     name = "trees infested (count)",
-    breaks = c(10, 100, 1000, 10000, 1e5, 1e6, 1e7),
+    breaks = c(10, 100, 1000, 10000, 1e5, 1e6),
     labels = label_number(),
 
     sec.axis = sec_axis(
@@ -1396,6 +1396,10 @@ ggsave(
 # (a) counts and areas infested 1999-2023
 # (b) Psurv 1999-2024
 # (c) CMI 1999-2024
+
+AB_mtn_parks_infested_gg
+JNPBNP_1998_2023
+JNPBNP_CMI_ts
 
 ## Figure 3: 2-panel boxplot in time (2014-2022) of
 # (a) r-value
