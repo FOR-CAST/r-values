@@ -1539,9 +1539,5 @@ ggsave(file.path(figPath,"Fig4_reg.png"), plot = Fig4_three_panel_plot, width = 
 ggsave(file.path(figPath,"Fig4_reg.pdf"), plot = Fig4_three_panel_plot, width = 6, height = 12, units = "in")
 
 ## Figure 5
-# GAMS model output
-
-## Figure 6
 # surface plot of Rt ~ Psurv + CMI
 
-## Figure SI1: annual maps of Psurv in areas where r-values were measured
