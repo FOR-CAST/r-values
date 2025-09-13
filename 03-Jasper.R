@@ -693,6 +693,12 @@ comparison_df <- left_join(
   by = c("beetle_yr" = "year")
 )
 
+Rvr.mod <- lm(Rt ~ log10(mean_r + 1), data = comparison_df)
+Rvr.mod.sum <- summary(Rvr.mod)
+r2 <- format(round(Rvr.mod.sum$r.squared, 2), nsmall = 2)
+pval <- formatC(Rvr.mod.sum$coefficients[2, "Pr(>|t|)"], format = "f", digits = 5)
+annot_text <- paste0("R² = ", r2, "\np = ", pval)
+
 JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
   geom_point(size = 3, color = "black") +
   geom_smooth(method = "lm", se = TRUE, color = "black", fill = "grey70", alpha = 0.4) +
@@ -702,19 +708,27 @@ JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
     name = expression("Mean r-value")
   ) +
   labs(
-    title = "Relationship Between r-value, r<sub>t</sub>,<br>and Interannual Infestation Rate, R<sub>t</sub>,<br>across Jasper and Banff",
+    #title = "Relationship Between r-value, r<sub>t</sub>,<br>and Interannual Infestation Rate, R<sub>t</sub>,<br>across Jasper and Banff",
     y = expression(R[t] == (A[t + 1] / A[t]))
+  )  +
+  geom_text(
+    data = comparison_df,
+    aes(x = log10(mean_r + 1), y = Rt, label = beetle_yr),
+    vjust = -1, size = 4
   ) +
   theme_minimal(base_size = 14) +
   theme(
-    plot.title = element_markdown(),
     panel.border = element_blank(), # optional: removes full box
-    axis.line.x = element_line(color = "black", linewidth = 0.8),
-    axis.line.y = element_line(color = "black", linewidth = 0.8),
+    axis.line.x = element_line(color = "black", linewidth = 0.5),
+    axis.line.y = element_line(color = "black", linewidth = 0.5),
     axis.ticks = element_line(color = "black"),
     axis.text = element_text(color = "black"),
     axis.title = element_text(color = "black")
   )
+
+JNPBNP_Rvsr <- JNPBNP_Rvsr +
+  annotate("text", x = 0.6, y = 3.2,
+           label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
 ggsave(
   file.path(figPath, "JNPBNP_RvsR.png"),
@@ -922,7 +936,15 @@ JNPBNP.full <- JNPBNP.r |>
   left_join(JNPBNP |> dplyr::select(KeyID, Psurv), by = "KeyID")
 
 JNPBNP.mod <- lm(r_value ~ Psurv, data = JNPBNP.full)
-summary(JNPBNP.mod)
+JNPBNP.mod.sum<-summary(JNPBNP.mod)
+
+r2<-JNPBNP.mod.sum$r.squared
+pval<-pf(JNPBNP.mod.sum$fstatistic["value"],
+   JNPBNP.mod.sum$fstatistic["numdf"],
+   JNPBNP.mod.sum$fstatistic["dendf"],
+   lower.tail = FALSE)
+r2 <- format(round(JNPBNP.mod.sum$r.squared, 2), nsmall = 2)
+pvalue <- formatC(pval, format = "f", digits = 5)
 
 JNPBNP.rvsPsurv <- ggplot(JNPBNP.full, aes(x = Psurv, y = r_value)) +
   geom_point(color = "black") +
@@ -935,10 +957,15 @@ JNPBNP.rvsPsurv <- ggplot(JNPBNP.full, aes(x = Psurv, y = r_value)) +
     axis.title = element_text(color = "black")
   ) +
   labs(
-    title = "Relationship Between Overwinter Survival (Psurv) and r-value",
-    x = "Psurv (%)",
+    #title = "Relationship Between Overwinter Survival (Psurv) and r-value",
+    x = "Overwinter Survival (%)",
     y = "r-value"
   )
+annot_text <- paste0("R² = ", r2, "\np = ", pvalue)
+
+JNPBNP.rvsPsurv <- JNPBNP.rvsPsurv +
+  annotate("text", x = 45, y = 22,
+           label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
 ggsave(
   file.path(figPath, "JNPBNP_r_vs_Psurv.png"),
@@ -959,7 +986,14 @@ JNPBNP.by.year <- JNPBNP.full |>
     .groups = "drop"
   )
 JNPBNP.year.mod <- lm(mean_r ~ mean_Psurv, data = JNPBNP.by.year)
-summary(JNPBNP.year.mod)
+JNPBNP.year.mod.sum<-summary(JNPBNP.year.mod)
+
+r2 <- format(round(JNPBNP.year.mod.sum$r.squared, 2), nsmall = 2)
+pval<-pf(JNPBNP.year.mod.sum$fstatistic["value"],
+         JNPBNP.year.mod.sum$fstatistic["numdf"],
+         JNPBNP.year.mod.sum$fstatistic["dendf"],
+         lower.tail = FALSE)
+pvalue <- formatC(pval, format = "f", digits = 5)
 
 JNPBNP.by.year.plot <- ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
   geom_point(size = 3, color = "black") +
@@ -973,10 +1007,16 @@ JNPBNP.by.year.plot <- ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
     axis.title = element_text(color = "black")
   ) +
   labs(
-    title = "Yearly Aggregated Relationship Between Psurv and r-value",
-    x = "Mean Psurv (%)",
+    #title = "Yearly Aggregated Relationship Between Psurv and r-value",
+    x = "Mean Overwinter Survival (%)",
     y = "Mean r-value"
   )
+
+annot_text <- paste0("R² = ", r2, "\np = ", pvalue)
+
+JNPBNP.by.year.plot <- JNPBNP.by.year.plot +
+  annotate("text", x = 45, y = 15,
+           label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
 ggsave(
   file.path(figPath, "JNPBNP_r_vs_Psurv_yearly.png"),
@@ -1475,9 +1515,28 @@ ggsave(file.path(figPath,"Fig3_boxplot.png"), plot = Fig3_two_panel_plot, width 
 ggsave(file.path(figPath,"Fig3_boxplot.pdf"), plot = Fig3_two_panel_plot, width = 6, height = 6, units = "in")
 
 ## Figure 4: 3-panel plot of:
-# (a) r-value vs Psurv (scatter)
-# (b) r-value vs. Psurv (aggregated by year)
-# (c) Rt vs rt (aggregated by year)
+# (a) r-value vs Psurv (scatter)              JNPBNP_r_vs_Psurv
+# (b) r-value vs. Psurv (aggregated by year)  JNPBNP_r_vs_Psurv_yearly
+# (c) Rt vs rt (aggregated by year)           JNPBNP_RvsR
+
+#panel(a)
+JNPBNP.rvsPsurv.a<-JNPBNP.rvsPsurv +
+  annotate("text", x = 10, y = 30, label = "(a)", hjust = -0.2, vjust = 2, size = 5)
+
+#panel(b)
+JNPBNP.by.year.plot.b<-JNPBNP.by.year.plot +
+  annotate("text", x = 20, y = 20, label = "(b)", hjust = -0.2, vjust = 2, size = 5)
+
+#panel(c)
+JNPBNP_Rvsr.c<-JNPBNP_Rvsr +
+  annotate("text", x = 0.15, y = 4, label = "(c)", hjust = -0.2, vjust = 2, size = 5)
+
+Fig4_three_panel_plot <- JNPBNP.rvsPsurv.a /
+  JNPBNP.by.year.plot.b /
+  JNPBNP_Rvsr.c
+
+ggsave(file.path(figPath,"Fig4_reg.png"), plot = Fig4_three_panel_plot, width = 6, height = 12, units = "in", dpi = 300)
+ggsave(file.path(figPath,"Fig4_reg.pdf"), plot = Fig4_three_panel_plot, width = 6, height = 12, units = "in")
 
 ## Figure 5
 # GAMS model output
