@@ -204,13 +204,14 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ## Log-scaled y-axis with natural tick labels
   scale_y_continuous(
     transform = "log10",
-    name = "trees infested (count)",
+    name = "Trees Infested (count)",
+    limits = c(10, 1e6),
     breaks = c(10, 100, 1000, 10000, 1e5, 1e6),
     labels = label_number(),
 
     sec.axis = sec_axis(
       transform = ~ . / scaleFact,
-      name = "area infested (ha)",
+      name = "Area Infested (ha)",
       breaks = c(10, 100, 1000, 10000, 1e5, 1e6),
       labels = label_number()
     )
@@ -218,16 +219,16 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ## Text labels
   geom_text(
     data = data.frame(
-      x = c(2005.3, 2017.5),
-      y = c(1e7, 1e7),
-      label = c("count infested", "area infested")
+      x = c(2006, 2017.5),
+      y = c(1e6, 1e6),
+      label = c("     Count Infested", "Area Infested")
     ),
     aes(x = x, y = y, label = label),
     size = 5,
     inherit.aes = FALSE
   ) +
   ## Theme and legend styling
-  theme_bw() +
+  theme_bw(base_size = 12) +
   theme(
     legend.position = "bottom",
     axis.title.y.right = element_text(angle = 90, vjust = 0.5)
@@ -652,7 +653,7 @@ JNPBNP_rvalues_boxplot <- ggplot(
   JNPBNP_rvalues,
   aes(x = factor(beetle_yr), y = log10(r_value + 1))
 ) +
-  geom_boxplot(fill = "lightblue", color = "black", outlier.color = "red", outlier.size = 2) +
+  geom_boxplot(fill = "skyblue", color = "black", outlier.color = "red", outlier.size = 2) +
   scale_y_continuous(
     breaks = log10(c(2, 3, 6, 11, 21, 51)), ## r + 1
     labels = c(1, 2, 5, 10, 20, 50), ## original r
@@ -709,14 +710,14 @@ JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
   ) +
   labs(
     #title = "Relationship Between r-value, r<sub>t</sub>,<br>and Interannual Infestation Rate, R<sub>t</sub>,<br>across Jasper and Banff",
-    y = expression(R[t] == (A[t + 1] / A[t]))
+    y = expression(R[t + 1] == (A[t + 1] / A[t]))
   )  +
   geom_text(
     data = comparison_df,
     aes(x = log10(mean_r + 1), y = Rt, label = beetle_yr),
     vjust = -1, size = 4
   ) +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 12) +
   theme(
     panel.border = element_blank(), # optional: removes full box
     axis.line.x = element_line(color = "black", linewidth = 0.5),
@@ -1537,7 +1538,3 @@ Fig4_three_panel_plot <- JNPBNP.rvsPsurv.a /
 
 ggsave(file.path(figPath,"Fig4_reg.png"), plot = Fig4_three_panel_plot, width = 6, height = 12, units = "in", dpi = 300)
 ggsave(file.path(figPath,"Fig4_reg.pdf"), plot = Fig4_three_panel_plot, width = 6, height = 12, units = "in")
-
-## Figure 5
-# surface plot of Rt ~ Psurv + CMI
-
