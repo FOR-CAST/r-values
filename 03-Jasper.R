@@ -205,7 +205,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   scale_y_continuous(
     transform = "log10",
     name = "Trees Infested (count)",
-    limits = c(10, 1e6),
+    limits = c(10, 2e6),
     breaks = c(10, 100, 1000, 10000, 1e5, 1e6),
     labels = label_number(),
 
@@ -233,6 +233,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
     legend.position = "bottom",
     axis.title.y.right = element_text(angle = 90, vjust = 0.5)
   ) +
+  scale_x_continuous(limits = c(1998, 2024)) +
   ## Color and fill scales for consistent legend appearance
   scale_fill_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
   scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480"))
@@ -1054,12 +1055,12 @@ JNPBNP.MPBwkPsurv <- JNPBNP.MPBwkPsurv |>
 
 JNPBNP_1998_2023_Psurv.ts <- ggplot(
   JNPBNP.MPBwkPsurv,
-  aes(x = Year - 1, y = Psurv, color = location)
+  aes(x = Year - 1, y = Psurv, color = location) #we plot beetle year (the fall year), not the spring year (the year BioSIM reports when output is completed)
 ) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 12) +
   theme(
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
@@ -1071,7 +1072,8 @@ JNPBNP_1998_2023_Psurv.ts <- ggplot(
     x = "Beetle Year",
     y = "Overwinter Survival (%)",
     color = "Location"
-  )
+  ) +
+  scale_x_continuous(limits = c(1998, 2024))
 
 ggsave(
   file.path(figPath, "JNPBNP_1998_2023.png"),
@@ -1101,7 +1103,7 @@ JNPBNP.CMI.plot <- ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) 
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Jasper" = "#e75480", "Banff" = "#56B4E9")) +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 12) +
   theme(
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
@@ -1109,11 +1111,12 @@ JNPBNP.CMI.plot <- ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) 
     axis.title = element_text(color = "black")
   ) +
   labs(
-    title = "Climate Moisture Index (CMI) Over Time",
+    title = "Climate Moisture Index (CMI)",
     x = "Beetle Year",
     y = "CMI",
     color = "Location"
-  )
+  ) +
+  scale_x_continuous(limits = c(1998, 2024))
 
 ggsave(
   file.path(figPath, "JNPBNP_CMI_ts.png"),
@@ -1332,7 +1335,7 @@ if (plot_all) {
   ggplot() +
     geom_sf(data = st_transform(ab_sf, targetCRS)) + ## Alberta boundary or base layer
     geom_sf(data = np_banff, col = "blue") + ## Banff National Park
-    geom_sf(data = np_jasper, col = "darkgreen") + # #Jasper National Park
+    geom_sf(data = np_jasper, col = "darkgreen") + ## Jasper National Park
     geom_sf(data = mpb_jb, fill = "red", alpha = 0.6) + ## MPB polygons in red
     theme_minimal() +
     labs(title = "Mountain Pine Beetle 2012–2023") +
@@ -1452,9 +1455,9 @@ ggsave(
 ABMtnParksMPB_plot.a<- ABMtnParksMPB_plot +
   annotate("text",
            x = min(ABMtnParksMPB_plot$data$Year),
-           y = max(ABMtnParksMPB_plot$data$Count, na.rm = TRUE) * 400,
+           y = 800000,
            label = "(a)",
-           hjust = 0, vjust = 1.2, size = 6)
+           hjust = 0, vjust = 0, size = 6)
 
 #panel(b) JNPBNP_1998_2023_Psurv.ts
 #remove the title off panel (b)
@@ -1462,7 +1465,7 @@ JNPBNP_1998_2023_Psurv.ts.b <- JNPBNP_1998_2023_Psurv.ts + labs(title = NULL)
 #insert frame label on (b)
 JNPBNP_1998_2023_Psurv.ts.b <- JNPBNP_1998_2023_Psurv.ts.b +
   annotate("text", x = min(JNPBNP.MPBwkPsurv$Year) - 1, y = max(JNPBNP.MPBwkPsurv$Psurv),
-           label = "(b)", hjust = 0, vjust = 1.2, size = 6)
+           label = "(b)", hjust = 0, vjust = 0.5, size = 6)
 
 #panel(c) JNPBNP_CMI
 JNPBNP.CMI.plot.c <- JNPBNP.CMI.plot + labs(title = NULL)
@@ -1470,9 +1473,10 @@ JNPBNP.CMI.plot.c<-JNPBNP.CMI.plot.c +
   annotate("text", x = min(JNPBNP.CMI$Year) - 1, y = max(JNPBNP.CMI$CMI),
            label = "(c)", hjust = 0, vjust = 1.2, size = 6)
 
-Fig2_three_panel_plot <- ABMtnParksMPB_plot.a /
-  JNPBNP_1998_2023_Psurv.ts.b /
-  JNPBNP.CMI.plot.c
+Fig2_three_panel_plot <-
+  ABMtnParksMPB_plot.a /
+  (JNPBNP_1998_2023_Psurv.ts.b / JNPBNP.CMI.plot.c + plot_layout(heights = c(3, 3))) +
+  plot_layout(heights = c(4, 6))
 
 ggsave(file.path(figPath,"Fig2_JNPBNP_ts.png"), plot = Fig2_three_panel_plot, width = 7, height = 9, units = "in", dpi = 300)
 ggsave(file.path(figPath,"Fig2_JNPBNP_ts.pdf"), plot = Fig2_three_panel_plot, width = 7, height = 9, units = "in")
