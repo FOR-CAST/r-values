@@ -937,6 +937,21 @@ stopifnot(
 JNPBNP.full <- JNPBNP.r |>
   left_join(JNPBNP |> dplyr::select(KeyID, Psurv), by = "KeyID")
 
+#report on r-value means before and after 2017
+JNPBNP.full |>
+  mutate(period = if_else(beetle_yr %in% 2014:2017, "2014–2017", "Post-2017")) |>
+  group_by(period) |>
+  summarise(mean_r = mean(r_value, na.rm = TRUE))
+
+#report on r-value means before and after 2017
+JNPBNP.full |>
+  mutate(period = if_else(beetle_yr %in% 2014:2017, "2014–2017", "Post-2017")) |>
+  group_by(period) |>
+  summarise(mean_r = mean(Psurv, na.rm = TRUE))
+
+n_unique <- JNPBNP.full |> distinct() |> nrow()
+cat("Number of unique location-years:", n_unique)
+
 JNPBNP.mod <- lm(r_value ~ Psurv, data = JNPBNP.full)
 JNPBNP.mod.sum<-summary(JNPBNP.mod)
 
@@ -1087,7 +1102,25 @@ twolocs.wide <- JNPBNP.MPBwkPsurv |>
   dplyr::select(Year, location, Psurv) |>
   pivot_wider(names_from = location, values_from = Psurv)
 
-cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
+Psurv.cor<-cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
+
+cat("The correlation betwen Jasper and Banff in Psurv is:",Psurv.cor)
+
+# Filter for the desired years
+twolocs.subset <- twolocs.wide |>
+  filter(Year %in% 2012:2017)
+
+# Compute means
+mean_Jasper <- mean(twolocs.subset$Jasper, na.rm = TRUE)
+mean_Banff  <- mean(twolocs.subset$Banff, na.rm = TRUE)
+
+# Compute difference (Jasper minus Banff)
+diff_Psurv <- mean_Jasper - mean_Banff
+
+# Print results
+cat("Mean Psurv (Jasper):", mean_Jasper, "\n")
+cat("Mean Psurv (Banff):", mean_Banff, "\n")
+cat("Difference (Jasper - Banff):", diff_Psurv, "\n")
 
 ## CMI
 f_JNPBNP.CMI <- file.path(outputPath, "JNPBNPCMI.csv")
@@ -1126,10 +1159,17 @@ ggsave(
 )
 
 JNPBNP.CMI |>
-  filter(Year %in% 2013:2016) |>
+  filter(Year %in% 2013:2017) |>
   group_by(location) |>
   summarise(mean_CMI = mean(CMI, na.rm = TRUE)) |>
   summarise(diff_CMI = diff(mean_CMI))
+
+CMI_means <- JNPBNP.CMI |>
+  filter(Year %in% 2013:2017) |>
+  group_by(location) |>
+  summarise(mean_CMI = mean(CMI, na.rm = TRUE))
+
+diff_CMI <- diff(CMI_means$mean_CMI)
 
 jasper.cmi <- subset(JNPBNP.CMI, location == "Jasper")
 banff.cmi <- subset(JNPBNP.CMI, location == "Banff")
@@ -1511,7 +1551,6 @@ JNPBNP_Psurv_boxplot.b <- JNPBNP_Psurv_boxplot +
             aes(x = x, y = y, label = "(b)"),
             inherit.aes = FALSE,
             hjust = 0, vjust = 1, size = 5)
-
 
 Fig3_two_panel_plot <- JNPBNP_rvalues_boxplot.a /
   JNPBNP_Psurv_boxplot.b
