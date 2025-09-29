@@ -278,7 +278,7 @@ ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
 
 if (!(file.exists(ssi_gdb) || dir.exists(ssi_gdb))) {
   googledrive::as_id("1meuraFVblxD8ZlwuqgKy0ADHOs-EAN13") |>
-    googledrive::drive_download()
+    googledrive::drive_download(path = dataPath)
   archive::archive_extract(ssi_gdb, dataPath)
 }
 
