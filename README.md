@@ -68,6 +68,8 @@ Donec scelerisque lacus a accumsan suscipit.
 Open the primary script (`00-main.R`) and run the lines sequentially.
 
 **NOTES:**
+- select the spatial extent of the analyses by setting `run_for = "AB"` for provincial scale,
+  or `run_for = "NP"` for running the national parks analyses;
 - setting `extract_mdb = TRUE` requires running on Windows to be able to open the Access database files;
 - setting `plot_all = TRUE` will build all plots, including intermediate ones;
 - setting `rerun_all = TRUE` will rebuild all local intermediate datasets (use carefully!);

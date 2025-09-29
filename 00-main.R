@@ -31,6 +31,7 @@ library(scales) ## used for log-scale plotting
 sf::sf_proj_network(TRUE)
 sf::sf_use_s2(TRUE)
 
+run_for <- "AB" ## use "NP" to run analyses for national parks; use "AB" to run province-wide
 extract_mdb <- FALSE ## use TRUE to re-extract from raw data sources (Windows only!)
 plot_all <- FALSE ## use TRUE to generate all plots, including exploratory/diagnostic plots
 rerun_all <- FALSE ## re-run all analyses, overwriting existing intermediate and output files
@@ -74,14 +75,18 @@ if (plot_all) {
 
 # r-values analyses ---------------------------------------------------------------------------
 
-## re-calculate r-values; add BioSIM-generated components
-source("02a-Alberta-data-prep.R")
+if (run_for == "AB") {
+  ## re-calculate r-values; add BioSIM-generated components
+  source("02a-Alberta-data-prep.R")
 
-## initial data and model exploration
-source("02b-Alberta-explore.R")
+  ## initial data and model exploration
+  source("02b-Alberta-explore.R")
 
-##
-source("02c-Alberta-analyses.R")
-
-##
-source("03-Jasper.R")
+  ##
+  source("02c-Alberta-analyses.R")
+} else if (run_for == "NP") {
+  ##
+  source("03-Jasper.R")
+} else {
+  stop("run_for must be one of 'AB' or 'NP'.")
+}
