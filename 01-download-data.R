@@ -270,6 +270,17 @@ local({
   }
 })
 
+# MPB SSI layers ------------------------------------------------------------------------------
+
+source("R/mpb_ssi.R")
+
+ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
+
+if (!(file.exists(ssi_gdb) || dir.exists(ssi_gdb))) {
+  google_drive::as_id("1meuraFVblxD8ZlwuqgKy0ADHOs-EAN13") |>
+    google_drive::drive_download()
+  archive::archive_extract(ssi_gdb, dataPath)
+}
 
 # Olesinski Jasper Banff 2012-2023 ------------------------------------------------------------
 

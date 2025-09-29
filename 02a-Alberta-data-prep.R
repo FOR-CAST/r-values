@@ -58,16 +58,6 @@ abr_csv <- file.path(outputPath, "AB", "csv", "new_r_values.csv")
 
 write.csv(abr, abr_csv, row.names = FALSE)
 
-# MPB SSI layers ------------------------------------------------------------------------------
-
-source("R/mpb_ssi.R")
-
-ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
-
-if (!(file.exists(ssi_gdb) || dir.exists(ssi_gdb))) {
-  archive::archive_extract(ssi_gdb, dataPath)
-}
-
 # build model data frame ----------------------------------------------------------------------
 
 ## check if data for modelling exists. If it doesn't, build it.
