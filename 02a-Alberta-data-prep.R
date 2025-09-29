@@ -34,8 +34,10 @@ abr$live <- rowSums(
   na.rm = TRUE
 )
 
-dev.new()
-hist(log10(abr$live + 1))
+if (plot_all) {
+  # dev.new()
+  hist(log10(abr$live + 1))
+}
 
 abr$holes <- rowSums(
   abr[, c(
@@ -47,8 +49,10 @@ abr$holes <- rowSums(
   na.rm = TRUE
 )
 
-dev.new()
-hist(log10(abr$holes + 1))
+if (plot_all) {
+  # dev.new()
+  hist(log10(abr$holes + 1))
+}
 
 ## adding 1 in denominator avoids a meaningless division by zero "error",
 ## with a relatively small cost in basing the r-value low
