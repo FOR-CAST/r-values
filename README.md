@@ -66,3 +66,12 @@ Donec scelerisque lacus a accumsan suscipit.
 ## Running the code
 
 Open the primary script (`00-main.R`) and run the lines sequentially.
+
+**NOTES:**
+- setting `extract_mdb = TRUE` requires running on Windows to be able to open the Access database files;
+- setting `plot_all = TRUE` will build all plots, including intermediate ones;
+- setting `rerun_all = TRUE` will rebuild all local intermediate datasets (use carefully!);
+- running `01-download-data.R` will prompt for Google credentials to access several data sets;
+- 01a gets skipped if `extract_mdb = FALSE`;
+- most of 01b gets skipped unless the outputs it creates are missing or `rerun_all = TRUE`;
+- sourcing `03-Jasper.R` can be done after all the '01' scripts have been run, it does not need the 02 scripts to have been run;

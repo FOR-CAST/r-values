@@ -272,7 +272,7 @@ local({
 
 # MPB SSI layers ------------------------------------------------------------------------------
 
-source("R/mpb_ssi.R")
+source("R/mpb_ssi.R") ## helper fun to load the layers
 
 ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
 
