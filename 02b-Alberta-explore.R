@@ -11,30 +11,18 @@ pivot_year <- 2015
 abr.early <- all_data_df |> filter(beetle_yr <= pivot_year)
 abr.late <- all_data_df |> filter(beetle_yr > pivot_year)
 
-sapply(
-  abr.early[, c(
-    "r",
-    "beetle_yr",
-    "plot_lat_dd_copy",
-    "plot_lon_dd_copy",
-    "nbr_infested",
-    "dbh",
-    "ht_pitch_tube"
-  )],
-  function(x) sum(is.na(x))
+cols2b <- c(
+  "r",
+  "beetle_yr",
+  "lat",
+  "lon",
+  "nbr_infested",
+  "dbh",
+  "ht_pitch_tube"
 )
-sapply(
-  abr.late[, c(
-    "r",
-    "beetle_yr",
-    "plot_lat_dd_copy",
-    "plot_lon_dd_copy",
-    "nbr_infested",
-    "dbh",
-    "ht_pitch_tube"
-  )],
-  function(x) sum(is.na(x))
-)
+
+sapply(abr.early[, cols2b], function(x) sum(is.na(x)))
+sapply(abr.late[, cols2b], function(x) sum(is.na(x)))
 
 ### try linear regression ---------------------------------------------------------------------
 
