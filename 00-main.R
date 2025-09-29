@@ -57,42 +57,12 @@ source("01b-import-mdb-csv.R")
 
 # load pine maps ------------------------------------------------------------------------------
 
-## EOSD (Yemshanov et al. 2012)
-yemshanov2012 <- terra::rast(tif_yemshanov2012)
-
-if (plot_all) {
-  plot(yemshanov2012)
-}
-
-## kNN (Beaudoin et al. 2014)
-beaudoin2014 <- terra::rast(tif_beaudoin2014)
-
-if (plot_all) {
-  plot(beaudoin2014)
-}
-
 ## Bleiker 2019
 bleiker2019 <- terra::rast(gdb_bleiker2019)
 
 if (plot_all) {
   plot(bleiker2019)
 }
-
-## CASFRI
-
-## TODO: use forestData::casfriSpeciesCover() ?
-
-## Coops et al. 2024
-
-## TODO:
-
-## NTEMS (Matasci et al. 2018)
-
-## TODO: use forestData::ntems() ?
-
-## plot them
-
-## TODO: ggplot/cowplot using tidyterra
 
 # load pine introgression (Q) maps  -----------------------------------------------------------
 

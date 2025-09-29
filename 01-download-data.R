@@ -152,73 +152,9 @@ ab_hydro_clipped <- st_intersection(ab_hydro, bbox_parks)
 
 # pine maps -----------------------------------------------------------------------------------
 
-## TODO: issue #3
-
-tif_yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map.tif")
-tif_beaudoin2014 <- file.path(dataPath, "Beaudoin_pine_map.tif")
 gdb_bleiker2019 <- file.path(dataPath, "AB_PineVolumes_Lambert.gdb")
-gdb_sbfi2020 <- file.path(dataPath, "SBFI_2020", "SBFI_2020.gdb")
 
 local({
-  ## EOSD (Yemshanov et al. 2012)
-  zip_yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map.zip")
-  if (!file.exists(zip_yemshanov2012)) {
-    googledrive::as_id("11g02bDnEt6U_xXtcLWLmqzWLleR_c54F") |>
-      googledrive::drive_download(path = zip_yemshanov2012, overwrite = TRUE)
-  }
-
-  if (!file.exists(tif_yemshanov2012)) {
-    archive::archive_extract(zip_yemshanov2012, dataPath)
-
-    yemshanov2012 <- file.path(dataPath, "Yemshanov_pine_map", "Yemshanov_pine_map.flt") |>
-      terra::rast()
-
-    yemshanov2012 <- terra::crop(
-      x = yemshanov2012,
-      y = terra::project(terra::vect(ab_sf), yemshanov2012),
-      mask = TRUE
-    ) |>
-      terra::writeRaster(tif_yemshanov2012, overwrite = TRUE)
-  }
-
-  ## kNN (Beaudoin et al. 2014)
-  if (!file.exists(tif_beaudoin2014)) {
-    url_beaudoin2014 <- paste0(
-      "https://ftp.maps.canada.ca/pub/nrcan_rncan/Forests_Foret/",
-      "canada-forests-attributes_attributs-forests-canada/2011",
-      "-attributes_attributs-2011/"
-    )
-
-    fileURLs <- RCurl::getURL(
-      url_beaudoin2014,
-      dirlistonly = TRUE,
-      .opts = list(followlocation = TRUE)
-    )
-    fileNames <- XML::getHTMLLinks(fileURLs)
-    fileNames <- grep("(Species_Pinu_Ban|Species_Pinu_Con)_.*\\.tif", fileNames, value = TRUE)
-    lapply(fileNames, function(f) {
-      utils::download.file(
-        url = paste0(url_beaudoin2014, f),
-        destfile = file.path(dataPath, f)
-      )
-    })
-
-    beaudoin2014 <- file.path(dataPath, fileNames) |>
-      grep("[.]tif$", x = _, value = TRUE) |>
-      terra::rast()
-    beaudoin2014 <- terra::crop(
-      x = beaudoin2014,
-      y = sf::st_transform(ab_sf, terra::crs(beaudoin2014))
-    )
-    beaudoin2014 <- terra::mask(
-      x = beaudoin2014,
-      mask = sf::st_transform(ab_sf, terra::crs(beaudoin2014)) |> terra::vect()
-    )
-    terra::set.names(beaudoin2014, c("Pinu_Ban", "Pinu_Con"))
-
-    beaudoin2014 <- terra::writeRaster(beaudoin2014, tif_beaudoin2014)
-  }
-
   ## Bleiker 2019
   zip_bleiker2019 <- paste0(gdb_bleiker2019, ".zip")
 
@@ -229,15 +165,6 @@ local({
 
   if (!(file.exists(gdb_bleiker2019) || dir.exists(gdb_bleiker2019))) {
     archive::archive_extract(zip_bleiker2019, dataPath)
-  }
-
-  ## NTEMS SBFI (Matasci et al. 2018)
-  url_sbfi <- "https://opendata.nfis.org/downloads/forest_change/CA_Forest_Satellite_Based_Inventory_2020.zip"
-  zip_sbfi <- file.path(dataPath, basename(url_sbfi))
-
-  if (!file.exists(zip_sbfi)) {
-    download.file(url_sbfi, zip_sbfi)
-    archive::archive_extract(zip_sbfi, dataPath)
   }
 })
 
