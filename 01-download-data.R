@@ -275,11 +275,12 @@ local({
 source("R/mpb_ssi.R") ## helper fun to load the layers
 
 ssi_gdb <- file.path(dataPath, "MPB_SSI.gdb")
+ssi_zip <- paste0(ssi_gdb, ".zip")
 
 if (!(file.exists(ssi_gdb) || dir.exists(ssi_gdb))) {
   googledrive::as_id("1meuraFVblxD8ZlwuqgKy0ADHOs-EAN13") |>
-    googledrive::drive_download(path = dataPath)
-  archive::archive_extract(ssi_gdb, dataPath)
+    googledrive::drive_download(path = ssi_zip)
+  archive::archive_extract(ssi_zip, dataPath)
 }
 
 # Olesinski Jasper Banff 2012-2023 ------------------------------------------------------------
