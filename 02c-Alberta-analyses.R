@@ -100,10 +100,10 @@ ssi_crs <- sf::st_crs(3400)
 
 ## bring the geometry back into the sf
 all_data_sf <- all_data_df_join_CMI |>
-  filter(!is.na(lon) & !is.na(lat)) |>
+  dplyr::filter(!is.na(lon) & !is.na(lat)) |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
   st_make_valid() |>
-  st_transform(st_crs(ssi_crs))
+  st_transform(ssi_crs)
 
 gg_r_by_year <- ggplot(all_data_sf) +
   geom_sf(aes(color = log10(r + 1)), size = 1.1, alpha = 0.7) +
@@ -118,6 +118,32 @@ gg_r_by_year <- ggplot(all_data_sf) +
   )
 
 ggsave(file.path(figPath, "map_r-values_by_year.png"), gg_r_by_year, height = 16, width = 16)
+
+### Plot r-values in base R, unprojected
+plot_df <- all_data_df_join_CMI |>
+  filter(!is.na(lon) & !is.na(lat) & !is.na(r) & !is.na(beetle_yr)) |>
+  mutate(
+    lon = as.numeric(lon),
+    lat = as.numeric(lat),
+    r_log = log10(r + 1),
+    beetle_yr = as.factor(beetle_yr)
+  )
+
+ab_outline_df <- ab_sf |>
+  st_transform(4326) |>  # match lon/lat CRS
+  st_coordinates() |>
+  as.data.frame() |>
+  rename(lon = X, lat = Y)
+
+gg_r_by_year <- ggplot(plot_df, aes(x = lon, y = lat, fill = r_log)) +
+  geom_point(size = 2, alpha = 0.8, stroke = 0.2, shape = 21, color = "black") +
+  geom_path(data = ab_outline_df, aes(x = lon, y = lat), inherit.aes = FALSE, color = "black", size = 0.8) +
+  scale_fill_gradient(low = "white", high = "black", name = "log₁₀(r + 1)") +
+  facet_wrap(~ beetle_yr, ncol = 7, nrow = 2) +
+  theme_minimal() +
+  labs(x = "Longitude", y = "Latitude", title = "Spatial Distribution of r-values by Year")
+
+ggsave(file.path(figPath, "map_r-values_by_year_unprojected.png"), gg_r_by_year, height = 8, width = 16)
 
 yearly_summary <- all_data_df_join_CMI |>
   group_by(beetle_yr) |>
