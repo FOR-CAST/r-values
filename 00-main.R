@@ -43,7 +43,7 @@ outputPath <- "outputs" |> fs::dir_create()
 
 # data download -------------------------------------------------------------------------------
 
-source("01-download-data.R")
+source("01-download-data.R") ## will prompt for Google authetication
 
 # MPB r-value data ----------------------------------------------------------------------------
 
