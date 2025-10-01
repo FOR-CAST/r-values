@@ -137,6 +137,7 @@ ab_outline_df <- ab_sf |>
 
 gg_r_by_year_unproj <- ggplot(plot_df, aes(x = lon, y = lat, fill = r_log)) +
   geom_point(size = 2, alpha = 0.8, stroke = 0.2, shape = 21, color = "black") +
+<<<<<<< Updated upstream
   geom_path(
     data = ab_outline_df,
     aes(x = lon, y = lat),
@@ -155,6 +156,25 @@ ggsave(
   height = 8,
   width = 16
 )
+=======
+  geom_path(data = ab_outline_df, aes(x = lon, y = lat), inherit.aes = FALSE, color = "black", size = 0.8) +
+  scale_x_continuous(
+    breaks = pretty(plot_df$lon, n = 5),  # ~5 evenly spaced ticks
+    labels = function(x) sprintf("%.0f", x)  # no decimals
+  ) +
+  scale_fill_gradient(
+    low = "white",
+    high = "black",
+    name = "r",
+    breaks = c(0, 1, 2),
+    labels = c("1", "10", "100")
+  ) +
+  facet_wrap(~ beetle_yr, ncol = 7, nrow = 2) +
+  theme_minimal() +
+  labs(x = "Longitude", y = "Latitude", title = "Spatial Distribution of r-values by Year")
+
+ggsave(file.path(figPath, "map_r-values_by_year_unprojected.png"), gg_r_by_year_unproj, height = 9, width = 15)
+>>>>>>> Stashed changes
 
 yearly_summary <- all_data_df_join_CMI |>
   group_by(beetle_yr) |>
@@ -263,3 +283,49 @@ gg_r_Tmin_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   )
 
 ggsave(file.path(figPath, "mean_Tmin_r_over_time.png"), gg_r_Tmin_ribbon)
+
+#Next we make a boxplot of r-values binned by year
+r.box<-ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
+  geom_boxplot(fill = "grey80", color = "black", outlier.shape = NA) +
+  geom_jitter(width = 0.2, size = 0.6, alpha = 0.6, color = "black") +
+  geom_hline(yintercept = log10(2), color = "red", linetype = "dashed", size = 0.6) +
+  scale_y_continuous(
+    breaks = c(0, 0.5, 1, 1.5, 2),
+    labels = c("0", "2", "9", "31", "99"),
+    name = "r"
+  ) +
+  labs(x = "Year", title = "Distribution of r-values by Year") +
+  theme_minimal()
+
+ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width = 9)
+
+# File RTC are red tree counts from Mike Undershultz Feb 22, 2023
+rtc <- read.table("data/ab/RedTreeCounts.txt", header = T)
+
+par(mar = c(5, 4, 4, 6))  # bottom, left, top, right
+
+plot(rtc$Year, log10(rtc$RedTrees), xlab = "year",yaxt = "n",
+     ylab = "Thousands of Trees", type = "l", col = "red", ylim = c(3, 7),lwd=2)
+axis(2, at = 3:7, labels = c("1", "10", "100", "1 000", "10 000"))
+
+abline(v=c(2010,2015,2020),col="gray")
+points(rtc$Year, log10(rtc$RedTrees), pch = 19, col = "red", cex = 1.5)
+lines(rtc$Year, log10(rtc$TreesControlled), lwd=2, col = "darkgreen")
+points(rtc$Year, log10(rtc$TreesControlled), pch = 15, col = "darkgreen", cex = 1.5)
+legend(2016,6.5,lwd=2,col=c("red","darkgreen"),pch=c(19,15),c("Red Trees Detected","Green Trees Controlled"))
+
+#compute and plot interannual change in red trees Rt=Xt/Xt-1, on second y-axis
+rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
+
+par(new = TRUE)
+
+plot(rtc$Year, log10(rtc$Rt),
+     type = "l", col = "blue", lwd = 2,
+     axes = FALSE, xlab = "", ylab = "",
+     ylim = c(-1, log10(50)))  # covers ratio from ~0.1 to 50
+abline(h=0,lty=2,col="blue")
+points(rtc$Year, log10(rtc$Rt), pch = 17, col = "blue", cex = 1.2)
+axis(4, at = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
+     labels = c("0.1", "0.5", "1", "2", "10", "30", "50"))
+
+mtext(expression(R[t] == X[t] / X[t-1]), side = 4, line = 3)
