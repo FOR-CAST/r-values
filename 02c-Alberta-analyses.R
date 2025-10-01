@@ -312,7 +312,13 @@ abline(v=c(2010,2015,2020),col="gray")
 points(rtc$Year, log10(rtc$RedTrees), pch = 19, col = "red", cex = 1.5)
 lines(rtc$Year, log10(rtc$TreesControlled), lwd=2, col = "darkgreen")
 points(rtc$Year, log10(rtc$TreesControlled), pch = 15, col = "darkgreen", cex = 1.5)
-legend(2016,6.5,lwd=2,col=c("red","darkgreen"),pch=c(19,15),c("Red Trees Detected","Green Trees Controlled"))
+legend(2016, 6.5,
+       legend = expression("Red Trees Detected ("*X[t]*")",
+                           "Green Trees Controlled",
+                           R[t]),
+       col = c("red", "darkgreen", "blue"),
+       pch = c(19, 15, 17),
+       lwd = 2)
 
 #compute and plot interannual change in red trees Rt=Xt/Xt-1, on second y-axis
 rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
