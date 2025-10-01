@@ -294,7 +294,7 @@ r.box<-ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
     labels = c("0", "2", "9", "31", "99"),
     name = "r"
   ) +
-  labs(x = "Year", title = "Distribution of r-values by Year") +
+  labs(x = "Beetle Attack Year", title = "Distribution of r-values by Year") +
   theme_minimal()
 
 ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width = 9)
@@ -302,6 +302,7 @@ ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width =
 # File RTC are red tree counts from Mike Undershultz Feb 22, 2023
 rtc <- read.table("data/ab/RedTreeCounts.txt", header = T)
 
+png("Figures\\RedGreenTrees.png", width = 2400, height = 1800, res = 300)
 par(mar = c(5, 4, 4, 6))  # bottom, left, top, right
 plot(rtc$Year, log10(rtc$RedTrees), xlab = "Survey Year",yaxt = "n",
      ylab = "Thousands of Trees", type = "l", col = "red", ylim = c(3, 7),lwd=2)
@@ -310,7 +311,7 @@ abline(v=c(2010,2015,2020),col="gray")
 points(rtc$Year, log10(rtc$RedTrees), pch = 19, col = "red", cex = 1.5)
 lines(rtc$Year, log10(rtc$TreesControlled), lwd=2, col = "darkgreen")
 points(rtc$Year, log10(rtc$TreesControlled), pch = 15, col = "darkgreen", cex = 1.5)
-legend(2014, 7,
+legend(2013, 7,
        legend = expression("Red Trees Detected ("*X[t]*")",
                            "Green Trees Controlled",
                            "Ratio of Change from Last Year ("*R[t]*")"),
@@ -331,3 +332,63 @@ points(rtc$Year, log10(rtc$Rt), pch = 17, col = "blue", cex = 1.2)
 axis(4, at = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
      labels = c("0.1", "0.5", "1", "2", "10", "30", "50"))
 mtext(expression(R[t] == X[t] / X[t-1]), side = 4, line = 3)
+dev.off()
+
+#same but in ggplot:
+rtc$RedTrees_log <- log10(rtc$RedTrees)
+rtc$TreesControlled_log <- log10(rtc$TreesControlled)
+rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
+rtc$Rt_log <- log10(rtc$Rt)
+
+red.green.plot<-ggplot(rtc, aes(x = Year)) +
+  # Red Trees line and points
+  geom_line(aes(y = RedTrees_log, color = "Red Trees"), size = 1.2) +
+  geom_point(aes(y = RedTrees_log, color = "Red Trees", shape = "Red Trees"), size = 3) +
+
+  # Green Trees line and points
+  geom_line(aes(y = TreesControlled_log, color = "Green Trees"), size = 1.2) +
+  geom_point(aes(y = TreesControlled_log, color = "Green Trees", shape = "Green Trees"), size = 3) +
+
+  # Ratio line and points on secondary axis
+  geom_line(aes(y = Rt_log, color = "Ratio"), size = 1.2) +
+  geom_point(aes(y = Rt_log, color = "Ratio", shape = "Ratio"), size = 2.5) +
+
+  # Vertical reference lines
+  geom_vline(xintercept = c(2010, 2015, 2020), color = "gray70", linetype = "dashed") +
+
+  # Horizontal reference line at ratio = 1 (log10 = 0)
+  geom_hline(yintercept = 0, color = "blue", linetype = "dotted") +
+
+  # Primary y-axis (log10 trees)
+  scale_y_continuous(
+    name = "Thousands of Trees",
+    breaks = 3:7,
+    labels = c("1", "10", "100", "1 000", "10 000"),
+    sec.axis = sec_axis(
+      trans = ~.,  # identity transform
+      breaks = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
+      labels = c("0.1", "0.5", "1", "2", "10", "30", "50"),
+      name = expression(R[t] == X[t] / X[t-1])
+    )
+  ) +
+
+  # Color and shape mappings
+  scale_color_manual(
+    name = NULL,
+    values = c("Red Trees" = "red", "Green Trees" = "darkgreen", "Ratio" = "blue")
+  ) +
+  scale_shape_manual(
+    name = NULL,
+    values = c("Red Trees" = 19, "Green Trees" = 15, "Ratio" = 17)
+  ) +
+
+  labs(x = "Survey Year") +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.title.y.right = element_text(color = "blue"),
+    legend.position = c(0.8, 0.9),
+    legend.background = element_blank(),
+    legend.key = element_blank(),
+    plot.margin = margin(t = 10, r = 60, b = 10, l = 10)  # equivalent to par(mar)
+  )
+
