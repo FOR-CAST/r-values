@@ -137,7 +137,6 @@ ab_outline_df <- ab_sf |>
 
 gg_r_by_year_unproj <- ggplot(plot_df, aes(x = lon, y = lat, fill = r_log)) +
   geom_point(size = 2, alpha = 0.8, stroke = 0.2, shape = 21, color = "black") +
-<<<<<<< Updated upstream
   geom_path(
     data = ab_outline_df,
     aes(x = lon, y = lat),
@@ -145,22 +144,9 @@ gg_r_by_year_unproj <- ggplot(plot_df, aes(x = lon, y = lat, fill = r_log)) +
     color = "black",
     size = 0.8
   ) +
-  scale_fill_gradient(low = "white", high = "black", name = "log₁₀(r + 1)") +
-  facet_wrap(~beetle_yr, ncol = 7, nrow = 2) +
-  theme_minimal() +
-  labs(x = "Longitude", y = "Latitude", title = "Spatial Distribution of r-values by Year")
-
-ggsave(
-  file.path(figPath, "map_r-values_by_year_unprojected.png"),
-  gg_r_by_year_unproj,
-  height = 8,
-  width = 16
-)
-=======
-  geom_path(data = ab_outline_df, aes(x = lon, y = lat), inherit.aes = FALSE, color = "black", size = 0.8) +
   scale_x_continuous(
-    breaks = pretty(plot_df$lon, n = 5),  # ~5 evenly spaced ticks
-    labels = function(x) sprintf("%.0f", x)  # no decimals
+    breaks = pretty(plot_df$lon, n = 5), ## ~5 evenly spaced ticks
+    labels = function(x) sprintf("%.0f", x) ## no decimals
   ) +
   scale_fill_gradient(
     low = "white",
@@ -169,13 +155,16 @@ ggsave(
     breaks = c(0, 1, 2),
     labels = c("1", "10", "100")
   ) +
-  facet_wrap(~ beetle_yr, ncol = 7, nrow = 2) +
+  facet_wrap(~beetle_yr, ncol = 7, nrow = 2) +
   theme_minimal() +
   labs(x = "Longitude", y = "Latitude", title = "Spatial Distribution of r-values by Year")
 
-ggsave(file.path(figPath, "map_r-values_by_year_unprojected.png"), gg_r_by_year_unproj, height = 9, width = 15)
->>>>>>> Stashed changes
-
+ggsave(
+  file.path(figPath, "map_r-values_by_year_unprojected.png"),
+  gg_r_by_year_unproj,
+  height = 9,
+  width = 15
+)
 yearly_summary <- all_data_df_join_CMI |>
   group_by(beetle_yr) |>
   summarise(
@@ -285,7 +274,7 @@ gg_r_Tmin_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
 ggsave(file.path(figPath, "mean_Tmin_r_over_time.png"), gg_r_Tmin_ribbon)
 
 #Next we make a boxplot of r-values binned by year
-r.box<-ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
+r.box <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
   geom_boxplot(fill = "grey80", color = "black", outlier.shape = NA) +
   geom_jitter(width = 0.2, size = 0.6, alpha = 0.6, color = "black") +
   geom_hline(yintercept = log10(2), color = "red", linetype = "dashed", size = 0.6) +
@@ -303,35 +292,59 @@ ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width =
 rtc <- read.table("data/ab/RedTreeCounts.txt", header = T)
 
 png("Figures\\RedGreenTrees.png", width = 2400, height = 1800, res = 300)
-par(mar = c(5, 4, 4, 6))  # bottom, left, top, right
-plot(rtc$Year, log10(rtc$RedTrees), xlab = "Survey Year",yaxt = "n",
-     ylab = "Thousands of Trees", type = "l", col = "red", ylim = c(3, 7),lwd=2)
+par(mar = c(5, 4, 4, 6)) # bottom, left, top, right
+plot(
+  rtc$Year,
+  log10(rtc$RedTrees),
+  xlab = "Survey Year",
+  yaxt = "n",
+  ylab = "Thousands of Trees",
+  type = "l",
+  col = "red",
+  ylim = c(3, 7),
+  lwd = 2
+)
 axis(2, at = 3:7, labels = c("1", "10", "100", "1 000", "10 000"))
-abline(v=c(2010,2015,2020),col="gray")
+abline(v = c(2010, 2015, 2020), col = "gray")
 points(rtc$Year, log10(rtc$RedTrees), pch = 19, col = "red", cex = 1.5)
-lines(rtc$Year, log10(rtc$TreesControlled), lwd=2, col = "darkgreen")
+lines(rtc$Year, log10(rtc$TreesControlled), lwd = 2, col = "darkgreen")
 points(rtc$Year, log10(rtc$TreesControlled), pch = 15, col = "darkgreen", cex = 1.5)
-legend(2013, 7,
-       legend = expression("Red Trees Detected ("*X[t]*")",
-                           "Green Trees Controlled",
-                           "Ratio of Change from Last Year ("*R[t]*")"),
-       col = c("red", "darkgreen", "blue"),
-       pch = c(19, 15, 17),
-       lwd = 2)
+legend(
+  2013,
+  7,
+  legend = expression(
+    "Red Trees Detected (" * X[t] * ")",
+    "Green Trees Controlled",
+    "Ratio of Change from Last Year (" * R[t] * ")"
+  ),
+  col = c("red", "darkgreen", "blue"),
+  pch = c(19, 15, 17),
+  lwd = 2
+)
 
 #compute and plot interannual change in red trees Rt=Xt/Xt-1, on second y-axis
 rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
 
 par(new = TRUE)
-plot(rtc$Year, log10(rtc$Rt),
-     type = "l", col = "blue", lwd = 2,
-     axes = FALSE, xlab = "", ylab = "",
-     ylim = c(-1, log10(50)))  # covers ratio from ~0.1 to 50
-abline(h=0,lty=2,col="blue")
+plot(
+  rtc$Year,
+  log10(rtc$Rt),
+  type = "l",
+  col = "blue",
+  lwd = 2,
+  axes = FALSE,
+  xlab = "",
+  ylab = "",
+  ylim = c(-1, log10(50))
+) # covers ratio from ~0.1 to 50
+abline(h = 0, lty = 2, col = "blue")
 points(rtc$Year, log10(rtc$Rt), pch = 17, col = "blue", cex = 1.2)
-axis(4, at = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
-     labels = c("0.1", "0.5", "1", "2", "10", "30", "50"))
-mtext(expression(R[t] == X[t] / X[t-1]), side = 4, line = 3)
+axis(
+  4,
+  at = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
+  labels = c("0.1", "0.5", "1", "2", "10", "30", "50")
+)
+mtext(expression(R[t] == X[t] / X[t - 1]), side = 4, line = 3)
 dev.off()
 
 #same but in ggplot:
@@ -340,7 +353,7 @@ rtc$TreesControlled_log <- log10(rtc$TreesControlled)
 rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
 rtc$Rt_log <- log10(rtc$Rt)
 
-red.green.plot<-ggplot(rtc, aes(x = Year)) +
+red.green.plot <- ggplot(rtc, aes(x = Year)) +
   # Red Trees line and points
   geom_line(aes(y = RedTrees_log, color = "Red Trees"), size = 1.2) +
   geom_point(aes(y = RedTrees_log, color = "Red Trees", shape = "Red Trees"), size = 3) +
@@ -365,10 +378,10 @@ red.green.plot<-ggplot(rtc, aes(x = Year)) +
     breaks = 3:7,
     labels = c("1", "10", "100", "1 000", "10 000"),
     sec.axis = sec_axis(
-      trans = ~.,  # identity transform
+      trans = ~., # identity transform
       breaks = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
       labels = c("0.1", "0.5", "1", "2", "10", "30", "50"),
-      name = expression(R[t] == X[t] / X[t-1])
+      name = expression(R[t] == X[t] / X[t - 1])
     )
   ) +
 
@@ -389,6 +402,5 @@ red.green.plot<-ggplot(rtc, aes(x = Year)) +
     legend.position = c(0.8, 0.9),
     legend.background = element_blank(),
     legend.key = element_blank(),
-    plot.margin = margin(t = 10, r = 60, b = 10, l = 10)  # equivalent to par(mar)
+    plot.margin = margin(t = 10, r = 60, b = 10, l = 10) # equivalent to par(mar)
   )
-
