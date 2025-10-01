@@ -100,7 +100,7 @@ ssi_crs <- sf::st_crs(3400)
 
 ## bring the geometry back into the sf
 all_data_sf <- all_data_df_join_CMI |>
-  dplyr::filter(!is.na(lon) & !is.na(lat)) |>
+  dplyr::filter(!is.na(lon) & !is.na(lat) & !is.na(beetle_yr)) |>
   st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
   st_make_valid() |>
   st_transform(ssi_crs)
