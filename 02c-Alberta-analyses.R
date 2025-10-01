@@ -106,7 +106,7 @@ all_data_sf <- all_data_df_join_CMI |>
   st_transform(ssi_crs)
 
 gg_r_by_year <- ggplot(all_data_sf) +
-  geom_sf(aes(color = log10(r + 1)), size = 1.1, alpha = 0.7) +
+  geom_sf(aes(color = log10(r + 1)), linewidth = 1.1, alpha = 0.7) +
   geom_sf(data = ab_sf, fill = NA) +
   facet_wrap(~beetle_yr, ncol = 7, nrow = 2) +
   scale_color_viridis_c(option = "plasma", name = "log₁₀(r + 1)") +
