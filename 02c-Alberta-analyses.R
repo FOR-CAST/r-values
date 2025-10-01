@@ -303,19 +303,17 @@ ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width =
 rtc <- read.table("data/ab/RedTreeCounts.txt", header = T)
 
 par(mar = c(5, 4, 4, 6))  # bottom, left, top, right
-
-plot(rtc$Year, log10(rtc$RedTrees), xlab = "year",yaxt = "n",
+plot(rtc$Year, log10(rtc$RedTrees), xlab = "Survey Year",yaxt = "n",
      ylab = "Thousands of Trees", type = "l", col = "red", ylim = c(3, 7),lwd=2)
 axis(2, at = 3:7, labels = c("1", "10", "100", "1 000", "10 000"))
-
 abline(v=c(2010,2015,2020),col="gray")
 points(rtc$Year, log10(rtc$RedTrees), pch = 19, col = "red", cex = 1.5)
 lines(rtc$Year, log10(rtc$TreesControlled), lwd=2, col = "darkgreen")
 points(rtc$Year, log10(rtc$TreesControlled), pch = 15, col = "darkgreen", cex = 1.5)
-legend(2016, 6.5,
+legend(2014, 7,
        legend = expression("Red Trees Detected ("*X[t]*")",
                            "Green Trees Controlled",
-                           R[t]),
+                           "Ratio of Change from Last Year ("*R[t]*")"),
        col = c("red", "darkgreen", "blue"),
        pch = c(19, 15, 17),
        lwd = 2)
@@ -324,7 +322,6 @@ legend(2016, 6.5,
 rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
 
 par(new = TRUE)
-
 plot(rtc$Year, log10(rtc$Rt),
      type = "l", col = "blue", lwd = 2,
      axes = FALSE, xlab = "", ylab = "",
@@ -333,5 +330,4 @@ abline(h=0,lty=2,col="blue")
 points(rtc$Year, log10(rtc$Rt), pch = 17, col = "blue", cex = 1.2)
 axis(4, at = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
      labels = c("0.1", "0.5", "1", "2", "10", "30", "50"))
-
 mtext(expression(R[t] == X[t] / X[t-1]), side = 4, line = 3)
