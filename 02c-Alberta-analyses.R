@@ -130,20 +130,31 @@ plot_df <- all_data_df_join_CMI |>
   )
 
 ab_outline_df <- ab_sf |>
-  st_transform(4326) |>  # match lon/lat CRS
+  st_transform(4326) |> ## match lon/lat CRS
   st_coordinates() |>
   as.data.frame() |>
   rename(lon = X, lat = Y)
 
 gg_r_by_year_unproj <- ggplot(plot_df, aes(x = lon, y = lat, fill = r_log)) +
   geom_point(size = 2, alpha = 0.8, stroke = 0.2, shape = 21, color = "black") +
-  geom_path(data = ab_outline_df, aes(x = lon, y = lat), inherit.aes = FALSE, color = "black", size = 0.8) +
+  geom_path(
+    data = ab_outline_df,
+    aes(x = lon, y = lat),
+    inherit.aes = FALSE,
+    color = "black",
+    size = 0.8
+  ) +
   scale_fill_gradient(low = "white", high = "black", name = "log₁₀(r + 1)") +
-  facet_wrap(~ beetle_yr, ncol = 7, nrow = 2) +
+  facet_wrap(~beetle_yr, ncol = 7, nrow = 2) +
   theme_minimal() +
   labs(x = "Longitude", y = "Latitude", title = "Spatial Distribution of r-values by Year")
 
-ggsave(file.path(figPath, "map_r-values_by_year_unprojected.png"), gg_r_by_year_unproj, height = 8, width = 16)
+ggsave(
+  file.path(figPath, "map_r-values_by_year_unprojected.png"),
+  gg_r_by_year_unproj,
+  height = 8,
+  width = 16
+)
 
 yearly_summary <- all_data_df_join_CMI |>
   group_by(beetle_yr) |>
