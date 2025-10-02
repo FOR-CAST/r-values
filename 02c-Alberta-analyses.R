@@ -63,6 +63,11 @@ if (FALSE) {
 ## then doubled k-values for Psurv and PineVol again.
 ## (see ?mgcv::gam.check and ?mgcv::choose.k)
 
+# Correct DBH values > 100 by assuming they are circumference
+all_data_df_join_CMI$dbh <- ifelse(all_data_df_join_CMI$dbh > 100,
+                                   all_data_df_join_CMI$dbh / (2 * pi),
+                                   all_data_df_join_CMI$dbh)
+
 gam_model.all <- gam(
   r ~
     s(lon, lat, bs = "gp", k = 64) +
@@ -89,7 +94,8 @@ qq.gam(gam_model.all, pch = 20)
 # dev.new()
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 
-png(file.path(figPath, "gam_model_all.png"), height = 1600, width = 1600)
+png(file.path(figPath, "gam_model_all.png"), height = 2400, width = 2400, res = 300)
+par(cex = 1.5, cex.axis = 1.4, cex.lab = 1.5, cex.main = 1.5)  # scale everything up
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 dev.off()
 
