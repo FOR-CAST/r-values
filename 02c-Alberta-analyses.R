@@ -481,15 +481,12 @@ rt_aligned_df <- data.frame(
 #plot Rt (properly delagged twice) against rt
 summary(lm(rt_aligned_df$Rt_log_delagged2~rt_aligned_df$r_log))
 
+png("Figures\\Ronr_byyear_Alberta.png", width = 1800, height = 1800, res = 300)
 # Plot log-log with natural number ticks
 plot(10^rt_aligned_df$r_log-1, 10^rt_aligned_df$Rt_log_delagged2,
      log = "xy",  # log scale for both axes
-     xlab = expression(r[t]),
-     ylab = expression(R[t+2]),
-     xlim=c(0.2,2),
-     xaxt = "n",  # suppress default x-axis
-     yaxt = "n"   # suppress default y-axis
-)
+     xlab = expression(r[t]), ylab = expression(R[t+2]),
+     xlim=c(0.2,2), xaxt = "n", yaxt = "n")
 
 # Define natural number ticks
 x_ticks <- c(0.2,0.5, 1, 2)
@@ -511,33 +508,31 @@ y_2007 <- 10^rt_aligned_df$Rt_log_delagged2[rt_aligned_df$beetle_yr == 2007]
 
 # Draw a red circle around it
 symbols(x = x_2007, y = y_2007,
-        circles = rep(0.03, length(x_2007)),  # radius in user units
-        inches = FALSE, add = TRUE,
-        fg = "red", lwd = 2)
+        circles = rep(0.03, length(x_2007)),
+        inches = FALSE, add = TRUE, fg = "red", lwd = 2)
 
-# Step 1: Create censored dataframe
+# Create censored dataframe
 censored_df <- rt_aligned_df[rt_aligned_df$beetle_yr != 2007, ]
 
-# Step 2: Refit model using named dataframe
+# Refit model using named dataframe
 Ronr.lm.censor <- lm(Rt_log_delagged2 ~ r_log, data = censored_df)
 Ronr.lm.censor.sum<-summary(Ronr.lm.censor)
 text(0.7, 24, bquote(italic(r)^2 == .(format(Ronr.lm.censor.sum$r.squared, digits = 3))))
 text(0.7, 16, bquote(italic(p) == .(format(summary(Ronr.lm.censor)$coefficients[2,4], digits = 3))))
 
-# Step 3: Generate x values in natural units
+# Generate x values in natural units
 x_vals <- seq(min(10^censored_df$r_log - 1), max(10^censored_df$r_log - 1), length.out = 100)
 
-# Step 4: Transform to log scale for prediction
+# Transform to log scale for prediction
 log_r_vals <- log10(x_vals + 1)
 
-# Step 5: Predict using clean newdata
+# Predict using clean newdata
 y_pred <- predict(Ronr.lm.censor, newdata = data.frame(r_log = log_r_vals))
 
-# Step 6: Back-transform y to natural units
+# Back-transform y to natural units
 y_vals <- 10^y_pred
 
-# Step 7: Plot regression line
+# Overplot regression line
 lines(x_vals, y_vals, col = "black", lwd = 2)
-
-abline(a = 0, b = 1, col = "black", lwd = 2,lty=2)
-
+abline(a = 0, b = 1, col = "black", lwd = 2,lty=2) #add 1:1 theoretical expectation
+dev.off()
