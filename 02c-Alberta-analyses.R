@@ -404,3 +404,57 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
     legend.key = element_blank(),
     plot.margin = margin(t = 10, r = 60, b = 10, l = 10) # equivalent to par(mar)
   )
+
+#plot Rt against rt: rtc$Rt vs plot_df$r_log
+
+# ------------------------------------------------------------------------------
+# Biological and Survey Timeline: Why r(t) Predicts R(t+2)
+#
+# This section explains the biological and observational logic behind our test:
+# Does brood productivity in beetle year t (r(t)) predict outbreak growth two years later (R(t+2))?
+#
+# Beetle Year t:
+# - Adult beetles attack trees in July of year t.
+# - Eggs are laid in those trees and overwinter from fall of year t to spring of year t+1.
+#
+# Survey Year t+1:
+# - In May–June of year t+1, ground crews use maps of red trees from the previous year t
+#   to identify spots in need of ground surveys for detecting fresh green attack in need of control.
+# - During these ground surveys in year t+1 we assess brood productivity (r(t)) by sampling trees attacked in year t.
+# - These r-values reflect how successful the beetles were at producing viable offspring.
+# - Brood maturing in year t+1 emerge as adults and disperse to new green trees, and begin a new attack cycle
+# - this adult dispersal in t+1 changes the potential size of the area experiencing outbreak; it can shrink or grow
+# - Later in summer (Aug–Nov of t+1), aerial surveys detect newly attacked fading trees (X(t+1)) — these are the "red trees".
+# - These red trees detected in t+1 were attacked by beetles that emerged from brood sites laid in year t.
+# - In BioSIM, this is the year reported for Psurv, not fall of t, but spring of t+1, the simulated year when the calculation finishes,
+#   not the simulated calendar year when the calculation started
+#
+# Winter t+1 → t+2:
+# - Control operations (cut & burn) target fading green trees with live larvae — often the same trees that will fade and turn red in year t+2.
+#
+# Survey Year t+2:
+# - Aerial surveys detect red trees again (X(t+2)), showing the spatial expansion or contraction of the outbreak.
+# - The outbreak growth rate is calculated as R(t+2) = X(t+2) / X(t+1).
+#
+# Causal Chain:
+# - r(t) measures reproductive success of beetles in year t.
+# - Those offspring emerge and attack new trees in year t+1.
+# - The impact of those attacks is visible in the red tree count of year t+2.
+# - Therefore, r(t) should be tested as a predictor of R(t+2).
+#
+# Implementation:
+# - We align r(t) with R(t+2) by shifting/delagging the Rt vector upward/forward by 2 years:
+#     rtc$Rt_delagged2_for_rt <- c(rtc$Rt[-(1:2)], NA, NA)
+# - This ensures that each r(t) value is paired with the outbreak growth that follows two years later.
+#
+# Note: In spreadsheet terms, this shift moves Rt "upward" to match earlier r(t).
+# In R indexing, it's a forward shift — we're de-lagging Rt by 2 years to align with its presumed cause.
+#
+# This logic respects the biology of the beetle life cycle, the timing of surveys, and the reporting structure of BioSIM.
+# It is critical to get this alignment correct to avoid false conclusions about causality.
+# ------------------------------------------------------------------------------
+
+rtc$Rt_delagged2_for_rt <- c(rtc$Rt_log[-(1:2)], NA, NA)
+
+
+
