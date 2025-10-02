@@ -443,9 +443,14 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
 # - Therefore, r(t) should be tested as a predictor of R(t+2).
 #
 # Implementation:
-# - We align r(t) with R(t+2) by shifting/delagging the Rt vector upward/forward by 2 years:
-#     rtc$Rt_delagged2_for_rt <- c(rtc$Rt[-(1:2)], NA, NA)
-# - This ensures that each r(t) value is paired with the outbreak growth that follows two years later.
+# - We align r(t) with R(t+2) by shifting (i.e., de-lagging) the Rt vector upward/forward by 2 years.
+# - This ensures that each r(t) value is paired with the outbreak growth rate that follows two years later.
+# - We do not store the shifted Rt in rtc, because rtc$Year is indexed by survey year, not beetle year.
+# - Storing it there would conflate survey-year indexing with beetle-year causality, creating semantic ambiguity.
+# - Instead, we place the doubly shifted Rt alongside plot_df$r_log, which is indexed by beetle year t.
+# - This preserves biological alignment and causal clarity.
+# - Final assignment:
+#     Rt_log_delagged2 <- c(rtc$Rt_log[-(1:2)], NA, NA) has to be appended onto an annual aggregate of plot_df
 #
 # Note: In spreadsheet terms, this shift moves Rt "upward" to match earlier r(t).
 # In R indexing, it's a forward shift — we're de-lagging Rt by 2 years to align with its presumed cause.
@@ -454,7 +459,22 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
 # It is critical to get this alignment correct to avoid false conclusions about causality.
 # ------------------------------------------------------------------------------
 
-rtc$Rt_delagged2_for_rt <- c(rtc$Rt_log[-(1:2)], NA, NA)
+rt.mean <- plot_df %>%
+  group_by(beetle_yr) %>%
+  summarize(r_log = mean(r_log, na.rm = TRUE)) %>%
+  arrange(beetle_yr)
 
+# Shift Rt_log forward by 2 years
+Rt_log_delagged2 <- c(rtc$Rt_log[-(1:2)], NA, NA)
 
+# Match to beetle years in rt.mean
+beetle_years <- as.character(rt.mean$beetle_yr)  # factor to character
+Rt_log_delagged2_trimmed <- Rt_log_delagged2[rtc$Year %in% beetle_years]
+
+# Final assignment
+rt_aligned_df <- data.frame(
+  beetle_yr = beetle_years,
+  r_log = rt.mean$r_log,
+  Rt_log_delagged2 = Rt_log_delagged2_trimmed
+)
 
