@@ -478,3 +478,66 @@ rt_aligned_df <- data.frame(
   Rt_log_delagged2 = Rt_log_delagged2_trimmed
 )
 
+#plot Rt (properly delagged twice) against rt
+summary(lm(rt_aligned_df$Rt_log_delagged2~rt_aligned_df$r_log))
+
+# Plot log-log with natural number ticks
+plot(10^rt_aligned_df$r_log-1, 10^rt_aligned_df$Rt_log_delagged2,
+     log = "xy",  # log scale for both axes
+     xlab = expression(r[t]),
+     ylab = expression(R[t+2]),
+     xlim=c(0.2,2),
+     xaxt = "n",  # suppress default x-axis
+     yaxt = "n"   # suppress default y-axis
+)
+
+# Define natural number ticks
+x_ticks <- c(0.2,0.5, 1, 2)
+y_ticks <- c(0.2,0.5, 1, 2, 5, 10, 20)
+
+# Add axes with natural number labels
+axis(1, at = x_ticks, labels = x_ticks)
+axis(2, at = y_ticks, labels = y_ticks)
+segments(x0 = 0.191, y0 = 1, x1 = 1, y1 = 1,  # horizontal line
+         col = "red", lwd = 2, lty = 2)
+segments(x0 = 1, y0 = 0.107, x1 = 1, y1 = 1,  # vertical line
+         col = "red", lwd = 2, lty = 2)
+
+#Try excluding beetle year 2007, where the big jump on 2009 was immigration-driven
+
+# Extract 2007 point
+x_2007 <- 10^rt_aligned_df$r_log[rt_aligned_df$beetle_yr == 2007] - 1
+y_2007 <- 10^rt_aligned_df$Rt_log_delagged2[rt_aligned_df$beetle_yr == 2007]
+
+# Draw a red circle around it
+symbols(x = x_2007, y = y_2007,
+        circles = rep(0.03, length(x_2007)),  # radius in user units
+        inches = FALSE, add = TRUE,
+        fg = "red", lwd = 2)
+
+# Step 1: Create censored dataframe
+censored_df <- rt_aligned_df[rt_aligned_df$beetle_yr != 2007, ]
+
+# Step 2: Refit model using named dataframe
+Ronr.lm.censor <- lm(Rt_log_delagged2 ~ r_log, data = censored_df)
+Ronr.lm.censor.sum<-summary(Ronr.lm.censor)
+text(0.7, 24, bquote(italic(r)^2 == .(format(Ronr.lm.censor.sum$r.squared, digits = 3))))
+text(0.7, 16, bquote(italic(p) == .(format(summary(Ronr.lm.censor)$coefficients[2,4], digits = 3))))
+
+# Step 3: Generate x values in natural units
+x_vals <- seq(min(10^censored_df$r_log - 1), max(10^censored_df$r_log - 1), length.out = 100)
+
+# Step 4: Transform to log scale for prediction
+log_r_vals <- log10(x_vals + 1)
+
+# Step 5: Predict using clean newdata
+y_pred <- predict(Ronr.lm.censor, newdata = data.frame(r_log = log_r_vals))
+
+# Step 6: Back-transform y to natural units
+y_vals <- 10^y_pred
+
+# Step 7: Plot regression line
+lines(x_vals, y_vals, col = "black", lwd = 2)
+
+abline(a = 0, b = 1, col = "black", lwd = 2,lty=2)
+
