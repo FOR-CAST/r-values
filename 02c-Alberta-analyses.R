@@ -409,7 +409,72 @@ r.box <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
 
 ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width = 9)
 
+r.violin<-ggplot(plot_df, aes(x = factor(beetle_yr), y = r)) +
+  geom_violin(fill = "grey80", color = "black") +
+  geom_hline(yintercept = 1, color = "red", linetype = "dashed", size = 0.6) +
+  scale_y_log10(
+    breaks = c(0.1,0.2,0.5, 1, 2, 5, 10, 20, 50, 100),
+    labels = c("0.1","0.2","0.5","1", "2", "5", "10", "20", "50", "100"),
+    name = "r"
+  ) +
+  labs(x = "Beetle Attack Year", title = "Violin Plot of r-values by Year") +
+  theme_minimal()
+ggsave(file.path(figPath, "violinplot_r_over_time.png"), r.violin, height = 6, width = 9, dpi=300)
 
+plot_df |>
+  group_by(beetle_yr) |>
+  summarise(prop_zero = mean(r == 0)) |>
+  ggplot(aes(x = factor(beetle_yr), y = prop_zero)) +
+  geom_col(fill = "firebrick", color = "black") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    x = "Beetle Attack Year",
+    y = "Proportion of Zero r-values",
+    title = "Zero Proportion by Year"
+  ) +
+  theme_minimal()
+
+# Filter out zeroes for violin plot
+plot_df_pos <- plot_df |> filter(r > 0)
+
+# Compute proportion of zeroes per year
+zero_prop_df <- plot_df |>
+  group_by(beetle_yr) |>
+  summarise(prop_zero = mean(r == 0))
+
+r.violin.bar<-ggplot() +
+  # Violin plot for r > 0
+  geom_violin(
+    data = plot_df_pos,
+    aes(x = factor(beetle_yr), y = r),
+    fill = "grey40", color = "black"
+  ) +
+  # Overlay bars for proportion of zeroes
+  geom_col(
+    data = zero_prop_df,
+    aes(x = factor(beetle_yr), y = prop_zero * max(plot_df_pos$r, na.rm = TRUE)),
+    fill = "firebrick", alpha = 0.3, width = 0.6
+  ) +
+  # Log scale for r
+  scale_y_log10(
+    breaks = c(0.05,0.1,0.2,0.5, 1, 2, 5, 10, 20, 50, 100),
+    labels = c("0.05","0.1","0.2","0.5","1", "2", "5", "10", "20", "50", "100"),
+    name = "r"
+  ) +
+  labs(
+    x = "Beetle Attack Year",
+    title = ""
+  ) +
+  geom_hline(yintercept = 1, color = "red", linetype = "dashed", size = 0.6) +
+  geom_hline(yintercept = 0, color = "black", size = 0.8) +  # solid y-axis
+  geom_vline(xintercept = 0.5, color = "black", size = 0.8) +  # solid x-axis at left edge
+  theme_minimal(base_size = 12) +
+  theme(
+    axis.text.x = element_text(size = 11),
+    axis.title.x = element_text(margin = margin(t = 10))
+  )
+
+ggsave(file.path(figPath, "violinbarplot_r_over_time.png"), r.violin.bar, height = 6, width = 9, dpi=300)
 
 ## file RTC are red tree counts from Mike Undershultz Feb 22, 2023
 rtc <- file.path(dataPath, "AB", "RedTreeCounts.txt") |>
