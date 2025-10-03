@@ -468,11 +468,28 @@ r.violin <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r)) +
   theme_minimal()
 
 ggsave(file.path(figPath, "violinplot_r_over_time.png"), r.violin, height = 6, width = 9, dpi = 300)
+
+## violin plot with overlaid box plot and median added
+r.violin.box <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r)) +
+  geom_violin(fill = "grey80", color = "black") +
+  stat_summary(fun.y = median, geom = "point", size = 2) +
+  geom_boxplot(width = 0.1) +
+  geom_hline(yintercept = 1, color = "red", linetype = "dashed", size = 0.6) +
+  scale_y_log10(
+    breaks = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
+    labels = c("0.1", "0.2", "0.5", "1", "2", "5", "10", "20", "50", "100"),
     name = "r"
   ) +
   labs(x = "Beetle Attack Year", title = "Violin Plot of r-values by Year") +
   theme_minimal()
-ggsave(file.path(figPath, "violinplot_r_over_time.png"), r.violin, height = 6, width = 9, dpi=300)
+
+ggsave(
+  file.path(figPath, "violinboxplot_r_over_time.png"),
+  r.violin.box,
+  height = 6,
+  width = 9,
+  dpi = 300
+)
 
 ## proportion of zeroes (omitted from violin plot)
 plot_df |>
