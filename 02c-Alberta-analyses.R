@@ -353,7 +353,7 @@ ggsave(
 ## Re-do the ribbon plot but without the ridiculous overlay scheme in ggplot
 
 ## Plot r on log scale
-png("Figures\\r_Psurv_overtime.png",height=1800,width=2400,res=300)
+png(file.path(figPath, "r_Psurv_overtime.png"), height = 1800, width = 2400, res = 300)
 par(mar = c(4, 5, 2, 6))
 plot(
   yearly_summary$beetle_yr,
