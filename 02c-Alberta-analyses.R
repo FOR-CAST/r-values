@@ -401,13 +401,15 @@ r.box <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
   geom_hline(yintercept = log10(2), color = "red", linetype = "dashed", size = 0.6) +
   scale_y_continuous(
     breaks = c(0, 0.5, 1, 1.5, 2),
-    labels = c("0", "2", "9", "31", "99"),
+    labels = c("0", "3", "9", "31", "99"),
     name = "r"
   ) +
   labs(x = "Beetle Attack Year", title = "Distribution of r-values by Year") +
   theme_minimal()
 
 ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width = 9)
+
+
 
 ## file RTC are red tree counts from Mike Undershultz Feb 22, 2023
 rtc <- file.path(dataPath, "AB", "RedTreeCounts.txt") |>
