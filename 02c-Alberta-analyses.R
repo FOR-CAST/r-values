@@ -128,7 +128,7 @@ gg_r_by_year <- ggplot(all_data_sf) +
 
 ggsave(file.path(figPath, "map_r-values_by_year.png"), gg_r_by_year, height = 16, width = 16)
 
-### Plot r-values in base R, unprojected
+### Plot r-values unprojected
 plot_df <- all_data_df_join_CMI |>
   filter(!is.na(lon) & !is.na(lat) & !is.na(r) & !is.na(beetle_yr)) |>
   mutate(
@@ -151,7 +151,7 @@ gg_r_by_year_unproj <- ggplot(plot_df, aes(x = lon, y = lat, fill = r_log)) +
     aes(x = lon, y = lat),
     inherit.aes = FALSE,
     color = "black",
-    size = 0.8
+    linewidth = 0.8
   ) +
   scale_x_continuous(
     breaks = pretty(plot_df$lon, n = 5), ## ~5 evenly spaced ticks
@@ -302,7 +302,7 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
     name = "Psurv (%)",
     limits = c(0, 100),
     sec.axis = sec_axis(
-      trans = ~ . / 200,
+      transform = ~ . / 200,
       name = "r",
       breaks = c(0, 0.2998, 0.477),
       labels = c("1", "2", "3")
