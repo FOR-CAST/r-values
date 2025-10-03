@@ -64,9 +64,11 @@ if (FALSE) {
 ## (see ?mgcv::gam.check and ?mgcv::choose.k)
 
 # Correct DBH values > 100 by assuming they are circumference
-all_data_df_join_CMI$dbh <- ifelse(all_data_df_join_CMI$dbh > 100,
-                                   all_data_df_join_CMI$dbh / (2 * pi),
-                                   all_data_df_join_CMI$dbh)
+all_data_df_join_CMI$dbh <- ifelse(
+  all_data_df_join_CMI$dbh > 100,
+  all_data_df_join_CMI$dbh / (2 * pi),
+  all_data_df_join_CMI$dbh
+)
 
 gam_model.all <- gam(
   r ~
@@ -97,7 +99,7 @@ plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 #png(file.path(figPath, "gam_model_cleaned.png"), height = 1600, width = 1600, res = 300)
 pdf(file.path(figPath, "gam_model_AB.pdf"), height = 8, width = 8)
 par(cex = 1.4, cex.axis = 1.2, cex.lab = 1.4, cex.main = 1.6)
-plot(gam_model.all, scheme = 2,pages = 1, all.terms = TRUE)
+plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 dev.off()
 
 ### -------------------------------------------------------------------------------------------
@@ -183,14 +185,14 @@ yearly_summary <- all_data_df_join_CMI |>
     se_Tmin = sd(Tmin, na.rm = TRUE) / sqrt(n())
   )
 
-plot_df <- yearly_summary |>
+plot_df_summary <- yearly_summary |>
   pivot_longer(
     cols = c(mean_r_log, se_r_log, mean_Psurv, se_Psurv, mean_Tmin, se_Tmin),
     names_to = "metric",
     values_to = "value"
   )
 
-Psurv.r.cor<-stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
+Psurv.r.cor <- stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
 
 stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Tmin)
 
@@ -219,7 +221,8 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   geom_text(
     data = data.frame(x = 2012, y = 100, label = paste0("r² = ", round(Psurv.r.cor, 2))),
     aes(x = x, y = y, label = label),
-    hjust = 1.1, vjust = 1.5,
+    hjust = 1.1,
+    vjust = 1.5,
     inherit.aes = FALSE,
     size = 4
   ) +
@@ -243,34 +246,35 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
 
 ggsave(file.path(figPath, "mean_Psurv_r_over_time.png"), gg_r_Psurv_ribbon)
 
-# Define scale and shift for log-transformed r
-y_scale <- 25   # adjust as needed for visual alignment
-y_shift <- 0    # vertical offset
+## Define scale and shift for log-transformed r
+y_scale <- 25 ## adjust as needed for visual alignment
+y_shift <- 0 ## adjust as needed for vertical offset
 
-# Choose r values for axis tics — adjust if needed
+## Choose r values for axis tics — adjust if needed
 r_breaks <- c(1, 2, 3)
 r_labels <- as.character(r_breaks)
 r_transformed <- log10(r_breaks) * y_scale + y_shift
-
-# Define scale and shift for log-transformed r
-y_scale <- 25   # adjust as needed
-y_shift <- 0    # adjust as needed
 
 gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   ## Psurv line and ribbon
   geom_ribbon(
     aes(ymin = mean_Psurv - se_Psurv, ymax = mean_Psurv + se_Psurv, fill = "Psurv (%)"),
-    alpha = 0.2, show.legend = FALSE
+    alpha = 0.2,
+    show.legend = FALSE
   ) +
   geom_line(aes(y = mean_Psurv, color = "Psurv (%)"), size = 1.2) +
   geom_point(
     aes(y = mean_Psurv, shape = "Psurv (%)"),
-    size = 4, stroke = 1.2, color = "black", fill = "white"
+    size = 4,
+    stroke = 1.2,
+    color = "black",
+    fill = "white"
   ) +
   geom_text(
     data = data.frame(x = 2013.5, y = 100, label = paste0("r² = ", round(Psurv.r.cor, 2))),
     aes(x = x, y = y, label = label),
-    hjust = 1.1, vjust = 1.5,
+    hjust = 1.1,
+    vjust = 1.5,
     inherit.aes = FALSE,
     size = 4
   ) +
@@ -281,12 +285,14 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
       ymax = (mean_r_log + se_r_log) * y_scale + y_shift,
       fill = "r"
     ),
-    alpha = 0.2, show.legend = FALSE
+    alpha = 0.2,
+    show.legend = FALSE
   ) +
   geom_line(aes(y = mean_r_log * y_scale + y_shift, color = "r"), size = 1.2) +
   geom_point(
     aes(y = mean_r_log * y_scale + y_shift, shape = "r"),
-    size = 4, color = "black"
+    size = 4,
+    color = "black"
   ) +
   ## Vertical markers
   geom_vline(xintercept = c(2010, 2015), linetype = "dashed", color = "gray50") +
@@ -302,7 +308,7 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
       labels = c("1", "2", "3")
     )
   ) +
-  geom_hline(yintercept = log10(c(1, 2, 3)) * y_scale, linetype = "dashed", color = "gray50")  +
+  geom_hline(yintercept = log10(c(1, 2, 3)) * y_scale, linetype = "dashed", color = "gray50") +
 
   scale_color_manual(
     values = c("Psurv (%)" = "black", "r" = "black"),
@@ -327,12 +333,26 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
     plot.subtitle = element_blank(),
     plot.caption = element_blank()
   )
-ggsave(file.path(figPath, "mean_Psurv_r_over_time_new.png"), gg_r_Psurv_ribbon, width = 6, height = 4, dpi = 300, units = "in")
-ggsave(file.path(figPath, "mean_Psurv_r_over_time_new.pdf"), gg_r_Psurv_ribbon, width = 6, height = 4)
 
+ggsave(
+  file.path(figPath, "mean_Psurv_r_over_time_new.png"),
+  gg_r_Psurv_ribbon,
+  width = 6,
+  height = 4,
+  dpi = 300,
+  units = "in"
+)
+
+ggsave(
+  file.path(figPath, "mean_Psurv_r_over_time_new.pdf"),
+  gg_r_Psurv_ribbon,
+  width = 6,
+  height = 4
+)
 
 y_scale <- 75
 y_shift <- -50
+
 gg_r_Tmin_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   ## Tmin line and ribbon
   geom_ribbon(
@@ -374,7 +394,7 @@ gg_r_Tmin_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
 
 ggsave(file.path(figPath, "mean_Tmin_r_over_time.png"), gg_r_Tmin_ribbon)
 
-#Next we make a boxplot of r-values binned by year
+## next we make a boxplot of r-values binned by year
 r.box <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
   geom_boxplot(fill = "grey80", color = "black", outlier.shape = NA) +
   geom_jitter(width = 0.2, size = 0.6, alpha = 0.6, color = "black") +
@@ -389,10 +409,11 @@ r.box <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
 
 ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width = 9)
 
-# File RTC are red tree counts from Mike Undershultz Feb 22, 2023
-rtc <- read.table("data/ab/RedTreeCounts.txt", header = T)
+## file RTC are red tree counts from Mike Undershultz Feb 22, 2023
+rtc <- file.path(dataPath, "AB", "RedTreeCounts.txt") |>
+  read.table(header = TRUE)
 
-png("Figures\\RedGreenTrees.png", width = 2400, height = 1800, res = 300)
+png(file.path(figPath, "RedGreenTrees.png"), width = 2400, height = 1800, res = 300)
 par(mar = c(5, 4, 4, 6)) # bottom, left, top, right
 plot(
   rtc$Year,
@@ -423,7 +444,7 @@ legend(
   lwd = 2
 )
 
-#compute and plot interannual change in red trees Rt=Xt/Xt-1, on second y-axis
+## compute and plot interannual change in red trees Rt=Xt/Xt-1, on second y-axis
 rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
 
 par(new = TRUE)
@@ -448,32 +469,32 @@ axis(
 mtext(expression(R[t] == X[t] / X[t - 1]), side = 4, line = 3)
 dev.off()
 
-#same but in ggplot:
+## same but in ggplot:
 rtc$RedTrees_log <- log10(rtc$RedTrees)
 rtc$TreesControlled_log <- log10(rtc$TreesControlled)
 rtc$Rt <- c(NA, rtc$RedTrees[-1] / rtc$RedTrees[-length(rtc$RedTrees)])
 rtc$Rt_log <- log10(rtc$Rt)
 
 red.green.plot <- ggplot(rtc, aes(x = Year)) +
-  # Red Trees line and points
+  ## Red Trees line and points
   geom_line(aes(y = RedTrees_log, color = "Red Trees"), size = 1.2) +
   geom_point(aes(y = RedTrees_log, color = "Red Trees", shape = "Red Trees"), size = 3) +
 
-  # Green Trees line and points
+  ## Green Trees line and points
   geom_line(aes(y = TreesControlled_log, color = "Green Trees"), size = 1.2) +
   geom_point(aes(y = TreesControlled_log, color = "Green Trees", shape = "Green Trees"), size = 3) +
 
-  # Ratio line and points on secondary axis
+  ## Ratio line and points on secondary axis
   geom_line(aes(y = Rt_log, color = "Ratio"), size = 1.2) +
   geom_point(aes(y = Rt_log, color = "Ratio", shape = "Ratio"), size = 2.5) +
 
-  # Vertical reference lines
+  ## Vertical reference lines
   geom_vline(xintercept = c(2010, 2015, 2020), color = "gray70", linetype = "dashed") +
 
-  # Horizontal reference line at ratio = 1 (log10 = 0)
+  ## Horizontal reference line at ratio = 1 (log10 = 0)
   geom_hline(yintercept = 0, color = "blue", linetype = "dotted") +
 
-  # Primary y-axis (log10 trees)
+  ## Primary y-axis (log10 trees)
   scale_y_continuous(
     name = "Thousands of Trees",
     breaks = 3:7,
@@ -486,7 +507,7 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
     )
   ) +
 
-  # Color and shape mappings
+  ## Color and shape mappings
   scale_color_manual(
     name = NULL,
     values = c("Red Trees" = "red", "Green Trees" = "darkgreen", "Ratio" = "blue")
@@ -500,13 +521,13 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
   theme_minimal(base_size = 14) +
   theme(
     axis.title.y.right = element_text(color = "blue"),
-    legend.position = c(0.8, 0.9),
+    legend.position.inside = c(0.8, 0.9),
     legend.background = element_blank(),
     legend.key = element_blank(),
-    plot.margin = margin(t = 10, r = 60, b = 10, l = 10) # equivalent to par(mar)
+    plot.margin = margin(t = 10, r = 60, b = 10, l = 10) ## equivalent to par(mar)
   )
 
-#plot Rt against rt: rtc$Rt vs plot_df$r_log
+## plot Rt against rt: rtc$Rt vs plot_df$r_log
 
 # ------------------------------------------------------------------------------
 # Biological and Survey Timeline: Why r(t) Predicts R(t+2)
@@ -560,80 +581,110 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
 # It is critical to get this alignment correct to avoid false conclusions about causality.
 # ------------------------------------------------------------------------------
 
-rt.mean <- plot_df %>%
-  group_by(beetle_yr) %>%
-  summarize(r_log = mean(r_log, na.rm = TRUE)) %>%
+rt.mean <- plot_df |>
+  group_by(beetle_yr) |>
+  summarize(r_log = mean(r_log, na.rm = TRUE)) |>
   arrange(beetle_yr)
 
-# Shift Rt_log forward by 2 years
+## Shift Rt_log forward by 2 years
 Rt_log_delagged2 <- c(rtc$Rt_log[-(1:2)], NA, NA)
 
-# Match to beetle years in rt.mean
-beetle_years <- as.character(rt.mean$beetle_yr)  # factor to character
+## Match to beetle years in rt.mean
+beetle_years <- as.character(rt.mean$beetle_yr) ## factor to character
 Rt_log_delagged2_trimmed <- Rt_log_delagged2[rtc$Year %in% beetle_years]
 
-# Final assignment
+## Final assignment
 rt_aligned_df <- data.frame(
   beetle_yr = beetle_years,
   r_log = rt.mean$r_log,
   Rt_log_delagged2 = Rt_log_delagged2_trimmed
 )
 
-#plot Rt (properly delagged twice) against rt
-summary(lm(rt_aligned_df$Rt_log_delagged2~rt_aligned_df$r_log))
+## plot Rt (properly delagged twice) against rt
+summary(lm(rt_aligned_df$Rt_log_delagged2 ~ rt_aligned_df$r_log))
 
-png("Figures\\Ronr_byyear_Alberta.png", width = 1800, height = 1800, res = 300)
-# Plot log-log with natural number ticks
-plot(10^rt_aligned_df$r_log-1, 10^rt_aligned_df$Rt_log_delagged2,
-     log = "xy",  # log scale for both axes
-     xlab = expression(r[t]), ylab = expression(R[t+2]),
-     xlim=c(0.2,2), xaxt = "n", yaxt = "n")
+png(file.path(figPath, "Ronr_byyear_Alberta.png"), width = 1800, height = 1800, res = 300)
+##  Plot log-log with natural number ticks
+plot(
+  10^rt_aligned_df$r_log - 1,
+  10^rt_aligned_df$Rt_log_delagged2,
+  log = "xy", # log scale for both axes
+  xlab = expression(r[t]),
+  ylab = expression(R[t + 2]),
+  xlim = c(0.2, 2),
+  xaxt = "n",
+  yaxt = "n"
+)
 
-# Define natural number ticks
-x_ticks <- c(0.2,0.5, 1, 2)
-y_ticks <- c(0.2,0.5, 1, 2, 5, 10, 20)
+## Define natural number ticks
+x_ticks <- c(0.2, 0.5, 1, 2)
+y_ticks <- c(0.2, 0.5, 1, 2, 5, 10, 20)
 
-# Add axes with natural number labels
+## Add axes with natural number labels
 axis(1, at = x_ticks, labels = x_ticks)
 axis(2, at = y_ticks, labels = y_ticks)
-segments(x0 = 0.191, y0 = 1, x1 = 1, y1 = 1,  # horizontal line
-         col = "red", lwd = 2, lty = 2)
-segments(x0 = 1, y0 = 0.107, x1 = 1, y1 = 1,  # vertical line
-         col = "red", lwd = 2, lty = 2)
+segments(
+  x0 = 0.191,
+  y0 = 1,
+  x1 = 1,
+  y1 = 1, ## horizontal line
+  col = "red",
+  lwd = 2,
+  lty = 2
+)
+segments(
+  x0 = 1,
+  y0 = 0.107,
+  x1 = 1,
+  y1 = 1, # vertical line
+  col = "red",
+  lwd = 2,
+  lty = 2
+)
 
-#Try excluding beetle year 2007, where the big jump on 2009 was immigration-driven
+## Try excluding beetle year 2007, where the big jump on 2009 was immigration-driven
 
-# Extract 2007 point
+## Extract 2007 point
 x_2007 <- 10^rt_aligned_df$r_log[rt_aligned_df$beetle_yr == 2007] - 1
 y_2007 <- 10^rt_aligned_df$Rt_log_delagged2[rt_aligned_df$beetle_yr == 2007]
 
-# Draw a red circle around it
-symbols(x = x_2007, y = y_2007,
-        circles = rep(0.03, length(x_2007)),
-        inches = FALSE, add = TRUE, fg = "red", lwd = 2)
+## Draw a red circle around it
+symbols(
+  x = x_2007,
+  y = y_2007,
+  circles = rep(0.03, length(x_2007)),
+  inches = FALSE,
+  add = TRUE,
+  fg = "red",
+  lwd = 2
+)
 
-# Create censored dataframe
+## Create censored dataframe
 censored_df <- rt_aligned_df[rt_aligned_df$beetle_yr != 2007, ]
 
-# Refit model using named dataframe
+## Refit model using named dataframe
 Ronr.lm.censor <- lm(Rt_log_delagged2 ~ r_log, data = censored_df)
-Ronr.lm.censor.sum<-summary(Ronr.lm.censor)
+Ronr.lm.censor.sum <- summary(Ronr.lm.censor)
 text(0.7, 24, bquote(italic(r)^2 == .(format(Ronr.lm.censor.sum$r.squared, digits = 3))))
-text(0.7, 16, bquote(italic(p) == .(format(summary(Ronr.lm.censor)$coefficients[2,4], digits = 3))))
+text(
+  0.7,
+  16,
+  bquote(italic(p) == .(format(summary(Ronr.lm.censor)$coefficients[2, 4], digits = 3)))
+)
 
-# Generate x values in natural units
+## Generate x values in natural units
 x_vals <- seq(min(10^censored_df$r_log - 1), max(10^censored_df$r_log - 1), length.out = 100)
 
-# Transform to log scale for prediction
+## Transform to log scale for prediction
 log_r_vals <- log10(x_vals + 1)
 
-# Predict using clean newdata
+## Predict using clean newdata
 y_pred <- predict(Ronr.lm.censor, newdata = data.frame(r_log = log_r_vals))
 
-# Back-transform y to natural units
+## Back-transform y to natural units
 y_vals <- 10^y_pred
 
-# Overplot regression line
+## Overplot regression line
 lines(x_vals, y_vals, col = "black", lwd = 2)
-abline(a = 0, b = 1, col = "black", lwd = 2,lty=2) #add 1:1 theoretical expectation
+abline(a = 0, b = 1, col = "black", lwd = 2, lty = 2) ## add 1:1 theoretical expectation
 dev.off()
