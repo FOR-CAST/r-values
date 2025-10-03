@@ -271,7 +271,7 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
     fill = "white"
   ) +
   geom_text(
-    data = data.frame(x = 2013.5, y = 100, label = paste0("r² = ", round(Psurv.r.cor, 2))),
+    data = data.frame(x = 2013.5, y = 100, label = paste0("r = ", round(Psurv.r.cor, 2))),
     aes(x = x, y = y, label = label),
     hjust = 1.1,
     vjust = 1.5,
@@ -349,6 +349,29 @@ ggsave(
   width = 6,
   height = 4
 )
+
+###Re-do the ribbon plot but without the ridiculous overlay scheme in ggplot
+
+# Plot r on log scale
+png("Figures\\r_Psurv_overtime.png",height=1800,width=2400,res=300)
+par(mar=c(4,5,2,6))
+plot(yearly_summary$beetle_yr, 10^yearly_summary$mean_r_log - 1,
+     type = "b", pch = 16, col = "black",
+     xlab = "Beetle Year", ylab = "r",
+     log = "y",cex=1.5)
+abline(h=1,lty=2,col="red")
+# Overlay Psurv on second axis
+par(new = TRUE)
+plot(yearly_summary$beetle_yr, yearly_summary$mean_Psurv,
+     type = "b", pch = 22, bg = "white",cex=1.5, col = "black",
+     axes = FALSE, xlab = "", ylab = "", ylim = c(0, 100))
+axis(4)
+mtext("Psurv (%)", side = 4, line = 3)
+legend(2012, 20, legend = c("r", "Psurv"),
+       pch = c(16, 22), pt.cex = 1.5, cex = 1,
+       text.width = max(strwidth(c("r", "Psurv"), cex = 1)))
+text(2007,95,paste0("r = ", round(Psurv.r.cor, 2)))
+dev.off()
 
 y_scale <- 75
 y_shift <- -50
