@@ -63,7 +63,7 @@ if (FALSE) {
 ## then doubled k-values for Psurv and PineVol again.
 ## (see ?mgcv::gam.check and ?mgcv::choose.k)
 
-# Correct DBH values > 100 by assuming they are circumference
+## Correct DBH values > 100 by assuming they are circumference
 all_data_df_join_CMI$dbh <- ifelse(
   all_data_df_join_CMI$dbh > 100,
   all_data_df_join_CMI$dbh / (2 * pi),
@@ -79,10 +79,10 @@ gam_model.all <- gam(
       s(log10(nbr_infested + 1)) +
       s(CMI, bs = "gp", k = 22) +
       s(asin(sqrt(Q)), bs = "gp", k = 22) +
-      s(PineVol, bs = "gp", k = 44) +
+      # s(PineVol, bs = "gp", k = 44) +
       s(Psurv, bs = "gp", k = 44) +
-      s(SSI_2016, bs = "gp", k = 22) +
-      s(Tmin, bs = "gp", k = 22),
+      s(SSI_2016, bs = "gp", k = 22), # +
+  # s(Tmin, bs = "gp", k = 22),
   data = all_data_df_join_CMI,
   method = "REML",
   family = gaussian(link = "identity")
