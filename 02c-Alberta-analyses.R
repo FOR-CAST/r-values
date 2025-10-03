@@ -96,7 +96,7 @@ qq.gam(gam_model.all, pch = 20)
 # dev.new()
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 
-#png(file.path(figPath, "gam_model_cleaned.png"), height = 1600, width = 1600, res = 300)
+# png(file.path(figPath, "gam_model_cleaned.png"), height = 1600, width = 1600, res = 300)
 pdf(file.path(figPath, "gam_model_AB.pdf"), height = 8, width = 8)
 par(cex = 1.4, cex.axis = 1.2, cex.lab = 1.4, cex.main = 1.6)
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
@@ -350,27 +350,50 @@ ggsave(
   height = 4
 )
 
-###Re-do the ribbon plot but without the ridiculous overlay scheme in ggplot
+## Re-do the ribbon plot but without the ridiculous overlay scheme in ggplot
 
-# Plot r on log scale
+## Plot r on log scale
 png("Figures\\r_Psurv_overtime.png",height=1800,width=2400,res=300)
-par(mar=c(4,5,2,6))
-plot(yearly_summary$beetle_yr, 10^yearly_summary$mean_r_log - 1,
-     type = "b", pch = 16, col = "black",
-     xlab = "Beetle Year", ylab = "r",
-     log = "y",cex=1.5)
-abline(h=1,lty=2,col="red")
-# Overlay Psurv on second axis
+par(mar = c(4, 5, 2, 6))
+plot(
+  yearly_summary$beetle_yr,
+  10^yearly_summary$mean_r_log - 1,
+  type = "b",
+  pch = 16,
+  col = "black",
+  xlab = "Beetle Year",
+  ylab = "r",
+  log = "y",
+  cex = 1.5
+)
+abline(h = 1, lty = 2, col = "red")
+## Overlay Psurv on second axis
 par(new = TRUE)
-plot(yearly_summary$beetle_yr, yearly_summary$mean_Psurv,
-     type = "b", pch = 22, bg = "white",cex=1.5, col = "black",
-     axes = FALSE, xlab = "", ylab = "", ylim = c(0, 100))
+plot(
+  yearly_summary$beetle_yr,
+  yearly_summary$mean_Psurv,
+  type = "b",
+  pch = 22,
+  bg = "white",
+  cex = 1.5,
+  col = "black",
+  axes = FALSE,
+  xlab = "",
+  ylab = "",
+  ylim = c(0, 100)
+)
 axis(4)
 mtext("Psurv (%)", side = 4, line = 3)
-legend(2012, 20, legend = c("r", "Psurv"),
-       pch = c(16, 22), pt.cex = 1.5, cex = 1,
-       text.width = max(strwidth(c("r", "Psurv"), cex = 1)))
-text(2007,95,paste0("r = ", round(Psurv.r.cor, 2)))
+legend(
+  2012,
+  20,
+  legend = c("r", "Psurv"),
+  pch = c(16, 22),
+  pt.cex = 1.5,
+  cex = 1,
+  text.width = max(strwidth(c("r", "Psurv"), cex = 1))
+)
+text(2007, 95, paste0("r = ", round(Psurv.r.cor, 2)))
 dev.off()
 
 y_scale <- 75
@@ -432,18 +455,26 @@ r.box <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r_log)) +
 
 ggsave(file.path(figPath, "boxplot_r_over_time.png"), r.box, height = 6, width = 9)
 
-r.violin<-ggplot(plot_df, aes(x = factor(beetle_yr), y = r)) +
+## violin plot
+r.violin <- ggplot(plot_df, aes(x = factor(beetle_yr), y = r)) +
   geom_violin(fill = "grey80", color = "black") +
   geom_hline(yintercept = 1, color = "red", linetype = "dashed", size = 0.6) +
   scale_y_log10(
-    breaks = c(0.1,0.2,0.5, 1, 2, 5, 10, 20, 50, 100),
-    labels = c("0.1","0.2","0.5","1", "2", "5", "10", "20", "50", "100"),
+    breaks = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
+    labels = c("0.1", "0.2", "0.5", "1", "2", "5", "10", "20", "50", "100"),
+    name = "r"
+  ) +
+  labs(x = "Beetle Attack Year", title = "Violin Plot of r-values by Year") +
+  theme_minimal()
+
+ggsave(file.path(figPath, "violinplot_r_over_time.png"), r.violin, height = 6, width = 9, dpi = 300)
     name = "r"
   ) +
   labs(x = "Beetle Attack Year", title = "Violin Plot of r-values by Year") +
   theme_minimal()
 ggsave(file.path(figPath, "violinplot_r_over_time.png"), r.violin, height = 6, width = 9, dpi=300)
 
+## proportion of zeroes (omitted from violin plot)
 plot_df |>
   group_by(beetle_yr) |>
   summarise(prop_zero = mean(r == 0)) |>
@@ -457,47 +488,57 @@ plot_df |>
   ) +
   theme_minimal()
 
-# Filter out zeroes for violin plot
+## Filter out zeroes for violin plot
 plot_df_pos <- plot_df |> filter(r > 0)
 
-# Compute proportion of zeroes per year
+## Compute proportion of zeroes per year
 zero_prop_df <- plot_df |>
   group_by(beetle_yr) |>
   summarise(prop_zero = mean(r == 0))
 
-r.violin.bar<-ggplot() +
-  # Violin plot for r > 0
+## overlay proportion zeroes onto violin plot
+r.violin.bar <- ggplot() +
+  ## Violin plot for r > 0
   geom_violin(
     data = plot_df_pos,
     aes(x = factor(beetle_yr), y = r),
-    fill = "grey40", color = "black"
+    fill = "grey40",
+    color = "black"
   ) +
-  # Overlay bars for proportion of zeroes
+  ## Overlay bars for proportion of zeroes
   geom_col(
     data = zero_prop_df,
     aes(x = factor(beetle_yr), y = prop_zero * max(plot_df_pos$r, na.rm = TRUE)),
-    fill = "firebrick", alpha = 0.3, width = 0.6
+    fill = "firebrick",
+    alpha = 0.3,
+    width = 0.6
   ) +
-  # Log scale for r
+  ## Log scale for r
   scale_y_log10(
-    breaks = c(0.05,0.1,0.2,0.5, 1, 2, 5, 10, 20, 50, 100),
-    labels = c("0.05","0.1","0.2","0.5","1", "2", "5", "10", "20", "50", "100"),
-    name = "r"
+    breaks = c(0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
+    labels = c("0.05", "0.1", "0.2", "0.5", "1", "2", "5", "10", "20", "50", "100"),
+    name = "r",
   ) +
   labs(
     x = "Beetle Attack Year",
     title = ""
   ) +
   geom_hline(yintercept = 1, color = "red", linetype = "dashed", size = 0.6) +
-  geom_hline(yintercept = 0, color = "black", size = 0.8) +  # solid y-axis
-  geom_vline(xintercept = 0.5, color = "black", size = 0.8) +  # solid x-axis at left edge
+  geom_hline(yintercept = 0, color = "black", size = 0.8) + # solid y-axis
+  geom_vline(xintercept = 0.5, color = "black", size = 0.8) + # solid x-axis at left edge
   theme_minimal(base_size = 12) +
   theme(
     axis.text.x = element_text(size = 11),
     axis.title.x = element_text(margin = margin(t = 10))
   )
 
-ggsave(file.path(figPath, "violinbarplot_r_over_time.png"), r.violin.bar, height = 6, width = 9, dpi=300)
+ggsave(
+  file.path(figPath, "violinbarplot_r_over_time.png"),
+  r.violin.bar,
+  height = 6,
+  width = 9,
+  dpi = 300
+)
 
 ## file RTC are red tree counts from Mike Undershultz Feb 22, 2023
 rtc <- file.path(dataPath, "AB", "RedTreeCounts.txt") |>
@@ -617,59 +658,57 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
     plot.margin = margin(t = 10, r = 60, b = 10, l = 10) ## equivalent to par(mar)
   )
 
-## plot Rt against rt: rtc$Rt vs plot_df$r_log
+## plot Rt against rt: rtc$Rt vs plot_df$r_log -----------------------------------------------------
 
-# ------------------------------------------------------------------------------
-# Biological and Survey Timeline: Why r(t) Predicts R(t+2)
-#
-# This section explains the biological and observational logic behind our test:
-# Does brood productivity in beetle year t (r(t)) predict outbreak growth two years later (R(t+2))?
-#
-# Beetle Year t:
-# - Adult beetles attack trees in July of year t.
-# - Eggs are laid in those trees and overwinter from fall of year t to spring of year t+1.
-#
-# Survey Year t+1:
-# - In May–June of year t+1, ground crews use maps of red trees from the previous year t
-#   to identify spots in need of ground surveys for detecting fresh green attack in need of control.
-# - During these ground surveys in year t+1 we assess brood productivity (r(t)) by sampling trees attacked in year t.
-# - These r-values reflect how successful the beetles were at producing viable offspring.
-# - Brood maturing in year t+1 emerge as adults and disperse to new green trees, and begin a new attack cycle
-# - this adult dispersal in t+1 changes the potential size of the area experiencing outbreak; it can shrink or grow
-# - Later in summer (Aug–Nov of t+1), aerial surveys detect newly attacked fading trees (X(t+1)) — these are the "red trees".
-# - These red trees detected in t+1 were attacked by beetles that emerged from brood sites laid in year t.
-# - In BioSIM, this is the year reported for Psurv, not fall of t, but spring of t+1, the simulated year when the calculation finishes,
-#   not the simulated calendar year when the calculation started
-#
-# Winter t+1 → t+2:
-# - Control operations (cut & burn) target fading green trees with live larvae — often the same trees that will fade and turn red in year t+2.
-#
-# Survey Year t+2:
-# - Aerial surveys detect red trees again (X(t+2)), showing the spatial expansion or contraction of the outbreak.
-# - The outbreak growth rate is calculated as R(t+2) = X(t+2) / X(t+1).
-#
-# Causal Chain:
-# - r(t) measures reproductive success of beetles in year t.
-# - Those offspring emerge and attack new trees in year t+1.
-# - The impact of those attacks is visible in the red tree count of year t+2.
-# - Therefore, r(t) should be tested as a predictor of R(t+2).
-#
-# Implementation:
-# - We align r(t) with R(t+2) by shifting (i.e., de-lagging) the Rt vector upward/forward by 2 years.
-# - This ensures that each r(t) value is paired with the outbreak growth rate that follows two years later.
-# - We do not store the shifted Rt in rtc, because rtc$Year is indexed by survey year, not beetle year.
-# - Storing it there would conflate survey-year indexing with beetle-year causality, creating semantic ambiguity.
-# - Instead, we place the doubly shifted Rt alongside plot_df$r_log, which is indexed by beetle year t.
-# - This preserves biological alignment and causal clarity.
-# - Final assignment:
-#     Rt_log_delagged2 <- c(rtc$Rt_log[-(1:2)], NA, NA) has to be appended onto an annual aggregate of plot_df
-#
-# Note: In spreadsheet terms, this shift moves Rt "upward" to match earlier r(t).
-# In R indexing, it's a forward shift — we're de-lagging Rt by 2 years to align with its presumed cause.
-#
-# This logic respects the biology of the beetle life cycle, the timing of surveys, and the reporting structure of BioSIM.
-# It is critical to get this alignment correct to avoid false conclusions about causality.
-# ------------------------------------------------------------------------------
+## Biological and Survey Timeline: Why r(t) Predicts R(t+2)
+##
+## This section explains the biological and observational logic behind our test:
+## Does brood productivity in beetle year t (r(t)) predict outbreak growth two years later (R(t+2))?
+##
+## Beetle Year t:
+## - Adult beetles attack trees in July of year t.
+## - Eggs are laid in those trees and overwinter from fall of year t to spring of year t+1.
+##
+## Survey Year t+1:
+## - In May–June of year t+1, ground crews use maps of red trees from the previous year t
+##   to identify spots in need of ground surveys for detecting fresh green attack in need of control.
+## - During these ground surveys in year t+1 we assess brood productivity (r(t)) by sampling trees attacked in year t.
+## - These r-values reflect how successful the beetles were at producing viable offspring.
+## - Brood maturing in year t+1 emerge as adults and disperse to new green trees, and begin a new attack cycle
+## - this adult dispersal in t+1 changes the potential size of the area experiencing outbreak; it can shrink or grow
+## - Later in summer (Aug–Nov of t+1), aerial surveys detect newly attacked fading trees (X(t+1)) — these are the "red trees".
+## - These red trees detected in t+1 were attacked by beetles that emerged from brood sites laid in year t.
+## - In BioSIM, this is the year reported for Psurv, not fall of t, but spring of t+1, the simulated year when the calculation finishes,
+##   not the simulated calendar year when the calculation started
+##
+## Winter t+1 → t+2:
+## - Control operations (cut & burn) target fading green trees with live larvae — often the same trees that will fade and turn red in year t+2.
+##
+## Survey Year t+2:
+## - Aerial surveys detect red trees again (X(t+2)), showing the spatial expansion or contraction of the outbreak.
+## - The outbreak growth rate is calculated as R(t+2) = X(t+2) / X(t+1).
+##
+## Causal Chain:
+## - r(t) measures reproductive success of beetles in year t.
+## - Those offspring emerge and attack new trees in year t+1.
+## - The impact of those attacks is visible in the red tree count of year t+2.
+## - Therefore, r(t) should be tested as a predictor of R(t+2).
+##
+## Implementation:
+## - We align r(t) with R(t+2) by shifting (i.e., de-lagging) the Rt vector upward/forward by 2 years.
+## - This ensures that each r(t) value is paired with the outbreak growth rate that follows two years later.
+## - We do not store the shifted Rt in rtc, because rtc$Year is indexed by survey year, not beetle year.
+## - Storing it there would conflate survey-year indexing with beetle-year causality, creating semantic ambiguity.
+## - Instead, we place the doubly shifted Rt alongside plot_df$r_log, which is indexed by beetle year t.
+## - This preserves biological alignment and causal clarity.
+## - Final assignment:
+##     Rt_log_delagged2 <- c(rtc$Rt_log[-(1:2)], NA, NA) has to be appended onto an annual aggregate of plot_df
+##
+## Note: In spreadsheet terms, this shift moves Rt "upward" to match earlier r(t).
+## In R indexing, it's a forward shift — we're de-lagging Rt by 2 years to align with its presumed cause.
+##
+## This logic respects the biology of the beetle life cycle, the timing of surveys, and the reporting structure of BioSIM.
+## It is critical to get this alignment correct to avoid false conclusions about causality.
 
 rt.mean <- plot_df |>
   group_by(beetle_yr) |>
@@ -756,14 +795,12 @@ censored_df <- rt_aligned_df[rt_aligned_df$beetle_yr != 2007, ]
 Ronr.lm.censor <- lm(Rt_log_delagged2 ~ r_log, data = censored_df)
 Ronr.lm.censor.sum <- summary(Ronr.lm.censor)
 
-#Fit quadratic
+## Fit quadratic
 Ronr_quad <- lm(Rt_log_delagged2 ~ r_log + I(r_log^2), data = censored_df)
-Ronr_quad.sum<-summary(Ronr_quad)
+Ronr_quad.sum <- summary(Ronr_quad)
 
 text(0.7, 24, bquote(italic(r)^2 == .(format(Ronr_quad.sum$r.squared, digits = 3))))
-text(0.7, 16,
-  bquote(italic(p) == .(format(Ronr_quad.sum$coefficients[2, 4], digits = 3)))
-)
+text(0.7, 16, bquote(italic(p) == .(format(Ronr_quad.sum$coefficients[2, 4], digits = 3))))
 
 ## Generate x values in natural units
 x_vals <- seq(min(10^censored_df$r_log - 1), max(10^censored_df$r_log - 1), length.out = 100)
