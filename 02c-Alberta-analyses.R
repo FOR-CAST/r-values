@@ -94,9 +94,10 @@ qq.gam(gam_model.all, pch = 20)
 # dev.new()
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 
-png(file.path(figPath, "gam_model_all.png"), height = 2400, width = 2400, res = 300)
-par(cex = 1.5, cex.axis = 1.4, cex.lab = 1.5, cex.main = 1.5)  # scale everything up
-plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
+#png(file.path(figPath, "gam_model_cleaned.png"), height = 1600, width = 1600, res = 300)
+pdf(file.path(figPath, "gam_model_AB.pdf"), height = 8, width = 8)
+par(cex = 1.4, cex.axis = 1.2, cex.lab = 1.4, cex.main = 1.6)
+plot(gam_model.all, scheme = 2,pages = 1, all.terms = TRUE)
 dev.off()
 
 ### -------------------------------------------------------------------------------------------
@@ -189,7 +190,7 @@ plot_df <- yearly_summary |>
     values_to = "value"
   )
 
-stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
+Psurv.r.cor<-stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Psurv)
 
 stats::cor(yearly_summary$mean_r_log, yearly_summary$mean_Tmin)
 
@@ -215,7 +216,13 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   ) +
   geom_line(aes(y = mean_r_log * y_scale, color = "log₁₀(r + 1)"), size = 1.2) +
   geom_point(aes(y = mean_r_log * y_scale, color = "log₁₀(r + 1)"), size = 2) +
-
+  geom_text(
+    data = data.frame(x = 2012, y = 100, label = paste0("r² = ", round(Psurv.r.cor, 2))),
+    aes(x = x, y = y, label = label),
+    hjust = 1.1, vjust = 1.5,
+    inherit.aes = FALSE,
+    size = 4
+  ) +
   ## axes and legend
   scale_y_continuous(
     name = "Psurv (%)",
@@ -235,6 +242,94 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   )
 
 ggsave(file.path(figPath, "mean_Psurv_r_over_time.png"), gg_r_Psurv_ribbon)
+
+# Define scale and shift for log-transformed r
+y_scale <- 25   # adjust as needed for visual alignment
+y_shift <- 0    # vertical offset
+
+# Choose r values for axis tics — adjust if needed
+r_breaks <- c(1, 2, 3)
+r_labels <- as.character(r_breaks)
+r_transformed <- log10(r_breaks) * y_scale + y_shift
+
+# Define scale and shift for log-transformed r
+y_scale <- 25   # adjust as needed
+y_shift <- 0    # adjust as needed
+
+gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
+  ## Psurv line and ribbon
+  geom_ribbon(
+    aes(ymin = mean_Psurv - se_Psurv, ymax = mean_Psurv + se_Psurv, fill = "Psurv (%)"),
+    alpha = 0.2, show.legend = FALSE
+  ) +
+  geom_line(aes(y = mean_Psurv, color = "Psurv (%)"), size = 1.2) +
+  geom_point(
+    aes(y = mean_Psurv, shape = "Psurv (%)"),
+    size = 4, stroke = 1.2, color = "black", fill = "white"
+  ) +
+  geom_text(
+    data = data.frame(x = 2013.5, y = 100, label = paste0("r² = ", round(Psurv.r.cor, 2))),
+    aes(x = x, y = y, label = label),
+    hjust = 1.1, vjust = 1.5,
+    inherit.aes = FALSE,
+    size = 4
+  ) +
+  ## r line and ribbon (scaled)
+  geom_ribbon(
+    aes(
+      ymin = (mean_r_log - se_r_log) * y_scale + y_shift,
+      ymax = (mean_r_log + se_r_log) * y_scale + y_shift,
+      fill = "r"
+    ),
+    alpha = 0.2, show.legend = FALSE
+  ) +
+  geom_line(aes(y = mean_r_log * y_scale + y_shift, color = "r"), size = 1.2) +
+  geom_point(
+    aes(y = mean_r_log * y_scale + y_shift, shape = "r"),
+    size = 4, color = "black"
+  ) +
+  ## Vertical markers
+  geom_vline(xintercept = c(2010, 2015), linetype = "dashed", color = "gray50") +
+
+  ## Axes and legend
+  scale_y_continuous(
+    name = "Psurv (%)",
+    limits = c(0, 100),
+    sec.axis = sec_axis(
+      trans = ~ . / 200,
+      name = "r",
+      breaks = c(0, 0.2998, 0.477),
+      labels = c("1", "2", "3")
+    )
+  ) +
+  geom_hline(yintercept = log10(c(1, 2, 3)) * y_scale, linetype = "dashed", color = "gray50")  +
+
+  scale_color_manual(
+    values = c("Psurv (%)" = "black", "r" = "black"),
+    breaks = c("Psurv (%)", "r")
+  ) +
+  scale_fill_manual(
+    values = c("Psurv (%)" = "black", "r" = "black"),
+    breaks = c("Psurv (%)", "r")
+  ) +
+  scale_shape_manual(
+    values = c("Psurv (%)" = 22, "r" = 16),
+    breaks = c("Psurv (%)", "r")
+  ) +
+  labs(x = "Beetle Year") +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.line = element_line(color = "black"),
+    axis.title.y.right = element_text(angle = 90, vjust = 0.5, hjust = 0.5),
+    legend.position = "top",
+    legend.title = element_blank(),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    plot.caption = element_blank()
+  )
+ggsave(file.path(figPath, "mean_Psurv_r_over_time_new.png"), gg_r_Psurv_ribbon, width = 6, height = 4, dpi = 300, units = "in")
+ggsave(file.path(figPath, "mean_Psurv_r_over_time_new.pdf"), gg_r_Psurv_ribbon, width = 6, height = 4)
+
 
 y_scale <- 75
 y_shift <- -50
