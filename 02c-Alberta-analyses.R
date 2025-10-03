@@ -732,11 +732,14 @@ censored_df <- rt_aligned_df[rt_aligned_df$beetle_yr != 2007, ]
 ## Refit model using named dataframe
 Ronr.lm.censor <- lm(Rt_log_delagged2 ~ r_log, data = censored_df)
 Ronr.lm.censor.sum <- summary(Ronr.lm.censor)
-text(0.7, 24, bquote(italic(r)^2 == .(format(Ronr.lm.censor.sum$r.squared, digits = 3))))
-text(
-  0.7,
-  16,
-  bquote(italic(p) == .(format(summary(Ronr.lm.censor)$coefficients[2, 4], digits = 3)))
+
+#Fit quadratic
+Ronr_quad <- lm(Rt_log_delagged2 ~ r_log + I(r_log^2), data = censored_df)
+Ronr_quad.sum<-summary(Ronr_quad)
+
+text(0.7, 24, bquote(italic(r)^2 == .(format(Ronr_quad.sum$r.squared, digits = 3))))
+text(0.7, 16,
+  bquote(italic(p) == .(format(Ronr_quad.sum$coefficients[2, 4], digits = 3)))
 )
 
 ## Generate x values in natural units
@@ -746,7 +749,7 @@ x_vals <- seq(min(10^censored_df$r_log - 1), max(10^censored_df$r_log - 1), leng
 log_r_vals <- log10(x_vals + 1)
 
 ## Predict using clean newdata
-y_pred <- predict(Ronr.lm.censor, newdata = data.frame(r_log = log_r_vals))
+y_pred <- predict(Ronr_quad, newdata = data.frame(r_log = log_r_vals))
 
 ## Back-transform y to natural units
 y_vals <- 10^y_pred
