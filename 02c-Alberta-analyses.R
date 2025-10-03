@@ -77,10 +77,10 @@ gam_model.all <- gam(
       s(log10(nbr_infested + 1)) +
       s(CMI, bs = "gp", k = 22) +
       s(asin(sqrt(Q)), bs = "gp", k = 22) +
-      s(PineVol, bs = "gp", k = 44) +
+      #s(PineVol, bs = "gp", k = 44) +
       s(Psurv, bs = "gp", k = 44) +
-      s(SSI_2016, bs = "gp", k = 22) +
-      s(Tmin, bs = "gp", k = 22),
+      s(SSI_2016, bs = "gp", k = 22),# +
+      #s(Tmin, bs = "gp", k = 22),
   data = all_data_df_join_CMI,
   method = "REML",
   family = gaussian(link = "identity")
@@ -329,7 +329,6 @@ gg_r_Psurv_ribbon <- ggplot(yearly_summary, aes(x = beetle_yr)) +
   )
 ggsave(file.path(figPath, "mean_Psurv_r_over_time_new.png"), gg_r_Psurv_ribbon, width = 6, height = 4, dpi = 300, units = "in")
 ggsave(file.path(figPath, "mean_Psurv_r_over_time_new.pdf"), gg_r_Psurv_ribbon, width = 6, height = 4)
-
 
 y_scale <- 75
 y_shift <- -50
