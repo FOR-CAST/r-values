@@ -10,11 +10,13 @@
 #
 # 1. Tree counts. For both Jasper and Banff we have red tree areas 2013-2021, the peak outbreak years.
 # Prior to outbreak, during 1999-2012, we have tree counts for Banff. We have them for Jasper too,
-# but 2011 and 2012 are missing, although there is a count for 2013.
+# but 2011 and 2012 are missing, although there is a count for 2013. [Oct 9 Update: in the shpfiles there is an
+# area infested datum for Banff in 2012 - a datum not in the 2022 time-series compilation. Similarly, there are
+# areas for 2023 in that same file. These data are used to update UngerRokeBrettBanffJasperCountsAreas.txt]
 #
-# 2. r-values. These are based on 4" disks that average just 0.5 female entrance holes per disk.
+# 2. r-values. These are based on 6" squares that average just 0.5 female entrance holes per disk.
 # There are no r-values for Banff. For Jasper there are r-values for beetle years
-# 2014, 2015, 2016, recorded by ASRD in .mdb files. The survey is done in the year after the "beetle year"
+# 2014, 2015, 2016, recorded by ASRD in .mdb files, based on 4" discs. The survey is done in the year after the "beetle year"
 # These need to be extracted, converted to .csv tables, and site and tree data merged
 # (as we did for the rest of Alberta in a companion paper). The formats of the three .mdb files are the same
 # (and very similar to the provincial files for 2006-2019 analyzed in the companion paper).
@@ -110,13 +112,15 @@ ggsave(
 ## Figure 1. Infestation dynamics of mountain pine beetle in Banff and Jasper National Parks, 1999–2021.
 ## The left y-axis shows the number of infested trees (log scale), and the right y-axis shows the area
 ## infested in hectares (log scale). Square markers represent counts; circular markers represent
-## area estimates. blue is Banff. Pink is Jasper. The vertical dashed line at 2012 marks the
-## transition from tree count data to area-based estimates. Note the steep rise in Jasper infestation
+## area estimates. blue is Banff. Pink is Jasper. Note the steep rise in Jasper infestation
 ## post-2013, contrasting with the more subdued outbreak in Banff.
 
 ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt") |>
   read.table(header = TRUE)
 
+#This adjustment is now deleted because of the discovered existence of the 2012 datum for Banff.
+#Any adjustments will be done at the stage of analysis, as a sensitivity test, not up front as part of the
+#basic time-series presentation.
 #ABMtnParksMPB <- ABMtnParksMPB |>
 #  mutate(
 #    ## Adjusted from 123 to 1123 due to likely underestimation at outbreak start
