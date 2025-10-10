@@ -127,10 +127,10 @@ ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAr
 #    Jasperha = ifelse(year == 2013, 1123, Jasperha)
 #  )
 
-if (.Platform$OS == "windows") {
+if (.Platform$OS == "windows") { #This base code has not been adjusted to reflect the new Banff 2012 datum
   win.graph(height = 5, width = 8)
   par(mar = c(5, 5, 2, 6))
-  ## 100 ha is about 2000 mature trees in AB Mtn Parks (20 trees/ha)
+  ## 100 ha is about 2200 mature trees in AB Mtn Parks (22 trees/ha)
   ## Area after 2013 needs to be scaled between 10 ha and 1 000 000 ha
   ## Count before 2013 needs to be scaled between 100 trees to 100 000 trees,
   ## but 100,000 trees is only 50,000 ha, so uncounted tree count after 2013 could be as high as 2,000,000
@@ -184,7 +184,7 @@ ABMtnParksMPB_long <- ABMtnParksMPB |>
   mutate(Park = as.factor(Park)) |>
   rename(Year = year, Area_ha = ha)
 
-scaleFact <- 23 ## scaling the second y axis
+scaleFact <- 22 ## scaling the second y axis (reflects 22 mature trees per infested hectare)
 
 ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ## Tree count (primary axis)
