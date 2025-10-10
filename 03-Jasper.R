@@ -265,7 +265,7 @@ jasper_values <- coalesce(ABMtnParksMPB$Jasperha, ABMtnParksMPB$JasperCount)
 Rt_Jasper <- compute_rt(jasper_values)
 
 JB.cor<-cor(jasper_values,banff_values,use = "pairwise.complete.obs")
-cat("The Jasper-Banff correlation in Rt 1999-2023 is:", JB.cor)
+cat("The Jasper-Banff correlation in A/C 1999-2023 is:", JB.cor)
 
 ## Combine
 JB.Rt <- data.frame(
