@@ -117,12 +117,11 @@ ggsave(
 ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt") |>
   read.table(header = TRUE)
 
-
-ABMtnParksMPB <- ABMtnParksMPB |>
-  mutate(
-    ## Adjusted from 123 to 1123 due to likely underestimation at outbreak start
-    Jasperha = ifelse(year == 2013, 1123, Jasperha)
-  )
+#ABMtnParksMPB <- ABMtnParksMPB |>
+#  mutate(
+#    ## Adjusted from 123 to 1123 due to likely underestimation at outbreak start
+#    Jasperha = ifelse(year == 2013, 1123, Jasperha)
+#  )
 
 if (.Platform$OS == "windows") {
   win.graph(height = 5, width = 8)
@@ -181,7 +180,7 @@ ABMtnParksMPB_long <- ABMtnParksMPB |>
   mutate(Park = as.factor(Park)) |>
   rename(Year = year, Area_ha = ha)
 
-scaleFact <- 1.7 ## scaling the second y axis #This should be 16 if 2013 JasperHa is 123 ha; 1.7 if it's 1123 ha
+scaleFact <- 23 ## scaling the second y axis
 
 ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ## Tree count (primary axis)
@@ -199,28 +198,28 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ) +
 
   ## Outbreak onset marker
-  geom_vline(xintercept = 2012.5, linetype = "dotted", linewidth = 1.5) +
+  #geom_vline(xintercept = 2012, linetype = "dashed", linewidth = 1.5, col="gray") +
 
   ## Log-scaled y-axis with natural tick labels
   scale_y_continuous(
     transform = "log10",
     name = "Trees Infested (count)",
-    limits = c(10, 2e6),
-    breaks = c(10, 100, 1000, 10000, 1e5, 1e6),
+    limits = c(10, 3e7),
+    breaks = c(10, 100, 1000, 10000, 1e5, 1e6, 1e7),
     labels = label_number(),
 
     sec.axis = sec_axis(
       transform = ~ . / scaleFact,
       name = "Area Infested (ha)",
-      breaks = c(10, 100, 1000, 10000, 1e5, 1e6),
+      breaks = c(10, 100, 1000, 10000, 1e5, 1e6, 1e7),
       labels = label_number()
     )
   ) +
   ## Text labels
   geom_text(
     data = data.frame(
-      x = c(2006, 2017.5),
-      y = c(1e6, 1e6),
+      x = c(2004, 2018),
+      y = c(2e7, 2e7),
       label = c("     Count Infested", "Area Infested")
     ),
     aes(x = x, y = y, label = label),
@@ -244,6 +243,12 @@ ggsave(
   height = 5,
   width = 7
 )
+ggsave(
+  file.path(figPath, "AB_mtn_parks_infested_gg.pdf"),
+  ABMtnParksMPB_plot,
+  height = 5,
+  width = 7
+)
 
 ## Compute Rt interannual rate of change in area infested Rt=At+1/At for each area
 ## Note the index Rt is unitless, so we can treat tree counts and areas identically.
@@ -258,6 +263,9 @@ Rt_Banff <- compute_rt(banff_values)
 ## Compute Rt for Jasper using area if available, else count
 jasper_values <- coalesce(ABMtnParksMPB$Jasperha, ABMtnParksMPB$JasperCount)
 Rt_Jasper <- compute_rt(jasper_values)
+
+JB.cor<-cor(jasper_values,banff_values,use = "pairwise.complete.obs")
+cat("The Jasper-Banff correlation in Rt 1999-2023 is:", JB.cor)
 
 ## Combine
 JB.Rt <- data.frame(
