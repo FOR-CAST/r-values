@@ -685,7 +685,27 @@ ggsave(
   width = 6
 )
 
-## compare r-value in year t with interannual rate of change in area infested Rt=At+1/At
+## compare r-value in beetle year t with interannual rate of change in area infested Rt+2=At+2/At+1
+
+## ---------------------------------------------------------------
+## Biological causality and survey timing: red tree lag logic
+##
+## Adults mass-attacking in beetle year t produce offspring that
+## feed, then emerge and attack in year t+1. The resulting red trees from
+## those NEW attacks are surveyed in year t+2.
+##
+## Therefore:
+##   - rt (red trees observed in beetle year t) reflects beetle attacks in year t
+##   - Rt (annual ratio of change in area infested between t and t+1)
+##     reflects outbreak expansion driven by beetles active in year t
+##
+## To preserve biological causality:
+##   - rt must be compared to Rt+2
+##     (i.e., the outbreak expansion two years after the beetle year)
+##
+## This logic ensures that beetle activity and outbreak expansion
+## are aligned across biological and survey timelines.
+## ---------------------------------------------------------------
 
 ABMtnParksMPB <- ABMtnParksMPB |>
   mutate(
@@ -694,45 +714,87 @@ ABMtnParksMPB <- ABMtnParksMPB |>
 ABMtnParks_area <- ABMtnParksMPB |>
   filter(!is.na(combined_area)) |>
   dplyr::select(year, combined_area)
-ABMtnParks_Rtarea <- ABMtnParks_area |>
-  mutate(Rt = lead(combined_area) / combined_area)
+
+#disambiguate "year" by referencing "survey year".
+#This will help clarify the coming join, wherere beetle_yr will precede survey_yr by one.
+ABMtnParks_area <- ABMtnParks_area |>
+  rename(survey_yr = year)
+
+ABMtnParks_area <- ABMtnParks_area |>
+  mutate(Rt = combined_area / lag(combined_area))
+
+#Explicitly store the beetle year that causes the change in Rt
+ABMtnParks_area <- ABMtnParks_area |>
+  mutate(beetle_yr = survey_yr - 2)
 
 r_summary <- JNPBNP_rvalues |>
   group_by(beetle_yr) |>
   summarise(mean_r = mean(r_value, na.rm = TRUE))
 
-comparison_df <- left_join(
-  r_summary,
-  ABMtnParks_Rtarea,
-  by = c("beetle_yr" = "year")
-)
+## ---------------------------------------------------------------
+## Model: outbreak expansion (Rt+2) as a function of r-value (rt)
+##
+## Biological timeline:
+##   - Beetle year t: adult beetles attack and lay eggs
+##   - Year t+1: offspring attack new trees
+##   - Year t+2: red trees from offspring attack are surveyed
+##
+## Data structures:
+##   - r_summary: indexed by beetle year t, contains mean_r (red tree signal)
+##   - ABMtnParks_area: indexed by survey year t, contains Rt = At / At-1
+##
+## Modeling logic:
+##   - For each beetle year t, we extract Rt from survey year t+2
+##   - Rt is computed as the ratio of infested area in year t+2 vs t+1
+##   - No join is performed; each object retains its native indexing
+##
+## This model respects the biological lag and avoids timeline fusion:
+##   lm(Rt[t+2] ~ log10(r[t] + 1))
+## ---------------------------------------------------------------
 
-Rvr.mod <- lm(Rt ~ log10(mean_r + 1), data = comparison_df)
+Rvr.mod <- lm(
+  ABMtnParks_area$Rt[match(r_summary$beetle_yr + 2, ABMtnParks_area$survey_yr)] ~
+    log10(r_summary$mean_r + 1)
+)
 Rvr.mod.sum <- summary(Rvr.mod)
+print(Rvr.mod.sum)
+
 r2 <- format(round(Rvr.mod.sum$r.squared, 2), nsmall = 2)
 pval <- formatC(Rvr.mod.sum$coefficients[2, "Pr(>|t|)"], format = "f", digits = 5)
 annot_text <- paste0("R² = ", r2, "\np = ", pval)
 
-JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
+## ---------------------------------------------------------------
+## Plot: rₜ vs Rₜ₊₂, preserving biological lag and indexing
+##
+## - r_summary: beetle-year-indexed red tree signal
+## - ABMtnParks_area: survey-year-indexed outbreak expansion
+## - Rt extracted using match(beetle_yr + 2, survey_yr)
+## ---------------------------------------------------------------
+
+plot_df <- tibble(
+  beetle_yr = r_summary$beetle_yr,
+  mean_r = r_summary$mean_r,
+  Rt_plus2 = ABMtnParks_area$Rt[match(r_summary$beetle_yr + 2, ABMtnParks_area$survey_yr)]
+)
+
+JNPBNP_Rvsr <- ggplot(plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
   geom_point(size = 3, color = "black") +
   geom_smooth(method = "lm", se = TRUE, color = "black", fill = "grey70", alpha = 0.4) +
   scale_x_continuous(
     breaks = log10(c(1 + 1, 2 + 1, 5 + 1, 10 + 1, 20 + 1)),
     labels = c(1, 2, 5, 10, 20),
-    name = expression("Mean r-value")
+    name = expression("Mean r-value for beetle year t")
   ) +
   labs(
-    #title = "Relationship Between r-value, r<sub>t</sub>,<br>and Interannual Infestation Rate, R<sub>t</sub>,<br>across Jasper and Banff",
-    y = expression(R[t + 1] == (A[t + 1] / A[t]))
-  )  +
+    y = expression(R[t + 2] == (A[t + 2] / A[t + 1]))
+  ) +
   geom_text(
-    data = comparison_df,
-    aes(x = log10(mean_r + 1), y = Rt, label = beetle_yr),
+    aes(label = beetle_yr),
     vjust = -1, size = 4
   ) +
   theme_minimal(base_size = 12) +
   theme(
-    panel.border = element_blank(), # optional: removes full box
+    panel.border = element_blank(),
     axis.line.x = element_line(color = "black", linewidth = 0.5),
     axis.line.y = element_line(color = "black", linewidth = 0.5),
     axis.ticks = element_line(color = "black"),
@@ -741,7 +803,7 @@ JNPBNP_Rvsr <- ggplot(comparison_df, aes(x = log10(mean_r + 1), y = Rt)) +
   )
 
 JNPBNP_Rvsr <- JNPBNP_Rvsr +
-  annotate("text", x = 0.6, y = 3.2,
+  annotate("text", x = 0.6, y = 2.3,
            label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
 ggsave(
@@ -750,12 +812,6 @@ ggsave(
   height = 5,
   width = 5
 )
-
-summary(lm(Rt ~ log(mean_r + 1), data = comparison_df))
-## marginally significant, but partly because we lumped Jasper and Banff areas
-## because they were lumped in the r-values.
-## We tried splitting the r-values to match the split areas, but the disaggregation
-### brings out an anomaly in the Banff data.
 
 # Part 3. BioSIM simulations of Psurv and CMI for Jasper and Banff -------------------------------------------------
 
