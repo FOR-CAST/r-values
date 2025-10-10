@@ -232,7 +232,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
     legend.position = "bottom",
     axis.title.y.right = element_text(angle = 90, vjust = 0.5)
   ) +
-  scale_x_continuous(limits = c(1998, 2024)) +
+  scale_x_continuous(name = "Survey Year", limits = c(1998, 2024)) +
   ## Color and fill scales for consistent legend appearance
   scale_fill_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
   scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480"))
