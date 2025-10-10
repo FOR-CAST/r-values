@@ -1379,6 +1379,21 @@ mpb_jb <- st_read(MPB_Jasper_Banff_2012_2023_shp) |>
   st_transform(targetCRS)
 glimpse(mpb_jb)
 
+#Extract the areas from the MPB Mtn Parks shp files. Note they do not match the UngerRoke data exactly.
+#Those 2013-2022 data come from the Brett 2022 forest health report time-series, and the archived jpg therefrom.
+#However this table supplies values for 2023 and for Banff 2012. And this *is* the source of those
+#particular data in the UngerRoke data file, UngerRokeBrettBanffJasperCountsAreas.txt
+invalid <- which(!st_is_valid(mpb_jb)) # Check for invalid geometries
+length(invalid) # Optionally print how many are invalid
+mpb_jb <- st_make_valid(mpb_jb) # Fix them
+hectares_by_year_park <- mpb_jb %>%
+  st_drop_geometry() %>%
+  group_by(YEAR, PARK) %>%
+  summarise(total_hectares = sum(HECTARES, na.rm = TRUE)) %>%
+  pivot_wider(names_from = PARK, values_from = total_hectares) %>%
+  arrange(YEAR)
+print(hectares_by_year_park)
+
 if (plot_all) {
   ggplot() +
     geom_sf(data = st_transform(ab_sf, targetCRS)) + ## Alberta boundary or base layer
