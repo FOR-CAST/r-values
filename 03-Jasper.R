@@ -1337,67 +1337,55 @@ Rt_model_data <- Rt_model_data |>
   arrange(location, year) |>
   group_by(location) |>
   mutate(
-    CMI_lag = lag(CMI),
-    Psurv_lag = lag(Psurv)
+    CMI_lag1 = lag(CMI,1),
+    Psurv_lag1 = lag(Psurv,1),
+    CMI_lag2 = lag(CMI,2),
+    Psurv_lag2 = lag(Psurv,2)
   ) |>
   ungroup()
 
-Rt_lm_pooled <- lm(Rt ~ CMI + CMI_lag + Psurv_lag, data = Rt_model_data)
+#Suppose the 2013 Jasper area infested was grossly underestimated, leading to an extreme Rt>50
+#Let's replace that value with the highest observed value
+Rt_model_data$Rt[41]<-0
+Rt_model_data$Rt[41]<-max(na.omit(Rt_model_data$Rt))
+
+Rt_lm_pooled <- lm(Rt ~ CMI_lag2 + Psurv_lag2, data = Rt_model_data)
+summary(Rt_lm_pooled)
+Rt_lm_pooled <- lm(Rt ~ CMI_lag1 + Psurv_lag1, data = Rt_model_data)
 summary(Rt_lm_pooled)
 
 ## try a thresholded model
+#lag0 (not logical; just testing)
 Rt_model_data_thresh <- Rt_model_data |>
-  mutate(CMI_thresh = CMI_lag < -20)
-
-Rt_thresh_model <- lm(Rt ~ CMI_thresh + Psurv_lag, data = Rt_model_data_thresh)
+  mutate(CMI_thresh = CMI < -22)
+Rt_thresh_model <- lm(Rt ~ CMI_thresh + Psurv, data = Rt_model_data_thresh)
 summary(Rt_thresh_model)
-
-Rt_gam <- gam(Rt ~ s(CMI_lag) + Psurv_lag, data = Rt_model_data, method = "REML")
-summary(Rt_gam)
-
-Rt_model_data <- Rt_model_data |>
-  mutate(location = factor(location))
-
-Rt_gam_interact <- gam(
-  Rt ~ s(CMI_lag, by = location) + location + Psurv_lag,
-  data = Rt_model_data,
-  method = "REML"
-)
-summary(Rt_gam_interact)
-
-## Come back to the threshold model using segmentation
-
-## Start with a linear model
-lm_base <- lm(Rt ~ CMI_lag + Psurv_lag, data = Rt_model_data)
-
-## Fit segmented model with estimated breakpoint in CMI_lag
-seg_model <- segmented(lm_base, seg.Z = ~CMI_lag)
-summary(seg_model)
-
-## estimates the segmentation at CMI = -12.5
-
-## revisit the threshold model
+#lag2 (logical but not supported)
 Rt_model_data_thresh <- Rt_model_data |>
-  mutate(CMI_thresh = CMI_lag < -22)
-
-Rt_thresh_model <- lm(Rt ~ CMI_thresh + Psurv_lag, data = Rt_model_data_thresh)
+  mutate(CMI_thresh = CMI_lag2 < -22)
+Rt_thresh_model <- lm(Rt ~ CMI_thresh + Psurv_lag2, data = Rt_model_data_thresh)
+summary(Rt_thresh_model)
+#lag1 (a compromise with strong support)
+Rt_model_data_thresh <- Rt_model_data |>
+  mutate(CMI_thresh = CMI_lag1 < -22)
+Rt_thresh_model <- lm(Rt ~ CMI_thresh + Psurv_lag1, data = Rt_model_data_thresh)
 summary(Rt_thresh_model)
 
 grid <- expand.grid(
-  CMI_lag = seq(
-    min(Rt_model_data$CMI_lag, na.rm = TRUE),
-    max(Rt_model_data$CMI_lag, na.rm = TRUE),
+  CMI_lag1 = seq(
+    min(Rt_model_data$CMI_lag1, na.rm = TRUE),
+    max(Rt_model_data$CMI_lag1, na.rm = TRUE),
     length.out = 100
   ),
-  Psurv_lag = seq(
-    min(Rt_model_data$Psurv_lag, na.rm = TRUE),
-    max(Rt_model_data$Psurv_lag, na.rm = TRUE),
+  Psurv_lag1 = seq(
+    min(Rt_model_data$Psurv_lag1, na.rm = TRUE),
+    max(Rt_model_data$Psurv_lag1, na.rm = TRUE),
     length.out = 100
   )
 )
 
 grid <- grid |>
-  mutate(CMI_thresh = CMI_lag < -22)
+  mutate(CMI_thresh = CMI_lag1 < -22)
 
 grid <- grid |>
   mutate(Rt_pred = predict(Rt_thresh_model, newdata = grid))
@@ -1405,14 +1393,14 @@ grid <- grid |>
 ## Reshape grid into a matrix for z-values
 z_matrix <- matrix(
   grid$Rt_pred,
-  nrow = length(unique(grid$Psurv_lag)),
-  ncol = length(unique(grid$CMI_lag)),
+  nrow = length(unique(grid$Psurv_lag1)),
+  ncol = length(unique(grid$CMI_lag1)),
   byrow = TRUE
 )
 
 ## Extract x and y axes
-x_vals <- sort(unique(grid$CMI_lag))
-y_vals <- sort(unique(grid$Psurv_lag))
+x_vals <- sort(unique(grid$CMI_lag1))
+y_vals <- sort(unique(grid$Psurv_lag1))
 
 ## Create the surface plot
 Rt.threhold.model.plot <- plot_ly(x = x_vals, y = y_vals, z = z_matrix, type = "surface") |>
@@ -1434,7 +1422,7 @@ fig2 <- file.path(figPath, "Rt_threshold_surface.png")
 webshot2::webshot(fig1, fig2, vwidth = 1200, vheight = 900)
 
 # Create surface plot
-plot_ly() |>
+Rt.model.surfaceplot<-plot_ly() |>
   add_surface(
     x = x_vals,
     y = y_vals,
@@ -1444,16 +1432,16 @@ plot_ly() |>
   ) |>
   add_markers(
     data = Rt_model_data_thresh |> filter(location == "Jasper"),
-    x = ~CMI_lag,
-    y = ~Psurv_lag,
+    x = ~CMI_lag1,
+    y = ~Psurv_lag1,
     z = ~Rt,
     marker = list(size = 4, color = '#e75480'),
     name = "Jasper"
   ) |>
   add_markers(
     data = Rt_model_data_thresh |> filter(location == "Banff"),
-    x = ~CMI_lag,
-    y = ~Psurv_lag,
+    x = ~CMI_lag1,
+    y = ~Psurv_lag1,
     z = ~Rt,
     marker = list(size = 4, color = '#56B4E9'),
     name = "Banff"
@@ -1466,6 +1454,10 @@ plot_ly() |>
       zaxis = list(title = "Rt")
     )
   )
+
+htmlwidgets::saveWidget(Rt.model.surfaceplot, "Rt_surface_plot.html")
+
+##TODO #Plot without plotly()
 
 ## Figure 1: map of infested areas over DEM
 
