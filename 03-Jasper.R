@@ -70,6 +70,7 @@ library(mgcv)
 library(plotly)
 library(reshape2)
 library(segmented)
+library(patchwork)
 
 # map locations from Carroll et al. 2017 ------------------------------------------------------
 
@@ -254,21 +255,49 @@ ggsave(
   width = 7
 )
 
-## Compute Rt interannual rate of change in area infested Rt=At+1/At for each area
-## Note the index Rt is unitless, so we can treat tree counts and areas identically.
-compute_rt <- function(x) {
+## Compute Rt interannual rate of change in area infested Rt+1=At+1/At for each area
+compute_Rt <- function(x) {
   c(NA, x[-1] / x[-length(x)])
 }
 
-## Compute Rt for Banff using area if available, else count
-banff_values <- coalesce(ABMtnParksMPB$Banffha, ABMtnParksMPB$BanffCount)
-Rt_Banff <- compute_rt(banff_values)
+## Note the index Rt is unitless, so we can treat tree counts and areas identically, except for years where
+## the metric changes.
 
-## Compute Rt for Jasper using area if available, else count
-jasper_values <- coalesce(ABMtnParksMPB$Jasperha, ABMtnParksMPB$JasperCount)
-Rt_Jasper <- compute_rt(jasper_values)
+# Rt from counts: 1999–2012 → output length 14 (includes leading NA)
+Rt_Banff_count <- compute_Rt(ABMtnParksMPB$BanffCount[1:14])
+years_count <- ABMtnParksMPB$year[1:14]  # 1999–2012
 
-JB.cor<-cor(jasper_values,banff_values,use = "pairwise.complete.obs")
+# Rt from areas: 2012–2023 → output length 12 (includes leading NA)
+Rt_Banff_area <- compute_Rt(ABMtnParksMPB$Banffha[14:25])
+years_area <- ABMtnParksMPB$year[14:25]  # 2012–2023
+
+# Combine Rt and years directly
+Rt_Banff <- c(Rt_Banff_count, Rt_Banff_area [2:12])
+years_Banff <- c(years_count, years_area[2:12])
+
+Rt_Banff_df <- data.frame(year = years_Banff, Rt_Banff)
+
+Rt_Jasper_count <- compute_Rt(ABMtnParksMPB$JasperCount[1:14])  # includes NA for 1999
+years_count <- ABMtnParksMPB$year[1:14]                          # 1999–2012
+
+Rt_Jasper_area <- compute_Rt(ABMtnParksMPB$Jasperha[15:25])     # includes NA for 2013
+years_area <- ABMtnParksMPB$year[15:25]                          # 2013–2023
+
+Rt_Jasper_area_clean <- Rt_Jasper_area[2:11]     # 2014–2023
+years_area_clean <- years_area[2:11]             # 2014–2023
+
+Rt_Jasper <- c(Rt_Jasper_count[1:12], Rt_Jasper_area_clean)     # 1999–2010 + 2014–2023
+years_Jasper <- c(years_count[1:12], years_area_clean)          # 1999–2010 + 2014–2023
+
+Jasper_gap_years <- c(2011, 2012, 2013)
+Jasper_gap_Rt <- rep(NA, length(Jasper_gap_years))
+
+Rt_Jasper_full <- c(Rt_Jasper_count[1:12], Jasper_gap_Rt, Rt_Jasper_area_clean)
+years_Jasper_full <- c(years_count[1:12], Jasper_gap_years, years_area_clean)
+
+Rt_Jasper_df <- data.frame(year = years_Jasper_full, Rt_Jasper = Rt_Jasper_full)
+
+JB.cor<-cor(Rt_Jasper_df$Rt_Jasper,Rt_Banff_df$Rt_Banff,use = "pairwise.complete.obs")
 cat("The Jasper-Banff correlation in A/C 1999-2023 is:", JB.cor)
 
 ## Combine
@@ -1140,10 +1169,10 @@ JNPBNP_1998_2023_Psurv.ts <- ggplot(
   JNPBNP.MPBwkPsurv,
   aes(x = Year - 1, y = Psurv, color = location) #we plot beetle year (the fall year), not the spring year (the year BioSIM reports when output is completed)
 ) +
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 1) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Banff" = "#56B4E9", "Jasper" = "#e75480")) +
-  theme_minimal(base_size = 12) +
+  theme_minimal(base_size = 11) +
   theme(
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
@@ -1156,7 +1185,10 @@ JNPBNP_1998_2023_Psurv.ts <- ggplot(
     y = "Overwinter Survival (%)",
     color = "Location"
   ) +
-  scale_x_continuous(limits = c(1998, 2024))
+  scale_x_continuous(
+    limits = c(1998, 2025),
+    breaks = seq(2000, 2025, by = 5)
+  )
 
 ggsave(
   file.path(figPath, "JNPBNP_1998_2023.png"),
@@ -1201,10 +1233,10 @@ JNPBNP.CMI <- JNPBNP.CMI |>
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
 
 JNPBNP.CMI.plot <- ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) +
-  geom_line(linewidth = 1.2) +
+  geom_line(linewidth = 1) +
   geom_point(size = 2) +
   scale_color_manual(values = c("Jasper" = "#e75480", "Banff" = "#56B4E9")) +
-  theme_minimal(base_size = 12) +
+  theme_minimal(base_size = 11) +
   theme(
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
@@ -1217,7 +1249,10 @@ JNPBNP.CMI.plot <- ggplot(JNPBNP.CMI, aes(x = Year, y = CMI, color = location)) 
     y = "CMI",
     color = "Location"
   ) +
-  scale_x_continuous(limits = c(1998, 2024))
+  scale_x_continuous(
+    limits = c(1998, 2025),
+    breaks = seq(2000, 2025, by = 5)
+  )
 
 ggsave(
   file.path(figPath, "JNPBNP_CMI_ts.png"),
@@ -1656,7 +1691,7 @@ JNPBNP.by.year.plot.b<-JNPBNP.by.year.plot +
 
 #panel(c)
 JNPBNP_Rvsr.c<-JNPBNP_Rvsr +
-  annotate("text", x = 0.15, y = 4, label = "(c)", hjust = -0.2, vjust = 2, size = 5)
+  annotate("text", x = 0.1, y = 3, label = "(c)", hjust = -0.2, vjust = 2, size = 5)
 
 Fig4_three_panel_plot <- JNPBNP.rvsPsurv.a /
   JNPBNP.by.year.plot.b /
