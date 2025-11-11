@@ -1111,6 +1111,11 @@ pval<-pf(JNPBNP.year.mod.sum$fstatistic["value"],
          lower.tail = FALSE)
 pvalue <- formatC(pval, format = "f", digits = 5)
 
+#testing the removal of 2014
+JNPBNP.filtered <- JNPBNP.by.year %>% filter(beetle_yr != 2014)
+JNPBNP.year.mod.no2014 <- lm(mean_r ~ mean_Psurv, data = JNPBNP.filtered)
+summary(JNPBNP.year.mod.no2014)
+
 JNPBNP.by.year.plot <- ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
   geom_point(size = 3, color = "black") +
   geom_text(aes(label = beetle_yr), vjust = -1, size = 3.5) +
