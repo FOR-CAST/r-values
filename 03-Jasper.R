@@ -297,7 +297,9 @@ years_Jasper_full <- c(years_count[1:12], Jasper_gap_years, years_area_clean)
 
 Rt_Jasper_df <- data.frame(year = years_Jasper_full, Rt_Jasper = Rt_Jasper_full)
 
-JB.cor<-cor(Rt_Jasper_df$Rt_Jasper,Rt_Banff_df$Rt_Banff,use = "pairwise.complete.obs")
+JB.cor<-cor(c(ABMtnParksMPB$BanffCount[1:14],ABMtnParksMPB$Banffha[14:25]),
+            c(ABMtnParksMPB$JasperCount[1:14],ABMtnParksMPB$Jasperha[14:25]),
+            use = "pairwise.complete.obs")
 cat("The Jasper-Banff correlation in A/C 1999-2023 is:", JB.cor)
 
 ## Combine
