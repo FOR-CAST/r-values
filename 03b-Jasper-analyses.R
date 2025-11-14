@@ -1467,7 +1467,7 @@ Rt.model.surfaceplot <- plot_ly() |>
     )
   )
 
-htmlwidgets::saveWidget(Rt.model.surfaceplot, "Rt_surface_plot.html")
+htmlwidgets::saveWidget(Rt.model.surfaceplot, file.path(figPath, "Rt_surface_plot.html"))
 
 ## TODO plot without plotly()
 
