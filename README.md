@@ -80,3 +80,7 @@ Open the primary script (`00-main.R`) and run the lines sequentially.
   (it does not need the 01a,b nor 02 scripts to have been run);
 
 ![](workflow.png)
+
+# References
+
+Cooke, B. J., Brett, R., Olesinski, J., Chubaty, A. M., and A. L. Carroll (*submitted*) Weather, climate, and the rise and fall of an unprecedented outbreak of mountain pine beetle in Alberta’s Mountain Parks, 1999-2023.
