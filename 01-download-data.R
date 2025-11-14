@@ -119,8 +119,6 @@ if (run_for == "NP") {
 
 # r-value data from google drive ---------------------------------------------------------------
 
-## TODO: split this for AB and NP
-
 if (run_for == "AB") {
   local({
     drive_id <- googledrive::as_id("1EiproEknMuuze5c6U_1tCptB8UM4z5YI")
