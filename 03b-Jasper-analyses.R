@@ -1177,9 +1177,11 @@ JNPBNP.MPBwkPsurv <- read.csv(f_JNPBNP.MPBwkPsurv)
 JNPBNP.MPBwkPsurv <- JNPBNP.MPBwkPsurv |>
   mutate(location = ifelse(Latitude == 51.179, "Banff", "Jasper"))
 
+## we plot beetle year (the fall year), not the spring year
+## (the year BioSIM reports when output is completed)
 JNPBNP_1998_2023_Psurv.ts <- ggplot(
   JNPBNP.MPBwkPsurv,
-  aes(x = Year - 1, y = Psurv, color = location) #we plot beetle year (the fall year), not the spring year (the year BioSIM reports when output is completed)
+  aes(x = Year - 1, y = Psurv, color = location)
 ) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
@@ -1218,18 +1220,18 @@ Psurv.cor <- cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
 
 cat("The correlation betwen Jasper and Banff in Psurv is:", Psurv.cor)
 
-# Filter for the desired years
+## Filter for the desired years
 twolocs.subset <- twolocs.wide |>
   filter(Year %in% 2012:2017)
 
-# Compute means
+## Compute means
 mean_Jasper <- mean(twolocs.subset$Jasper, na.rm = TRUE)
 mean_Banff <- mean(twolocs.subset$Banff, na.rm = TRUE)
 
-# Compute difference (Jasper minus Banff)
+## Compute difference (Jasper minus Banff)
 diff_Psurv <- mean_Jasper - mean_Banff
 
-# Print results
+## Print results
 cat("Mean Psurv (Jasper):", mean_Jasper, "\n")
 cat("Mean Psurv (Banff):", mean_Banff, "\n")
 cat("Difference (Jasper - Banff):", diff_Psurv, "\n")
@@ -1676,8 +1678,8 @@ ggsave(
 )
 
 ## Figure 3: 2-panel boxplot in time (2014-2022) of
-# (a) r-value: JNPBNP_rvalues_boxplot
-# (b) Psurv (at plots): JNPBNP_Psurv_boxplot
+## (a) r-value: JNPBNP_rvalues_boxplot
+## (b) Psurv (at plots): JNPBNP_Psurv_boxplot
 JNPBNP_rvalues_boxplot
 JNPBNP_Psurv_boxplot
 
@@ -1690,13 +1692,13 @@ custom_theme <- theme(
   plot.title = element_blank(),
 )
 
-#panel (a)
+## panel (a)
 JNPBNP_rvalues_boxplot.a <- JNPBNP_rvalues_boxplot +
   custom_theme +
   xlab("Year of Beetle Attack") +
   annotate("text", x = "2014", y = Inf, label = "(a)", hjust = -0.2, vjust = 2, size = 5)
 
-#panel (b)
+## panel (b)
 JNPBNP_Psurv_boxplot.b <- JNPBNP_Psurv_boxplot +
   custom_theme +
   scale_x_discrete(labels = as.character(c(c(2014:2018), c(2020:2021)))) +
@@ -1731,19 +1733,19 @@ ggsave(
 )
 
 ## Figure 4: 3-panel plot of:
-# (a) r-value vs Psurv (scatter)              JNPBNP_r_vs_Psurv
-# (b) r-value vs. Psurv (aggregated by year)  JNPBNP_r_vs_Psurv_yearly
-# (c) Rt vs rt (aggregated by year)           JNPBNP_RvsR
+## (a) r-value vs Psurv (scatter)              JNPBNP_r_vs_Psurv
+## (b) r-value vs. Psurv (aggregated by year)  JNPBNP_r_vs_Psurv_yearly
+## (c) Rt vs rt (aggregated by year)           JNPBNP_RvsR
 
-#panel(a)
+## panel(a)
 JNPBNP.rvsPsurv.a <- JNPBNP.rvsPsurv +
   annotate("text", x = 10, y = 30, label = "(a)", hjust = -0.2, vjust = 2, size = 5)
 
-#panel(b)
+## panel(b)
 JNPBNP.by.year.plot.b <- JNPBNP.by.year.plot +
   annotate("text", x = 20, y = 20, label = "(b)", hjust = -0.2, vjust = 2, size = 5)
 
-#panel(c)
+## panel(c)
 JNPBNP_Rvsr.c <- JNPBNP_Rvsr +
   annotate("text", x = 0.1, y = 3, label = "(c)", hjust = -0.2, vjust = 2, size = 5)
 
