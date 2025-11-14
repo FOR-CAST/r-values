@@ -266,11 +266,11 @@ compute_Rt <- function(x) {
 
 # Rt from counts: 1999–2012 → output length 14 (includes leading NA)
 Rt_Banff_count <- compute_Rt(ABMtnParksMPB$BanffCount[1:14])
-years_count <- ABMtnParksMPB$year[1:14] # 1999–2012
+years_count <- ABMtnParksMPB$year[1:14] ## 1999–2012
 
 # Rt from areas: 2012–2023 → output length 12 (includes leading NA)
 Rt_Banff_area <- compute_Rt(ABMtnParksMPB$Banffha[14:25])
-years_area <- ABMtnParksMPB$year[14:25] # 2012–2023
+years_area <- ABMtnParksMPB$year[14:25] ## 2012–2023
 
 # Combine Rt and years directly
 Rt_Banff <- c(Rt_Banff_count, Rt_Banff_area[2:12])
@@ -278,17 +278,17 @@ years_Banff <- c(years_count, years_area[2:12])
 
 Rt_Banff_df <- data.frame(year = years_Banff, Rt_Banff)
 
-Rt_Jasper_count <- compute_Rt(ABMtnParksMPB$JasperCount[1:14]) # includes NA for 1999
-years_count <- ABMtnParksMPB$year[1:14] # 1999–2012
+Rt_Jasper_count <- compute_Rt(ABMtnParksMPB$JasperCount[1:14]) ## includes NA for 1999
+years_count <- ABMtnParksMPB$year[1:14] ## 1999–2012
 
-Rt_Jasper_area <- compute_Rt(ABMtnParksMPB$Jasperha[15:25]) # includes NA for 2013
-years_area <- ABMtnParksMPB$year[15:25] # 2013–2023
+Rt_Jasper_area <- compute_Rt(ABMtnParksMPB$Jasperha[15:25]) ## includes NA for 2013
+years_area <- ABMtnParksMPB$year[15:25] ## 2013–2023
 
-Rt_Jasper_area_clean <- Rt_Jasper_area[2:11] # 2014–2023
-years_area_clean <- years_area[2:11] # 2014–2023
+Rt_Jasper_area_clean <- Rt_Jasper_area[2:11] ## 2014–2023
+years_area_clean <- years_area[2:11] ## 2014–2023
 
-Rt_Jasper <- c(Rt_Jasper_count[1:12], Rt_Jasper_area_clean) # 1999–2010 + 2014–2023
-years_Jasper <- c(years_count[1:12], years_area_clean) # 1999–2010 + 2014–2023
+Rt_Jasper <- c(Rt_Jasper_count[1:12], Rt_Jasper_area_clean) ## 1999–2010 + 2014–2023
+years_Jasper <- c(years_count[1:12], years_area_clean) ## 1999–2010 + 2014–2023
 
 Jasper_gap_years <- c(2011, 2012, 2013)
 Jasper_gap_Rt <- rep(NA, length(Jasper_gap_years))
@@ -1117,7 +1117,7 @@ pval <- pf(
 )
 pvalue <- formatC(pval, format = "f", digits = 5)
 
-#testing the removal of 2014
+## testing the removal of 2014
 JNPBNP.filtered <- JNPBNP.by.year |> filter(beetle_yr != 2014)
 JNPBNP.year.mod.no2014 <- lm(mean_r ~ mean_Psurv, data = JNPBNP.filtered)
 summary(JNPBNP.year.mod.no2014)
@@ -1134,7 +1134,7 @@ JNPBNP.by.year.plot <- ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
     axis.title = element_text(color = "black")
   ) +
   labs(
-    #title = "Yearly Aggregated Relationship Between Psurv and r-value",
+    ## title = "Yearly Aggregated Relationship Between Psurv and r-value",
     x = "Mean Overwinter Survival (%)",
     y = "Mean r-value"
   )
@@ -1557,8 +1557,8 @@ mpb.map <- mpb.map +
     color = "black"
   ) +
   annotation_north_arrow(
-    location = "tr", # top right corner
-    which_north = "true", # geographic north
+    location = "tr", ## top right corner
+    which_north = "true", ## geographic north
     style = north_arrow_fancy_orienteering,
     height = unit(1.5, "cm"),
     width = unit(1.5, "cm")
