@@ -119,16 +119,17 @@ ggsave(
 ABMtnParksMPB <- file.path(dataPath, "Brett", "UngerRokeBrettBanffJasperCountsAreas.txt") |>
   read.table(header = TRUE)
 
-#This adjustment is now deleted because of the discovered existence of the 2012 datum for Banff.
-#Any adjustments will be done at the stage of analysis, as a sensitivity test, not up front as part of the
-#basic time-series presentation.
-#ABMtnParksMPB <- ABMtnParksMPB |>
-#  mutate(
-#    ## Adjusted from 123 to 1123 due to likely underestimation at outbreak start
-#    Jasperha = ifelse(year == 2013, 1123, Jasperha)
-#  )
+## This adjustment is now deleted because of the discovered existence of the 2012 datum for Banff.
+## Any adjustments will be done at the stage of analysis, as a sensitivity test, not up front as part of the
+## basic time-series presentation.
+# ABMtnParksMPB <- ABMtnParksMPB |>
+#   mutate(
+#     ## Adjusted from 123 to 1123 due to likely underestimation at outbreak start
+#     Jasperha = ifelse(year == 2013, 1123, Jasperha)
+#   )
 
-if (.Platform$OS == "windows") { #This base code has not been adjusted to reflect the new Banff 2012 datum
+if (.Platform$OS == "windows") {
+  ## This base code has not been adjusted to reflect the new Banff 2012 datum
   win.graph(height = 5, width = 8)
   par(mar = c(5, 5, 2, 6))
   ## 100 ha is about 2200 mature trees in AB Mtn Parks (22 trees/ha)
@@ -203,7 +204,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   ) +
 
   ## Outbreak onset marker
-  #geom_vline(xintercept = 2012, linetype = "dashed", linewidth = 1.5, col="gray") +
+  # geom_vline(xintercept = 2012, linetype = "dashed", linewidth = 1.5, col="gray") +
 
   ## Log-scaled y-axis with natural tick labels
   scale_y_continuous(
@@ -265,29 +266,29 @@ compute_Rt <- function(x) {
 
 # Rt from counts: 1999–2012 → output length 14 (includes leading NA)
 Rt_Banff_count <- compute_Rt(ABMtnParksMPB$BanffCount[1:14])
-years_count <- ABMtnParksMPB$year[1:14]  # 1999–2012
+years_count <- ABMtnParksMPB$year[1:14] # 1999–2012
 
 # Rt from areas: 2012–2023 → output length 12 (includes leading NA)
 Rt_Banff_area <- compute_Rt(ABMtnParksMPB$Banffha[14:25])
-years_area <- ABMtnParksMPB$year[14:25]  # 2012–2023
+years_area <- ABMtnParksMPB$year[14:25] # 2012–2023
 
 # Combine Rt and years directly
-Rt_Banff <- c(Rt_Banff_count, Rt_Banff_area [2:12])
+Rt_Banff <- c(Rt_Banff_count, Rt_Banff_area[2:12])
 years_Banff <- c(years_count, years_area[2:12])
 
 Rt_Banff_df <- data.frame(year = years_Banff, Rt_Banff)
 
-Rt_Jasper_count <- compute_Rt(ABMtnParksMPB$JasperCount[1:14])  # includes NA for 1999
-years_count <- ABMtnParksMPB$year[1:14]                          # 1999–2012
+Rt_Jasper_count <- compute_Rt(ABMtnParksMPB$JasperCount[1:14]) # includes NA for 1999
+years_count <- ABMtnParksMPB$year[1:14] # 1999–2012
 
-Rt_Jasper_area <- compute_Rt(ABMtnParksMPB$Jasperha[15:25])     # includes NA for 2013
-years_area <- ABMtnParksMPB$year[15:25]                          # 2013–2023
+Rt_Jasper_area <- compute_Rt(ABMtnParksMPB$Jasperha[15:25]) # includes NA for 2013
+years_area <- ABMtnParksMPB$year[15:25] # 2013–2023
 
-Rt_Jasper_area_clean <- Rt_Jasper_area[2:11]     # 2014–2023
-years_area_clean <- years_area[2:11]             # 2014–2023
+Rt_Jasper_area_clean <- Rt_Jasper_area[2:11] # 2014–2023
+years_area_clean <- years_area[2:11] # 2014–2023
 
-Rt_Jasper <- c(Rt_Jasper_count[1:12], Rt_Jasper_area_clean)     # 1999–2010 + 2014–2023
-years_Jasper <- c(years_count[1:12], years_area_clean)          # 1999–2010 + 2014–2023
+Rt_Jasper <- c(Rt_Jasper_count[1:12], Rt_Jasper_area_clean) # 1999–2010 + 2014–2023
+years_Jasper <- c(years_count[1:12], years_area_clean) # 1999–2010 + 2014–2023
 
 Jasper_gap_years <- c(2011, 2012, 2013)
 Jasper_gap_Rt <- rep(NA, length(Jasper_gap_years))
@@ -297,9 +298,11 @@ years_Jasper_full <- c(years_count[1:12], Jasper_gap_years, years_area_clean)
 
 Rt_Jasper_df <- data.frame(year = years_Jasper_full, Rt_Jasper = Rt_Jasper_full)
 
-JB.cor<-cor(c(ABMtnParksMPB$BanffCount[1:14],ABMtnParksMPB$Banffha[14:25]),
-            c(ABMtnParksMPB$JasperCount[1:14],ABMtnParksMPB$Jasperha[14:25]),
-            use = "pairwise.complete.obs")
+JB.cor <- cor(
+  c(ABMtnParksMPB$BanffCount[1:14], ABMtnParksMPB$Banffha[14:25]),
+  c(ABMtnParksMPB$JasperCount[1:14], ABMtnParksMPB$Jasperha[14:25]),
+  use = "pairwise.complete.obs"
+)
 cat("The Jasper-Banff correlation in A/C 1999-2023 is:", JB.cor)
 
 ## Combine
@@ -545,10 +548,10 @@ sd(jasper_custom_rvalues$r_value, na.rm = TRUE) / mean(jasper_custom_rvalues$r_v
 gam_model.jasper_custom <- gam(
   log(r_tree + 1) ~
     beetle_yr +
-      s(plot_long_dd, plot_lat_dd, bs = "gp", k = 16) +
-      s(dbh) +
-      s(ht_pitch_tube) +
-      s(log10(nbr_infested + 1)),
+    s(plot_long_dd, plot_lat_dd, bs = "gp", k = 16) +
+    s(dbh) +
+    s(ht_pitch_tube) +
+    s(log10(nbr_infested + 1)),
   data = jasper_custom_rvalues,
   method = "REML",
   family = gaussian(link = "identity")
@@ -821,7 +824,8 @@ JNPBNP_Rvsr <- ggplot(plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
   ) +
   geom_text(
     aes(label = beetle_yr),
-    vjust = -1, size = 4
+    vjust = -1,
+    size = 4
   ) +
   theme_minimal(base_size = 12) +
   theme(
@@ -834,8 +838,7 @@ JNPBNP_Rvsr <- ggplot(plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
   )
 
 JNPBNP_Rvsr <- JNPBNP_Rvsr +
-  annotate("text", x = 0.6, y = 2.3,
-           label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
+  annotate("text", x = 0.6, y = 2.3, label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
 ggsave(
   file.path(figPath, "JNPBNP_RvsR.png"),
@@ -1052,13 +1055,15 @@ n_unique <- JNPBNP.full |> distinct() |> nrow()
 cat("Number of unique location-years:", n_unique)
 
 JNPBNP.mod <- lm(r_value ~ Psurv, data = JNPBNP.full)
-JNPBNP.mod.sum<-summary(JNPBNP.mod)
+JNPBNP.mod.sum <- summary(JNPBNP.mod)
 
-r2<-JNPBNP.mod.sum$r.squared
-pval<-pf(JNPBNP.mod.sum$fstatistic["value"],
-   JNPBNP.mod.sum$fstatistic["numdf"],
-   JNPBNP.mod.sum$fstatistic["dendf"],
-   lower.tail = FALSE)
+r2 <- JNPBNP.mod.sum$r.squared
+pval <- pf(
+  JNPBNP.mod.sum$fstatistic["value"],
+  JNPBNP.mod.sum$fstatistic["numdf"],
+  JNPBNP.mod.sum$fstatistic["dendf"],
+  lower.tail = FALSE
+)
 r2 <- format(round(JNPBNP.mod.sum$r.squared, 2), nsmall = 2)
 pvalue <- formatC(pval, format = "f", digits = 5)
 
@@ -1080,8 +1085,7 @@ JNPBNP.rvsPsurv <- ggplot(JNPBNP.full, aes(x = Psurv, y = r_value)) +
 annot_text <- paste0("R² = ", r2, "\np = ", pvalue)
 
 JNPBNP.rvsPsurv <- JNPBNP.rvsPsurv +
-  annotate("text", x = 45, y = 22,
-           label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
+  annotate("text", x = 45, y = 22, label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
 ggsave(
   file.path(figPath, "JNPBNP_r_vs_Psurv.png"),
@@ -1102,17 +1106,19 @@ JNPBNP.by.year <- JNPBNP.full |>
     .groups = "drop"
   )
 JNPBNP.year.mod <- lm(mean_r ~ mean_Psurv, data = JNPBNP.by.year)
-JNPBNP.year.mod.sum<-summary(JNPBNP.year.mod)
+JNPBNP.year.mod.sum <- summary(JNPBNP.year.mod)
 
 r2 <- format(round(JNPBNP.year.mod.sum$r.squared, 2), nsmall = 2)
-pval<-pf(JNPBNP.year.mod.sum$fstatistic["value"],
-         JNPBNP.year.mod.sum$fstatistic["numdf"],
-         JNPBNP.year.mod.sum$fstatistic["dendf"],
-         lower.tail = FALSE)
+pval <- pf(
+  JNPBNP.year.mod.sum$fstatistic["value"],
+  JNPBNP.year.mod.sum$fstatistic["numdf"],
+  JNPBNP.year.mod.sum$fstatistic["dendf"],
+  lower.tail = FALSE
+)
 pvalue <- formatC(pval, format = "f", digits = 5)
 
 #testing the removal of 2014
-JNPBNP.filtered <- JNPBNP.by.year %>% filter(beetle_yr != 2014)
+JNPBNP.filtered <- JNPBNP.by.year |> filter(beetle_yr != 2014)
 JNPBNP.year.mod.no2014 <- lm(mean_r ~ mean_Psurv, data = JNPBNP.filtered)
 summary(JNPBNP.year.mod.no2014)
 
@@ -1136,8 +1142,7 @@ JNPBNP.by.year.plot <- ggplot(JNPBNP.by.year, aes(x = mean_Psurv, y = mean_r)) +
 annot_text <- paste0("R² = ", r2, "\np = ", pvalue)
 
 JNPBNP.by.year.plot <- JNPBNP.by.year.plot +
-  annotate("text", x = 45, y = 15,
-           label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
+  annotate("text", x = 45, y = 15, label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
 ggsave(
   file.path(figPath, "JNPBNP_r_vs_Psurv_yearly.png"),
@@ -1209,9 +1214,9 @@ twolocs.wide <- JNPBNP.MPBwkPsurv |>
   dplyr::select(Year, location, Psurv) |>
   pivot_wider(names_from = location, values_from = Psurv)
 
-Psurv.cor<-cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
+Psurv.cor <- cor(twolocs.wide$Banff, twolocs.wide$Jasper, use = "complete.obs")
 
-cat("The correlation betwen Jasper and Banff in Psurv is:",Psurv.cor)
+cat("The correlation betwen Jasper and Banff in Psurv is:", Psurv.cor)
 
 # Filter for the desired years
 twolocs.subset <- twolocs.wide |>
@@ -1219,7 +1224,7 @@ twolocs.subset <- twolocs.wide |>
 
 # Compute means
 mean_Jasper <- mean(twolocs.subset$Jasper, na.rm = TRUE)
-mean_Banff  <- mean(twolocs.subset$Banff, na.rm = TRUE)
+mean_Banff <- mean(twolocs.subset$Banff, na.rm = TRUE)
 
 # Compute difference (Jasper minus Banff)
 diff_Psurv <- mean_Jasper - mean_Banff
@@ -1344,17 +1349,17 @@ Rt_model_data <- Rt_model_data |>
   arrange(location, year) |>
   group_by(location) |>
   mutate(
-    CMI_lag1 = lag(CMI,1),
-    Psurv_lag1 = lag(Psurv,1),
-    CMI_lag2 = lag(CMI,2),
-    Psurv_lag2 = lag(Psurv,2)
+    CMI_lag1 = lag(CMI, 1),
+    Psurv_lag1 = lag(Psurv, 1),
+    CMI_lag2 = lag(CMI, 2),
+    Psurv_lag2 = lag(Psurv, 2)
   ) |>
   ungroup()
 
 #Suppose the 2013 Jasper area infested was grossly underestimated, leading to an extreme Rt>50
 #Let's replace that value with the highest observed value
-Rt_model_data$Rt[41]<-0
-Rt_model_data$Rt[41]<-max(na.omit(Rt_model_data$Rt))
+Rt_model_data$Rt[41] <- 0
+Rt_model_data$Rt[41] <- max(na.omit(Rt_model_data$Rt))
 
 Rt_lm_pooled <- lm(Rt ~ CMI_lag2 + Psurv_lag2, data = Rt_model_data)
 summary(Rt_lm_pooled)
@@ -1429,7 +1434,7 @@ fig2 <- file.path(figPath, "Rt_threshold_surface.png")
 webshot2::webshot(fig1, fig2, vwidth = 1200, vheight = 900)
 
 # Create surface plot
-Rt.model.surfaceplot<-plot_ly() |>
+Rt.model.surfaceplot <- plot_ly() |>
   add_surface(
     x = x_vals,
     y = y_vals,
@@ -1464,27 +1469,29 @@ Rt.model.surfaceplot<-plot_ly() |>
 
 htmlwidgets::saveWidget(Rt.model.surfaceplot, "Rt_surface_plot.html")
 
-##TODO #Plot without plotly()
+## TODO plot without plotly()
 
 ## Figure 1: map of infested areas over DEM
 
-mpb_jb <- st_read(MPB_Jasper_Banff_2012_2023_shp) |>
-  st_zm() |>
-  st_transform(targetCRS)
+mpb_jb <- sf::st_read(MPB_Jasper_Banff_2012_2023_shp) |>
+  sf::st_zm() |>
+  sf::st_transform(targetCRS)
 glimpse(mpb_jb)
 
-#Extract the areas from the MPB Mtn Parks shp files. Note they do not match the UngerRoke data exactly.
-#Those 2013-2022 data come from the Brett 2022 forest health report time-series, and the archived jpg therefrom.
-#However this table supplies values for 2023 and for Banff 2012. And this *is* the source of those
-#particular data in the UngerRoke data file, UngerRokeBrettBanffJasperCountsAreas.txt
-invalid <- which(!st_is_valid(mpb_jb)) # Check for invalid geometries
-length(invalid) # Optionally print how many are invalid
-mpb_jb <- st_make_valid(mpb_jb) # Fix them
-hectares_by_year_park <- mpb_jb %>%
-  st_drop_geometry() %>%
-  group_by(YEAR, PARK) %>%
-  summarise(total_hectares = sum(HECTARES, na.rm = TRUE)) %>%
-  pivot_wider(names_from = PARK, values_from = total_hectares) %>%
+## Extract the areas from the MPB Mtn Parks shp files.
+## Note they do not match the UngerRoke data exactly.
+## Those 2013-2022 data come from the Brett 2022 forest health report time-series,
+## and the archived jpg therefrom.
+## However this table supplies values for 2023 and for Banff 2012. And this *is* the source of
+## those particular data in the UngerRoke data file, UngerRokeBrettBanffJasperCountsAreas.txt
+invalid <- which(!sf::st_is_valid(mpb_jb)) ## check for invalid geometries
+length(invalid) ## print how many are invalid
+mpb_jb <- sf::st_make_valid(mpb_jb) ## fix them
+hectares_by_year_park <- mpb_jb |>
+  sf::st_drop_geometry() |>
+  group_by(YEAR, PARK) |>
+  summarise(total_hectares = sum(HECTARES, na.rm = TRUE)) |>
+  pivot_wider(names_from = PARK, values_from = total_hectares) |>
   arrange(YEAR)
 print(hectares_by_year_park)
 
@@ -1608,35 +1615,65 @@ ggsave(
 # (b) Psurv 1999-2024
 # (c) CMI 1999-2024
 
-#panel(a) ABMtnParksMPB_plot
-ABMtnParksMPB_plot.a<- ABMtnParksMPB_plot +
-  annotate("text",
-           x = min(ABMtnParksMPB_plot$data$Year),
-           y = 800000,
-           label = "(a)",
-           hjust = 0, vjust = 0, size = 6)
+## panel(a) ABMtnParksMPB_plot
+ABMtnParksMPB_plot.a <- ABMtnParksMPB_plot +
+  annotate(
+    "text",
+    x = min(ABMtnParksMPB_plot$data$Year),
+    y = 800000,
+    label = "(a)",
+    hjust = 0,
+    vjust = 0,
+    size = 6
+  )
 
-#panel(b) JNPBNP_1998_2023_Psurv.ts
-#remove the title off panel (b)
+## panel(b) JNPBNP_1998_2023_Psurv.ts
+## remove the title off panel (b)
 JNPBNP_1998_2023_Psurv.ts.b <- JNPBNP_1998_2023_Psurv.ts + labs(title = NULL)
-#insert frame label on (b)
+## insert frame label on (b)
 JNPBNP_1998_2023_Psurv.ts.b <- JNPBNP_1998_2023_Psurv.ts.b +
-  annotate("text", x = min(JNPBNP.MPBwkPsurv$Year) - 1, y = max(JNPBNP.MPBwkPsurv$Psurv),
-           label = "(b)", hjust = 0, vjust = 0.5, size = 6)
+  annotate(
+    "text",
+    x = min(JNPBNP.MPBwkPsurv$Year) - 1,
+    y = max(JNPBNP.MPBwkPsurv$Psurv),
+    label = "(b)",
+    hjust = 0,
+    vjust = 0.5,
+    size = 6
+  )
 
-#panel(c) JNPBNP_CMI
+## panel(c) JNPBNP_CMI
 JNPBNP.CMI.plot.c <- JNPBNP.CMI.plot + labs(title = NULL)
-JNPBNP.CMI.plot.c<-JNPBNP.CMI.plot.c +
-  annotate("text", x = min(JNPBNP.CMI$Year) - 1, y = max(JNPBNP.CMI$CMI),
-           label = "(c)", hjust = 0, vjust = 1.2, size = 6)
+JNPBNP.CMI.plot.c <- JNPBNP.CMI.plot.c +
+  annotate(
+    "text",
+    x = min(JNPBNP.CMI$Year) - 1,
+    y = max(JNPBNP.CMI$CMI),
+    label = "(c)",
+    hjust = 0,
+    vjust = 1.2,
+    size = 6
+  )
 
-Fig2_three_panel_plot <-
-  ABMtnParksMPB_plot.a /
+Fig2_three_panel_plot <- ABMtnParksMPB_plot.a /
   (JNPBNP_1998_2023_Psurv.ts.b / JNPBNP.CMI.plot.c + plot_layout(heights = c(3, 3))) +
   plot_layout(heights = c(4, 6))
 
-ggsave(file.path(figPath,"Fig2_JNPBNP_ts.png"), plot = Fig2_three_panel_plot, width = 7, height = 9, units = "in", dpi = 300)
-ggsave(file.path(figPath,"Fig2_JNPBNP_ts.pdf"), plot = Fig2_three_panel_plot, width = 7, height = 9, units = "in")
+ggsave(
+  file.path(figPath, "Fig2_JNPBNP_ts.png"),
+  plot = Fig2_three_panel_plot,
+  width = 7,
+  height = 9,
+  units = "in",
+  dpi = 300
+)
+ggsave(
+  file.path(figPath, "Fig2_JNPBNP_ts.pdf"),
+  plot = Fig2_three_panel_plot,
+  width = 7,
+  height = 9,
+  units = "in"
+)
 
 ## Figure 3: 2-panel boxplot in time (2014-2022) of
 # (a) r-value: JNPBNP_rvalues_boxplot
@@ -1654,26 +1691,44 @@ custom_theme <- theme(
 )
 
 #panel (a)
-JNPBNP_rvalues_boxplot.a <- JNPBNP_rvalues_boxplot + custom_theme +
+JNPBNP_rvalues_boxplot.a <- JNPBNP_rvalues_boxplot +
+  custom_theme +
   xlab("Year of Beetle Attack") +
   annotate("text", x = "2014", y = Inf, label = "(a)", hjust = -0.2, vjust = 2, size = 5)
 
 #panel (b)
 JNPBNP_Psurv_boxplot.b <- JNPBNP_Psurv_boxplot +
   custom_theme +
-  scale_x_discrete(labels = as.character(c(c(2014:2018),c(2020:2021)))) +
+  scale_x_discrete(labels = as.character(c(c(2014:2018), c(2020:2021)))) +
   xlab("Year Winter Starts") +
   ylab("Overwintering Survival (%)") +
-  geom_text(data = data.frame(x = 0.75, y = 100),
-            aes(x = x, y = y, label = "(b)"),
-            inherit.aes = FALSE,
-            hjust = 0, vjust = 1, size = 5)
+  geom_text(
+    data = data.frame(x = 0.75, y = 100),
+    aes(x = x, y = y, label = "(b)"),
+    inherit.aes = FALSE,
+    hjust = 0,
+    vjust = 1,
+    size = 5
+  )
 
 Fig3_two_panel_plot <- JNPBNP_rvalues_boxplot.a /
   JNPBNP_Psurv_boxplot.b
 
-ggsave(file.path(figPath,"Fig3_boxplot.png"), plot = Fig3_two_panel_plot, width = 6, height = 6, units = "in", dpi = 300)
-ggsave(file.path(figPath,"Fig3_boxplot.pdf"), plot = Fig3_two_panel_plot, width = 6, height = 6, units = "in")
+ggsave(
+  file.path(figPath, "Fig3_boxplot.png"),
+  plot = Fig3_two_panel_plot,
+  width = 6,
+  height = 6,
+  units = "in",
+  dpi = 300
+)
+ggsave(
+  file.path(figPath, "Fig3_boxplot.pdf"),
+  plot = Fig3_two_panel_plot,
+  width = 6,
+  height = 6,
+  units = "in"
+)
 
 ## Figure 4: 3-panel plot of:
 # (a) r-value vs Psurv (scatter)              JNPBNP_r_vs_Psurv
@@ -1681,20 +1736,33 @@ ggsave(file.path(figPath,"Fig3_boxplot.pdf"), plot = Fig3_two_panel_plot, width 
 # (c) Rt vs rt (aggregated by year)           JNPBNP_RvsR
 
 #panel(a)
-JNPBNP.rvsPsurv.a<-JNPBNP.rvsPsurv +
+JNPBNP.rvsPsurv.a <- JNPBNP.rvsPsurv +
   annotate("text", x = 10, y = 30, label = "(a)", hjust = -0.2, vjust = 2, size = 5)
 
 #panel(b)
-JNPBNP.by.year.plot.b<-JNPBNP.by.year.plot +
+JNPBNP.by.year.plot.b <- JNPBNP.by.year.plot +
   annotate("text", x = 20, y = 20, label = "(b)", hjust = -0.2, vjust = 2, size = 5)
 
 #panel(c)
-JNPBNP_Rvsr.c<-JNPBNP_Rvsr +
+JNPBNP_Rvsr.c <- JNPBNP_Rvsr +
   annotate("text", x = 0.1, y = 3, label = "(c)", hjust = -0.2, vjust = 2, size = 5)
 
 Fig4_three_panel_plot <- JNPBNP.rvsPsurv.a /
   JNPBNP.by.year.plot.b /
   JNPBNP_Rvsr.c
 
-ggsave(file.path(figPath,"Fig4_reg.png"), plot = Fig4_three_panel_plot, width = 6, height = 12, units = "in", dpi = 300)
-ggsave(file.path(figPath,"Fig4_reg.pdf"), plot = Fig4_three_panel_plot, width = 6, height = 12, units = "in")
+ggsave(
+  file.path(figPath, "Fig4_reg.png"),
+  plot = Fig4_three_panel_plot,
+  width = 6,
+  height = 12,
+  units = "in",
+  dpi = 300
+)
+ggsave(
+  file.path(figPath, "Fig4_reg.pdf"),
+  plot = Fig4_three_panel_plot,
+  width = 6,
+  height = 12,
+  units = "in"
+)
