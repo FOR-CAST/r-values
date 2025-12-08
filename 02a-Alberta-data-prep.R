@@ -75,7 +75,8 @@ if (!file.exists(model_data_csv) || rerun_all) {
 
     ssi_crs <- sf::st_crs(mpb_ssi_2023)
 
-    ## use the version that has more r-values because the provincial version has too many NAs for r_value_tree
+    ## use the version that has more r-values because the provincial version
+    ## has too many NAs for r_value_tree;
     ## keep plot_lat/lon_dd for later analysis, not just removed for geometry purposes.
     all_data_sf <- read.csv(abr_csv) |>
       filter(!is.na(plot_lon_dd) & !is.na(plot_lat_dd)) |>
@@ -163,7 +164,7 @@ if (!file.exists(model_data_csv) || rerun_all) {
     trees_missing <- all_data_sf |> filter(is.na(SSI_2008))
 
     ## Find nearest polygon index
-    nearest_index <- st_nearest_feature(trees_missing, mpb_ssi_2008)
+    nearest_index <- sf::st_nearest_feature(trees_missing, mpb_ssi_2008)
 
     ## Extract nearest polygons
     nearest_polygons <- mpb_ssi_2008[nearest_index, ]
@@ -183,11 +184,29 @@ if (!file.exists(model_data_csv) || rerun_all) {
         labs(title = "Trees with aggressive SSI_2008 Join", color = "Joined")
     }
 
+    ## How "aggressive" was the "aggressive join procedure?"
+    trees_missing$distance_to_ssi_2008 <- sf::st_distance(
+      trees_missing,
+      nearest_polygons,
+      by_element = TRUE
+    )
+
+    if (plot_all) {
+      # dev.new()
+      ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2008) / 1000)) +
+        geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
+        labs(
+          title = "Distance to Nearest SSI Polygon (2008)",
+          x = "Distance (km)",
+          y = "Tree Count"
+        )
+    }
+
     ## 2016 ---------------------------------------------------------------------
     trees_missing <- all_data_sf |> filter(is.na(SSI_2016))
 
     ## Find nearest polygon index
-    nearest_index <- st_nearest_feature(trees_missing, mpb_ssi_2016)
+    nearest_index <- sf::st_nearest_feature(trees_missing, mpb_ssi_2016)
 
     ## Extract nearest polygons
     nearest_polygons <- mpb_ssi_2016[nearest_index, ]
@@ -207,11 +226,29 @@ if (!file.exists(model_data_csv) || rerun_all) {
         labs(title = "Trees with aggressive SSI_2016 Join", color = "Joined")
     }
 
+    ## How "aggressive" was the "aggressive join procedure?"
+    trees_missing$distance_to_ssi_2016 <- sf::st_distance(
+      trees_missing,
+      nearest_polygons,
+      by_element = TRUE
+    )
+
+    if (plot_all) {
+      # dev.new()
+      ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2016) / 1000)) +
+        geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
+        labs(
+          title = "Distance to Nearest SSI Polygon (2016)",
+          x = "Distance (km)",
+          y = "Tree Count"
+        )
+    }
+
     ## 2023 ---------------------------------------------------------------------
     trees_missing <- all_data_sf |> filter(is.na(SSI_2023))
 
     ## Find nearest polygon index
-    nearest_index <- st_nearest_feature(trees_missing, mpb_ssi_2023)
+    nearest_index <- sf::st_nearest_feature(trees_missing, mpb_ssi_2023)
 
     ## Extract nearest polygons
     nearest_polygons <- mpb_ssi_2023[nearest_index, ]
@@ -219,7 +256,7 @@ if (!file.exists(model_data_csv) || rerun_all) {
     ## Add SSI_2023 from nearest polygon
     trees_missing$SSI_2023 <- nearest_polygons$SSI
 
-    ## Combine with original trees that already had SSI_2008
+    ## Combine with original trees that already had SSI_2023
     all_data_sf_aggressive <- all_data_sf |>
       filter(!is.na(SSI_2023)) |>
       bind_rows(trees_missing)
@@ -231,8 +268,8 @@ if (!file.exists(model_data_csv) || rerun_all) {
         labs(title = "Trees with aggressive SSI_2023 Join", color = "Joined")
     }
 
-    ## How "aggressive" was the "aggressive join procedure?" (Test using 2008)
-    trees_missing$distance_to_ssi_2008 <- st_distance(
+    ## How "aggressive" was the "aggressive join procedure?"
+    trees_missing$distance_to_ssi_2023 <- sf::st_distance(
       trees_missing,
       nearest_polygons,
       by_element = TRUE
@@ -240,15 +277,16 @@ if (!file.exists(model_data_csv) || rerun_all) {
 
     if (plot_all) {
       # dev.new()
-      ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2008) / 1000)) +
+      ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2023) / 1000)) +
         geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
         labs(
-          title = "Distance to Nearest SSI Polygon (2008)",
+          title = "Distance to Nearest SSI Polygon (2023)",
           x = "Distance (km)",
           y = "Tree Count"
         )
     }
-    ## Extract Q-values from raster to tree points
+
+    ## Extract Q-values from raster to tree points --------------------------------------------
     all_data_sf$Q <- terra::extract(pine_q, terra::vect(all_data_sf))$pine
 
     summary(all_data_sf$Q)
@@ -258,7 +296,7 @@ if (!file.exists(model_data_csv) || rerun_all) {
       hist(all_data_sf$Q, breaks = 50, col = "skyblue", main = "Distribution of Q-values")
     }
 
-    ## Extract pine volume per hectare
+    ## Extract pine volume per hectare --------------------------------------------------------
     all_data_sf$PineVol <- terra::extract(
       x = bleiker2019,
       y = terra::vect(all_data_sf)
@@ -267,7 +305,7 @@ if (!file.exists(model_data_csv) || rerun_all) {
     summary(all_data_sf$PineVol)
 
     ## Prepare data for modelling
-    all_data_df <- st_drop_geometry(all_data_sf)
+    all_data_df <- sf::st_drop_geometry(all_data_sf)
 
     ## Save to disk
     write.csv(all_data_df, model_data_csv, row.names = FALSE)
