@@ -1,5 +1,6 @@
 # additional packages -------------------------------------------------------------------------
 
+library(FNN)
 library(mgcv)
 
 ## build model now with Psurv and/or Tmin -----------------------------------------------------
@@ -13,15 +14,15 @@ if (FALSE) {
   gam_model.e <- gam(
     r ~
       beetle_yr +
-        s(dbh) +
-        s(ht_pitch_tube) +
-        s(log10(nbr_infested + 1)) +
-        s(Q, bs = "gp") +
-        s(asin(sqrt(Q)), bs = "gp") +
-        s(lon, lat, bs = "gp") +
-        s(Tmin, bs = "gp") +
-        s(Psurv, bs = "gp") +
-        s(PineVol, bs = "gp"),
+      s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)) +
+      s(Q, bs = "gp") +
+      s(asin(sqrt(Q)), bs = "gp") +
+      s(lon, lat, bs = "gp") +
+      s(Tmin, bs = "gp") +
+      s(Psurv, bs = "gp") +
+      s(PineVol, bs = "gp"),
     data = abr.early,
     method = "REML",
     family = gaussian(link = "identity")
@@ -36,15 +37,15 @@ if (FALSE) {
   gam_model.l <- gam(
     r ~
       beetle_yr +
-        s(dbh) +
-        s(ht_pitch_tube) +
-        s(log10(nbr_infested + 1)) +
-        s(asin(sqrt(Q)), bs = "gp") +
-        s(SSI_2023, bs = "gp") +
-        s(lon, lat, bs = "gp") +
-        s(Tmin, bs = "gp") +
-        s(Psurv, bs = "gp") +
-        s(PineVol, bs = "gp"),
+      s(dbh) +
+      s(ht_pitch_tube) +
+      s(log10(nbr_infested + 1)) +
+      s(asin(sqrt(Q)), bs = "gp") +
+      s(SSI_2023, bs = "gp") +
+      s(lon, lat, bs = "gp") +
+      s(Tmin, bs = "gp") +
+      s(Psurv, bs = "gp") +
+      s(PineVol, bs = "gp"),
     data = abr.late,
     method = "REML",
     family = gaussian(link = "identity")
@@ -73,15 +74,15 @@ all_data_df_join_CMI$dbh <- ifelse(
 gam_model.all <- gam(
   r ~
     s(lon, lat, bs = "gp", k = 64) +
-      s(beetle_yr) +
-      s(dbh) +
-      s(ht_pitch_tube) +
-      s(log10(nbr_infested + 1)) +
-      s(CMI, bs = "gp", k = 22) +
-      s(asin(sqrt(Q)), bs = "gp", k = 22) +
-      # s(PineVol, bs = "gp", k = 44) +
-      s(Psurv, bs = "gp", k = 44), #+
-      #s(SSI_2016, bs = "gp", k = 22), +
+    s(beetle_yr) +
+    s(dbh) +
+    s(ht_pitch_tube) +
+    s(log10(nbr_infested + 1)) +
+    s(CMI, bs = "gp", k = 22) +
+    s(asin(sqrt(Q)), bs = "gp", k = 22) +
+    # s(PineVol, bs = "gp", k = 44) +
+    s(Psurv, bs = "gp", k = 44), # +
+  # s(SSI_2016, bs = "gp", k = 22), +
   # s(Tmin, bs = "gp", k = 22),
   data = all_data_df_join_CMI,
   method = "REML",
@@ -102,35 +103,34 @@ par(cex = 1.4, cex.axis = 1.2, cex.lab = 1.4, cex.main = 1.6)
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 dev.off()
 
-#Try filling in NAs on SSI_2026 using nearest neighbour
-library(FNN)
+## Try filling in NAs on SSI_2026 using nearest neighbour
 
-# Separate rows with and without SSI_2016
-df_with    <- all_data_df_join_CMI[!is.na(all_data_df_join_CMI$SSI_2016), ]
-df_missing <- all_data_df_join_CMI[ is.na(all_data_df_join_CMI$SSI_2016), ]
+## Separate rows with and without SSI_2016
+df_with <- all_data_df_join_CMI[!is.na(all_data_df_join_CMI$SSI_2016), ]
+df_missing <- all_data_df_join_CMI[is.na(all_data_df_join_CMI$SSI_2016), ]
 
-# Build matrix of coordinates
-coords_with    <- as.matrix(df_with[, c("lat", "lon")])
+## Build matrix of coordinates
+coords_with <- as.matrix(df_with[, c("lat", "lon")])
 coords_missing <- as.matrix(df_missing[, c("lat", "lon")])
 
-# Find nearest neighbor for each missing row
+## Find nearest neighbour for each missing row
 nn_index <- get.knnx(coords_with, coords_missing, k = 1)$nn.index
 
-# Impute SSI_2016 from nearest neighbor
+## Impute SSI_2016 from nearest neighbour
 df_missing$SSI_2016 <- df_with$SSI_2016[nn_index]
 
-# Recombine
+## Recombine
 all_data_imputed <- rbind(df_with, df_missing)
 
-#rename variables for manuscript
-all_data_imputed <- all_data_imputed %>%
+## rename variables for manuscript
+all_data_imputed <- all_data_imputed |>
   rename(
-    DBH   = dbh,
-    LAT   = lat,
-    LON   = lon,
-    YR    = beetle_yr,
-    HT    = ht_pitch_tube,
-    NUM   = nbr_infested
+    DBH = dbh,
+    LAT = lat,
+    LON = lon,
+    YR = beetle_yr,
+    HT = ht_pitch_tube,
+    NUM = nbr_infested
   )
 
 gam_model.imputed <- gam(
@@ -144,7 +144,7 @@ gam_model.imputed <- gam(
     s(asin(sqrt(Q)), bs = "gp", k = 22) +
     # s(PineVol, bs = "gp", k = 44) +
     s(Psurv, bs = "gp", k = 44) +
-    s(SSI_2016, bs = "gp", k = 22),# +
+    s(SSI_2016, bs = "gp", k = 22), # +
   # s(Tmin, bs = "gp", k = 22),
   data = all_data_imputed,
   method = "REML",
@@ -155,9 +155,8 @@ summary(gam_model.imputed)
 # png(file.path(figPath, "gam_model_cleaned.png"), height = 1600, width = 1600, res = 300)
 pdf(file.path(figPath, "gam_model_imputed_AB.pdf"), height = 9, width = 9)
 par(cex = 1.4, cex.axis = 1.2, cex.lab = 1.4, cex.main = 1.6)
-plot(gam_model.imputed, scheme = 2, pages = 1, all.terms = TRUE,rug=T)
+plot(gam_model.imputed, scheme = 2, pages = 1, all.terms = TRUE, rug = TRUE)
 dev.off()
-
 
 ### -------------------------------------------------------------------------------------------
 
@@ -167,9 +166,9 @@ ssi_crs <- sf::st_crs(3400)
 ## bring the geometry back into the sf
 all_data_sf <- all_data_df_join_CMI |>
   dplyr::filter(!is.na(lon) & !is.na(lat) & !is.na(beetle_yr)) |>
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
-  st_make_valid() |>
-  st_transform(ssi_crs)
+  sf::st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
+  sf::st_make_valid() |>
+  sf::st_transform(ssi_crs)
 
 gg_r_by_year <- ggplot(all_data_sf) +
   geom_sf(aes(color = log10(r + 1)), linewidth = 1.1, alpha = 0.7) +
@@ -196,8 +195,8 @@ plot_df <- all_data_df_join_CMI |>
   )
 
 ab_outline_df <- ab_sf |>
-  st_transform(4326) |> ## match lon/lat CRS
-  st_coordinates() |>
+  sf::st_transform(4326) |> ## match lon/lat CRS
+  sf::st_coordinates() |>
   as.data.frame() |>
   rename(lon = X, lat = Y)
 
