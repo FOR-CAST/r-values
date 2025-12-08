@@ -31,10 +31,17 @@ library(scales) ## used for log-scale plotting
 sf::sf_proj_network(TRUE)
 sf::sf_use_s2(TRUE)
 
-run_for <- "AB" ## use "NP" to run analyses for national parks; use "AB" to run province-wide
+run_for <- "NP" ## use "NP" to run analyses for national parks; use "AB" to run province-wide
 extract_mdb <- FALSE ## use TRUE to re-extract from raw data sources (Windows only!)
 plot_all <- FALSE ## use TRUE to generate all plots, including exploratory/diagnostic plots
 rerun_all <- FALSE ## re-run all analyses, overwriting existing intermediate and output files
+
+stopifnot(
+  run_for %in% c("AB", "NP"),
+  is.logical(extract_mdb),
+  is.logical(plot_all),
+  is.logical(rerun_all)
+)
 
 ## paths
 dataPath <- normalizePath("./data", mustWork = FALSE) |> fs::dir_create()
@@ -47,30 +54,35 @@ source("01-download-data.R") ## will prompt for Google authentication
 
 # MPB r-value data ----------------------------------------------------------------------------
 
-## mdb extraction only needs to be done once,
-## and can only be run on a Windows machine
-if (extract_mdb) {
-  source("01a-extract-mdb.R")
-}
+## mdb extraction only needs to be done once, and can only be run on a Windows machine
 
-## join all the extracted data into a single table
-source("01b-import-mdb-csv.R")
+if (run_for == "AB") {
+  if (extract_mdb) {
+    source("01a-extract-mdb.R")
+  }
+
+  ## join all the extracted data into a single table
+  source("01b-import-mdb-csv.R")
+}
 
 # load pine maps ------------------------------------------------------------------------------
 
-## Bleiker 2019
-bleiker2019 <- terra::rast(gdb_bleiker2019)
+if (run_for == "AB") {
+  bleiker2019 <- terra::rast(gdb_bleiker2019)
 
-if (plot_all) {
-  plot(bleiker2019)
+  if (plot_all) {
+    plot(bleiker2019)
+  }
 }
 
 # load pine introgression (Q) maps  -----------------------------------------------------------
 
-pine_q <- terra::rast(pine_gdb)
+if (run_for == "AB") {
+  pine_q <- terra::rast(pine_gdb)
 
-if (plot_all) {
-  terra::plot(pine_q)
+  if (plot_all) {
+    terra::plot(pine_q)
+  }
 }
 
 # r-values analyses ---------------------------------------------------------------------------
@@ -87,6 +99,4 @@ if (run_for == "AB") {
 } else if (run_for == "NP") {
   ##
   source("03-Jasper.R")
-} else {
-  stop("run_for must be one of 'AB' or 'NP'.")
 }
