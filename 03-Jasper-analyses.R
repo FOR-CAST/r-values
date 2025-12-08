@@ -10,13 +10,16 @@
 #
 # 1. Tree counts. For both Jasper and Banff we have red tree areas 2013-2021, the peak outbreak years.
 # Prior to outbreak, during 1999-2012, we have tree counts for Banff. We have them for Jasper too,
-# but 2011 and 2012 are missing, although there is a count for 2013. [Oct 9 Update: in the shpfiles there is an
-# area infested datum for Banff in 2012 - a datum not in the 2022 time-series compilation. Similarly, there are
-# areas for 2023 in that same file. These data are used to update UngerRokeBrettBanffJasperCountsAreas.txt]
+# but 2011 and 2012 are missing, although there is a count for 2013.
+# [Oct 9 Update: in the shpfiles there is an area infested datum for Banff in 2012 --
+# a datum not in the 2022 time-series compilation.
+# Similarly, there are areas for 2023 in that same file.
+# These data are used to update UngerRokeBrettBanffJasperCountsAreas.txt]
 #
 # 2. r-values. These are based on 6" squares that average just 0.5 female entrance holes per disk.
-# There are no r-values for Banff. For Jasper there are r-values for beetle years
-# 2014, 2015, 2016, recorded by ASRD in .mdb files, based on 4" discs. The survey is done in the year after the "beetle year"
+# There are no r-values for Banff. For Jasper there are r-values for beetle years 2014, 2015, 2016,
+# recorded by ASRD in .mdb files, based on 4" discs.
+# The survey is done in the year after the "beetle year".
 # These need to be extracted, converted to .csv tables, and site and tree data merged
 # (as we did for the rest of Alberta in a companion paper). The formats of the three .mdb files are the same
 # (and very similar to the provincial files for 2006-2019 analyzed in the companion paper).
@@ -41,7 +44,7 @@
 #
 # For the beetle years 2014-16 the Jasper r-values data are "rich" (as they were with Alberta) as they have recorded tree DBH,
 # height of pitch tubes, and number of surrounded red attacked trees in the cluster. For 2017-2022 there is no DBH and
-# no pitch tube height. There is a vague guesstimate about the number of trees in the cluater, but it's often expressed as ">100",
+# no pitch tube height. There is a vague guesstimate about the number of trees in the cluster, but it's often expressed as ">100",
 # meaning so many they couldn't easily be counted.
 #
 # This paper is the first in a series of two. We mention a "companion paper", which regards the rest of Alberta, a managed
