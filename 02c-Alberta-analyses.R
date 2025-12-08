@@ -1,6 +1,5 @@
 # additional packages -------------------------------------------------------------------------
 
-library(FNN)
 library(mgcv)
 
 ## build model now with Psurv and/or Tmin -----------------------------------------------------
@@ -60,16 +59,16 @@ if (FALSE) {
 
 ### use full dataset --------------------------------------------------------------------------
 
-## below we doubled k' based on initial gam.check of model using default k-values;
-## then doubled k-values for Psurv and PineVol again.
-## (see ?mgcv::gam.check and ?mgcv::choose.k)
-
 ## Correct DBH values > 100 by assuming they are circumference
 all_data_df_join_CMI$dbh <- ifelse(
   all_data_df_join_CMI$dbh > 100,
   all_data_df_join_CMI$dbh / (2 * pi),
   all_data_df_join_CMI$dbh
 )
+
+## below we doubled k' based on initial gam.check of model using default k-values;
+## then doubled k-values for Psurv, PineVol, and SSI again.
+## (see ?mgcv::gam.check and ?mgcv::choose.k)
 
 gam_model.all <- gam(
   r ~
@@ -81,8 +80,8 @@ gam_model.all <- gam(
     s(CMI, bs = "gp", k = 22) +
     s(asin(sqrt(Q)), bs = "gp", k = 22) +
     # s(PineVol, bs = "gp", k = 44) +
-    s(Psurv, bs = "gp", k = 44), # +
-  # s(SSI_2016, bs = "gp", k = 22), +
+    s(Psurv, bs = "gp", k = 44) +
+    s(SSI_2016, bs = "gp", k = 44), # +
   # s(Tmin, bs = "gp", k = 22),
   data = all_data_df_join_CMI,
   method = "REML",
@@ -101,61 +100,6 @@ plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
 pdf(file.path(figPath, "gam_model_AB.pdf"), height = 8, width = 8)
 par(cex = 1.4, cex.axis = 1.2, cex.lab = 1.4, cex.main = 1.6)
 plot(gam_model.all, scheme = 2, pages = 1, all.terms = TRUE)
-dev.off()
-
-## Try filling in NAs on SSI_2026 using nearest neighbour
-
-## Separate rows with and without SSI_2016
-df_with <- all_data_df_join_CMI[!is.na(all_data_df_join_CMI$SSI_2016), ]
-df_missing <- all_data_df_join_CMI[is.na(all_data_df_join_CMI$SSI_2016), ]
-
-## Build matrix of coordinates
-coords_with <- as.matrix(df_with[, c("lat", "lon")])
-coords_missing <- as.matrix(df_missing[, c("lat", "lon")])
-
-## Find nearest neighbour for each missing row
-nn_index <- get.knnx(coords_with, coords_missing, k = 1)$nn.index
-
-## Impute SSI_2016 from nearest neighbour
-df_missing$SSI_2016 <- df_with$SSI_2016[nn_index]
-
-## Recombine
-all_data_imputed <- rbind(df_with, df_missing)
-
-## rename variables for manuscript
-all_data_imputed <- all_data_imputed |>
-  rename(
-    DBH = dbh,
-    LAT = lat,
-    LON = lon,
-    YR = beetle_yr,
-    HT = ht_pitch_tube,
-    NUM = nbr_infested
-  )
-
-gam_model.imputed <- gam(
-  r ~
-    s(LON, LAT, bs = "gp", k = 64) +
-    s(YR) +
-    s(DBH) +
-    s(HT) +
-    s(log10(NUM + 1)) +
-    s(CMI, bs = "gp", k = 22) +
-    s(asin(sqrt(Q)), bs = "gp", k = 22) +
-    # s(PineVol, bs = "gp", k = 44) +
-    s(Psurv, bs = "gp", k = 44) +
-    s(SSI_2016, bs = "gp", k = 22), # +
-  # s(Tmin, bs = "gp", k = 22),
-  data = all_data_imputed,
-  method = "REML",
-  family = gaussian(link = "identity")
-)
-summary(gam_model.imputed)
-
-# png(file.path(figPath, "gam_model_cleaned.png"), height = 1600, width = 1600, res = 300)
-pdf(file.path(figPath, "gam_model_imputed_AB.pdf"), height = 9, width = 9)
-par(cex = 1.4, cex.axis = 1.2, cex.lab = 1.4, cex.main = 1.6)
-plot(gam_model.imputed, scheme = 2, pages = 1, all.terms = TRUE, rug = TRUE)
 dev.off()
 
 ### -------------------------------------------------------------------------------------------
@@ -705,7 +649,7 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
     breaks = 3:7,
     labels = c("1", "10", "100", "1 000", "10 000"),
     sec.axis = sec_axis(
-      trans = ~., # identity transform
+      transform = ~., # identity transform
       breaks = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
       labels = c("0.1", "0.5", "1", "2", "10", "30", "50"),
       name = expression(R[t] == X[t] / X[t - 1])

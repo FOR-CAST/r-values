@@ -173,12 +173,12 @@ if (!file.exists(model_data_csv) || rerun_all) {
     trees_missing$SSI_2008 <- nearest_polygons$SSI
 
     ## Combine with original trees that already had SSI_2008
-    all_data_sf_aggressive <- all_data_sf |>
+    all_data_sf <- all_data_sf |>
       filter(!is.na(SSI_2008)) |>
       bind_rows(trees_missing)
 
     if (plot_all) {
-      ggplot(all_data_sf_aggressive) +
+      ggplot(all_data_sf) +
         geom_sf(aes(color = !is.na(SSI_2008))) +
         geom_sf(data = ab_sf, fill = NA) +
         labs(title = "Trees with aggressive SSI_2008 Join", color = "Joined")
@@ -191,16 +191,15 @@ if (!file.exists(model_data_csv) || rerun_all) {
       by_element = TRUE
     )
 
-    if (plot_all) {
-      # dev.new()
-      ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2008) / 1000)) +
-        geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
-        labs(
-          title = "Distance to Nearest SSI Polygon (2008)",
-          x = "Distance (km)",
-          y = "Tree Count"
-        )
-    }
+    # dev.new()
+    gg_nn_ssi_2008 <- ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2008) / 1000)) +
+      geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
+      labs(
+        title = "Distance to Nearest SSI Polygon (2008)",
+        x = "Distance (km)",
+        y = "Tree Count"
+      )
+    ggsave(file.path(figPath, "hist_NN_SSI_2008.png"), gg_nn_ssi_2008)
 
     ## 2016 ---------------------------------------------------------------------
     trees_missing <- all_data_sf |> filter(is.na(SSI_2016))
@@ -215,12 +214,12 @@ if (!file.exists(model_data_csv) || rerun_all) {
     trees_missing$SSI_2016 <- nearest_polygons$SSI
 
     ## Combine with original trees that already had SSI_2016
-    all_data_sf_aggressive <- all_data_sf |>
+    all_data_sf <- all_data_sf |>
       filter(!is.na(SSI_2016)) |>
       bind_rows(trees_missing)
 
     if (plot_all) {
-      ggplot(all_data_sf_aggressive) +
+      ggplot(all_data_sf) +
         geom_sf(aes(color = !is.na(SSI_2016))) +
         geom_sf(data = ab_sf, fill = NA) +
         labs(title = "Trees with aggressive SSI_2016 Join", color = "Joined")
@@ -233,16 +232,15 @@ if (!file.exists(model_data_csv) || rerun_all) {
       by_element = TRUE
     )
 
-    if (plot_all) {
-      # dev.new()
-      ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2016) / 1000)) +
-        geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
-        labs(
-          title = "Distance to Nearest SSI Polygon (2016)",
-          x = "Distance (km)",
-          y = "Tree Count"
-        )
-    }
+    # dev.new()
+    gg_nn_ssi_2016 <- ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2016) / 1000)) +
+      geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
+      labs(
+        title = "Distance to Nearest SSI Polygon (2016)",
+        x = "Distance (km)",
+        y = "Tree Count"
+      )
+    ggsave(file.path(figPath, "hist_NN_SSI_2016.png"), gg_nn_ssi_2016)
 
     ## 2023 ---------------------------------------------------------------------
     trees_missing <- all_data_sf |> filter(is.na(SSI_2023))
@@ -257,12 +255,12 @@ if (!file.exists(model_data_csv) || rerun_all) {
     trees_missing$SSI_2023 <- nearest_polygons$SSI
 
     ## Combine with original trees that already had SSI_2023
-    all_data_sf_aggressive <- all_data_sf |>
+    all_data_sf <- all_data_sf |>
       filter(!is.na(SSI_2023)) |>
       bind_rows(trees_missing)
 
     if (plot_all) {
-      ggplot(all_data_sf_aggressive) +
+      ggplot(all_data_sf) +
         geom_sf(aes(color = !is.na(SSI_2023))) +
         geom_sf(data = ab_sf, fill = NA) +
         labs(title = "Trees with aggressive SSI_2023 Join", color = "Joined")
@@ -275,16 +273,15 @@ if (!file.exists(model_data_csv) || rerun_all) {
       by_element = TRUE
     )
 
-    if (plot_all) {
-      # dev.new()
-      ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2023) / 1000)) +
-        geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
-        labs(
-          title = "Distance to Nearest SSI Polygon (2023)",
-          x = "Distance (km)",
-          y = "Tree Count"
-        )
-    }
+    # dev.new()
+    gg_nn_ssi_2023 <- ggplot(trees_missing, aes(x = as.numeric(distance_to_ssi_2023) / 1000)) +
+      geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
+      labs(
+        title = "Distance to Nearest SSI Polygon (2023)",
+        x = "Distance (km)",
+        y = "Tree Count"
+      )
+    ggsave(file.path(figPath, "hist_NN_SSI_2023.png"), gg_nn_ssi_2023)
 
     ## Extract Q-values from raster to tree points --------------------------------------------
     all_data_sf$Q <- terra::extract(pine_q, terra::vect(all_data_sf))$pine
