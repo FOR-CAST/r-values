@@ -16,8 +16,8 @@ if (FALSE) {
       s(dbh) +
       s(ht_pitch_tube) +
       s(log10(nbr_infested + 1)) +
-      s(Q, bs = "gp") +
       s(asin(sqrt(Q)), bs = "gp") +
+      s(SSI_2023, bs = "gp") +
       s(lon, lat, bs = "gp") +
       s(Tmin, bs = "gp") +
       s(Psurv, bs = "gp") +
