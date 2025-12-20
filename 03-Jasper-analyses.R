@@ -832,9 +832,8 @@ JNPBNP_Rvsr <- ggplot(plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
   ) +
   theme_minimal(base_size = 12) +
   theme(
-    panel.border = element_blank(),
-    axis.line.x = element_line(color = "black", linewidth = 0.5),
-    axis.line.y = element_line(color = "black", linewidth = 0.5),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
+    axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
     axis.text = element_text(color = "black"),
     axis.title = element_text(color = "black")
@@ -843,11 +842,25 @@ JNPBNP_Rvsr <- ggplot(plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
 JNPBNP_Rvsr <- JNPBNP_Rvsr +
   annotate("text", x = 0.6, y = 2.3, label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
+# Optional: Add the red bounding box (same coordinates as Alberta)
+JNPBNP_Rvsr <- JNPBNP_Rvsr +
+  annotate(
+    "rect",
+    xmin  = log10(0.1 + 1), xmax = log10(2 + 1),
+    ymin  = 0.1,            ymax = 2,
+    color = "red", fill = NA, linewidth = 1
+  ) +
+  geom_text(
+    aes(label = beetle_yr),
+    vjust = -1,
+    size = 4
+  )
+
 ggsave(
-  file.path(figPath, "JNPBNP_RvsR.png"),
+  file.path(figPath, "JNPBNP_Rvsr.png"),
   JNPBNP_Rvsr,
-  height = 5,
-  width = 5
+  height = 6,
+  width = 6
 )
 
 # Part 3. BioSIM simulations of Psurv and CMI for Jasper and Banff -------------------------------------------------

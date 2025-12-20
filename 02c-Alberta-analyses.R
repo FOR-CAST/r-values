@@ -836,3 +836,109 @@ y_vals <- 10^y_pred
 lines(x_vals, y_vals, col = "black", lwd = 2)
 abline(a = 0, b = 1, col = "black", lwd = 2, lty = 2) ## add 1:1 theoretical expectation
 dev.off()
+
+
+#as above but with ggplot styling, similar to Mtn Parks figure
+
+library(ggplot2)
+library(dplyr)
+
+# --- 1. Fit the QUADRATIC model on log-log scale, excluding 2007 ---
+mod_AB <- lm(Rt_log_delagged2 ~ r_log + I(r_log^2),
+             data = subset(rt_aligned_df, beetle_yr != 2007))
+mod_sum <- summary(mod_AB)
+R2_val  <- mod_sum$r.squared
+
+p_val <- mod_sum$fstatistic
+p_val <- pf(p_val[1], p_val[2], p_val[3], lower.tail = FALSE)
+
+# --- 2. Identify the 2007 immigration point ---
+df_2007 <- rt_aligned_df %>% filter(beetle_yr == 2007)
+
+annot_text <- paste0(
+  "R² = ", format(R2_val, digits = 3), "\n",
+  "p = ", format(p_val, digits = 3)
+)
+
+# Center coordinates
+x_center <- mean(range(rt_aligned_df$r_log))
+y_center <- log10(15)
+
+# --- 3. Build the ggplot ---
+AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
+
+  # (A) Solid black points
+  geom_point(size = 3, color = "black") +
+
+  # (B) Year labels
+  geom_text(aes(label = beetle_yr), vjust = -1, size = 4) +
+
+  # (C) Quadratic regression line with shaded SE interval
+  geom_smooth(
+    data   = subset(rt_aligned_df, beetle_yr != 2007),
+    aes(x = r_log, y = Rt_log_delagged2),
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    se = TRUE,
+    color = "black",
+    fill = "grey70",
+    alpha = 0.4
+  ) +
+
+  # (D) Highlight 2007 immigration point with red ring
+  geom_point(
+    data  = df_2007,
+    aes(x = r_log, y = Rt_log_delagged2),
+    shape = 21, fill = NA, color = "red",
+    stroke = 1.2, size = 5
+  ) +
+
+  # (E) Natural-scale axis labels on log10 coordinates
+  scale_x_continuous(
+    name   = expression(r[t]),
+    breaks = log10(c(0.1, 0.2, 0.5, 1, 2) + 1),
+    labels = c(0.1, 0.2, 0.5, 1, 2)
+  ) +
+  scale_y_continuous(
+    name   = expression(R[t+2] == C[t+2] / C[t+1]),
+    breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
+    labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)
+  ) +
+
+  # (F) Red bounding box: r = 0.1–2, R = 0.1–2
+  #annotate(
+  #  "rect",
+  #  xmin  = log10(0.1 + 1), xmax = log10(2 + 1),
+  #  ymin  = log10(0.1),     ymax = log10(2),
+  #  color = "red", fill = NA, linewidth = 1
+  #) +
+
+  # (G) R^2 annotation
+  annotate(
+    "text",
+    x = x_center,
+    y = y_center,
+    hjust = 0.5,
+    vjust = 0.5,
+    label = annot_text,
+    size = 5
+  ) +
+
+  # (H) Square frame and harmonized theme
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
+    axis.line    = element_line(color = "black"),
+    axis.ticks   = element_line(color = "black"),
+    axis.text    = element_text(color = "black"),
+    axis.title   = element_text(color = "black")
+  )
+
+AB_Rvsr_plot
+ggsave(
+  file.path(figPath, "AB_Rvsr.png"),
+  AB_Rvsr_plot,
+  height = 6,
+  width = 6
+)
+
