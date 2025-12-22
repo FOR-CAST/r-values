@@ -1,6 +1,8 @@
 # Alberta mountain pine beetle r values
 
-[![DOI](https://zenodo.org/badge/816380071.svg)](https://doi.org/10.5281/zenodo.18023491)
+| **Code** | **Data (Alberta)** | **Data (national parks)** |
+| -------- | ------------- | ------------------------- |
+| [![DOI](https://zenodo.org/badge/816380071.svg)](https://doi.org/10.5281/zenodo.18023491) | [![Dryad DOI](https://img.shields.io/badge/Dryad-10.5061/dryad.kprr4xhk6-green)](https://doi.org/10.5061/dryad.kprr4xhk6) | [![Dryad DOI](https://img.shields.io/badge/Dryad-10.5061/dryad.np5hqc07k-green)](https://doi.org/10.5061/dryad.np5hqc07k) |
 
 ## Background
 
@@ -16,8 +18,8 @@ In support of the following manuscripts:
 
 Data are retrieved from public sources, or shared via Google Drive.
 
-Additionally, data used for analyses of the national parks are archived at <https://doi.org/10.5061/dryad.np5hqc07k>,
-and those used for analyses of the provincial commercially managed forests are archived at <https://doi.org/10.5061/dryad.kprr4xhk6>.
+Additionally, data used for analyses of the national parks are archived at [![Dryad DOI](https://img.shields.io/badge/Dryad-10.5061/dryad.np5hqc07k-green)](https://doi.org/10.5061/dryad.np5hqc07k),
+and those used for analyses of the provincial commercially managed forests are archived at [![Dryad DOI](https://img.shields.io/badge/Dryad-10.5061/dryad.kprr4xhk6-green)](https://doi.org/10.5061/dryad.kprr4xhk6).
 
 ## Initial project setup
 
