@@ -1,5 +1,7 @@
 # Alberta mountain pine beetle r values
 
+[![DOI](https://zenodo.org/badge/816380071.svg)](https://doi.org/10.5281/zenodo.18023491)
+
 ## Background
 
 Code for data retrieval and analyses of Alberta mountain pine beetle population recruitment rates (r values).
