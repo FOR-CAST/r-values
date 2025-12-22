@@ -607,7 +607,7 @@ plot(
   xlab = "",
   ylab = "",
   ylim = c(-1, log10(50))
-) # covers ratio from ~0.1 to 50
+) ## covers ratio from ~0.1 to 50
 abline(h = 0, lty = 2, col = "blue")
 points(rtc$Year, log10(rtc$Rt), pch = 17, col = "blue", cex = 1.2)
 axis(
@@ -649,7 +649,7 @@ red.green.plot <- ggplot(rtc, aes(x = Year)) +
     breaks = 3:7,
     labels = c("1", "10", "100", "1 000", "10 000"),
     sec.axis = sec_axis(
-      transform = ~., # identity transform
+      transform = ~., ## identity transform
       breaks = log10(c(0.1, 0.5, 1, 2, 10, 30, 50)),
       labels = c("0.1", "0.5", "1", "2", "10", "30", "50"),
       name = expression(R[t] == X[t] / X[t - 1])
@@ -755,7 +755,7 @@ png(file.path(figPath, "Ronr_byyear_Alberta.png"), width = 1800, height = 1800, 
 plot(
   10^rt_aligned_df$r_log - 1,
   10^rt_aligned_df$Rt_log_delagged2,
-  log = "xy", # log scale for both axes
+  log = "xy", ## log scale for both axes
   xlab = expression(r[t]),
   ylab = expression(R[t + 2]),
   xlim = c(0.2, 2),
@@ -783,7 +783,7 @@ segments(
   x0 = 1,
   y0 = 0.107,
   x1 = 1,
-  y1 = 1, # vertical line
+  y1 = 1, ## vertical line
   col = "red",
   lwd = 2,
   lty = 2
@@ -844,10 +844,9 @@ library(ggplot2)
 library(dplyr)
 
 # --- 1. Fit the QUADRATIC model on log-log scale, excluding 2007 ---
-mod_AB <- lm(Rt_log_delagged2 ~ r_log + I(r_log^2),
-             data = subset(rt_aligned_df, beetle_yr != 2007))
+mod_AB <- lm(Rt_log_delagged2 ~ r_log + I(r_log^2), data = subset(rt_aligned_df, beetle_yr != 2007))
 mod_sum <- summary(mod_AB)
-R2_val  <- mod_sum$r.squared
+R2_val <- mod_sum$r.squared
 
 p_val <- mod_sum$fstatistic
 p_val <- pf(p_val[1], p_val[2], p_val[3], lower.tail = FALSE)
@@ -856,26 +855,29 @@ p_val <- pf(p_val[1], p_val[2], p_val[3], lower.tail = FALSE)
 df_2007 <- rt_aligned_df %>% filter(beetle_yr == 2007)
 
 annot_text <- paste0(
-  "R² = ", format(R2_val, digits = 3), "\n",
-  "p = ", format(p_val, digits = 3)
+  "R² = ",
+  format(R2_val, digits = 3),
+  "\n",
+  "p = ",
+  format(p_val, digits = 3)
 )
 
-# Center coordinates
+## Center coordinates
 x_center <- mean(range(rt_aligned_df$r_log))
 y_center <- log10(15)
 
 # --- 3. Build the ggplot ---
 AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
 
-  # (A) Solid black points
+  ## (A) Solid black points
   geom_point(size = 3, color = "black") +
 
-  # (B) Year labels
+  ## (B) Year labels
   geom_text(aes(label = beetle_yr), vjust = -1, size = 4) +
 
-  # (C) Quadratic regression line with shaded SE interval
+  ## (C) Quadratic regression line with shaded SE interval
   geom_smooth(
-    data   = subset(rt_aligned_df, beetle_yr != 2007),
+    data = subset(rt_aligned_df, beetle_yr != 2007),
     aes(x = r_log, y = Rt_log_delagged2),
     method = "lm",
     formula = y ~ x + I(x^2),
@@ -885,35 +887,38 @@ AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
     alpha = 0.4
   ) +
 
-  # (D) Highlight 2007 immigration point with red ring
+  ## (D) Highlight 2007 immigration point with red ring
   geom_point(
-    data  = df_2007,
+    data = df_2007,
     aes(x = r_log, y = Rt_log_delagged2),
-    shape = 21, fill = NA, color = "red",
-    stroke = 1.2, size = 5
+    shape = 21,
+    fill = NA,
+    color = "red",
+    stroke = 1.2,
+    size = 5
   ) +
 
-  # (E) Natural-scale axis labels on log10 coordinates
+  ## (E) Natural-scale axis labels on log10 coordinates
   scale_x_continuous(
-    name   = expression(r[t]),
+    name = expression(r[t]),
     breaks = log10(c(0.1, 0.2, 0.5, 1, 2) + 1),
     labels = c(0.1, 0.2, 0.5, 1, 2)
   ) +
   scale_y_continuous(
-    name   = expression(R[t+2] == C[t+2] / C[t+1]),
+    name = expression(R[t + 2] == C[t + 2] / C[t + 1]),
     breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
     labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)
   ) +
 
-  # (F) Red bounding box: r = 0.1–2, R = 0.1–2
-  #annotate(
-  #  "rect",
-  #  xmin  = log10(0.1 + 1), xmax = log10(2 + 1),
-  #  ymin  = log10(0.1),     ymax = log10(2),
-  #  color = "red", fill = NA, linewidth = 1
-  #) +
+  ## (F) Red bounding box: r = 0.1–2, R = 0.1–2
+  # annotate(
+  #   "rect",
+  #   xmin  = log10(0.1 + 1), xmax = log10(2 + 1),
+  #   ymin  = log10(0.1),     ymax = log10(2),
+  #   color = "red", fill = NA, linewidth = 1
+  # ) +
 
-  # (G) R^2 annotation
+  ## (G) R^2 annotation
   annotate(
     "text",
     x = x_center,
@@ -924,14 +929,14 @@ AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
     size = 5
   ) +
 
-  # (H) Square frame and harmonized theme
+  ## (H) Square frame and harmonized theme
   theme_minimal(base_size = 12) +
   theme(
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
-    axis.line    = element_line(color = "black"),
-    axis.ticks   = element_line(color = "black"),
-    axis.text    = element_text(color = "black"),
-    axis.title   = element_text(color = "black")
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
   )
 
 AB_Rvsr_plot
@@ -941,4 +946,3 @@ ggsave(
   height = 6,
   width = 6
 )
-

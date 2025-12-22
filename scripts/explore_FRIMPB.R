@@ -130,7 +130,13 @@ hist(abr.2006$ht_pitch_tube)
 hist(abr.2006$CF)
 hist(abr.2006$SSI)
 
-abr.lm <- lm(log10(abr.2006$R_VALUE + 1) ~ abr.2006$NBR_TREES + abr.2006$dbh + abr.2006$ht_pitch_tube + abr.2006$CF + abr.2006$SSI)
+abr.lm <- lm(
+  log10(abr.2006$R_VALUE + 1) ~ abr.2006$NBR_TREES +
+    abr.2006$dbh +
+    abr.2006$ht_pitch_tube +
+    abr.2006$CF +
+    abr.2006$SSI
+)
 summary(abr.lm)
 
 ########
@@ -201,7 +207,13 @@ hist(abr.2007$HT_PITCH_T)
 hist(abr.2007$CF)
 hist(abr.2007$SSI)
 
-abr.lm <- lm(log10(abr.2007$R_VALUE + 1) ~ abr.2007$SAMPLE_TRE + abr.2007$DBH + abr.2007$HT_PITCH_T + abr.2007$CF + abr.2007$SSI)
+abr.lm <- lm(
+  log10(abr.2007$R_VALUE + 1) ~ abr.2007$SAMPLE_TRE +
+    abr.2007$DBH +
+    abr.2007$HT_PITCH_T +
+    abr.2007$CF +
+    abr.2007$SSI
+)
 summary(abr.lm)
 
 ########
@@ -230,7 +242,13 @@ hist(abr.2008$SSI)
 
 abr.2008$BEETLE_YR[abr.2008$BEETLE_YR == 2208] <- 2008
 
-abr.lm <- lm(log10(abr.2008$R_VALUE + 1) ~ log10(abr.2008$NBR_INFEST + 1) + abr.2008$dbh + abr.2008$ht_pitch_tube + abr.2008$CF + abr.2008$SSI)
+abr.lm <- lm(
+  log10(abr.2008$R_VALUE + 1) ~ log10(abr.2008$NBR_INFEST + 1) +
+    abr.2008$dbh +
+    abr.2008$ht_pitch_tube +
+    abr.2008$CF +
+    abr.2008$SSI
+)
 summary(abr.lm)
 
 ########
@@ -260,7 +278,13 @@ abr.2009$beetle_yr[abr.2009$beetle_yr == 0] <- 2009
 # There are  records where year = 2003
 abr.2009$beetle_yr[abr.2009$beetle_yr == 2003] <- 2009
 
-abr.lm <- lm(log10(abr.2009$r_value + 1) ~ log10(abr.2009$nbr_infest + 1) + abr.2009$dbh + abr.2009$ht_pitch_tube + abr.2009$CF + abr.2009$SSI)
+abr.lm <- lm(
+  log10(abr.2009$r_value + 1) ~ log10(abr.2009$nbr_infest + 1) +
+    abr.2009$dbh +
+    abr.2009$ht_pitch_tube +
+    abr.2009$CF +
+    abr.2009$SSI
+)
 summary(abr.lm)
 
 ########
@@ -282,7 +306,13 @@ hist(abr.2010$ht_pitch_tube)
 hist(abr.2010$CF)
 hist(abr.2010$SSI)
 
-abr.lm <- lm(log10(abr.2010$R_VALUE + 1) ~ log10(abr.2010$NBR_INFEST + 1) + abr.2010$dbh + abr.2010$ht_pitch_tube + abr.2010$CF + abr.2010$SSI)
+abr.lm <- lm(
+  log10(abr.2010$R_VALUE + 1) ~ log10(abr.2010$NBR_INFEST + 1) +
+    abr.2010$dbh +
+    abr.2010$ht_pitch_tube +
+    abr.2010$CF +
+    abr.2010$SSI
+)
 summary(abr.lm)
 
 ########
@@ -304,7 +334,13 @@ hist(abr.2011$ht_pitch_tube)
 hist(abr.2011$CF)
 hist(abr.2011$SSI)
 
-abr.lm <- lm(log10(abr.2011$r_value + 1) ~ log10(abr.2011$nbr_infest + 1) + abr.2011$dbh + abr.2011$ht_pitch_tube + abr.2011$CF + abr.2011$SSI)
+abr.lm <- lm(
+  log10(abr.2011$r_value + 1) ~ log10(abr.2011$nbr_infest + 1) +
+    abr.2011$dbh +
+    abr.2011$ht_pitch_tube +
+    abr.2011$CF +
+    abr.2011$SSI
+)
 summary(abr.lm)
 
 ########
@@ -326,7 +362,13 @@ hist(abr.2012$ht_pitch_tube)
 hist(abr.2012$CF)
 hist(abr.2012$SSI)
 
-abr.lm <- lm(log10(abr.2012$r_value + 1) ~ log10(abr.2012$nbr_infest + 1) + abr.2012$dbh + abr.2012$ht_pitch_tube + abr.2012$CF + abr.2012$SSI)
+abr.lm <- lm(
+  log10(abr.2012$r_value + 1) ~ log10(abr.2012$nbr_infest + 1) +
+    abr.2012$dbh +
+    abr.2012$ht_pitch_tube +
+    abr.2012$CF +
+    abr.2012$SSI
+)
 summary(abr.lm)
 
 ########
@@ -348,7 +390,13 @@ hist(abr.2013$ht_pitch_tube)
 hist(abr.2013$CF)
 hist(abr.2013$SSI)
 
-abr.lm <- lm(log10(abr.2013$r_value + 1) ~ log10(abr.2013$nbr_infest + 1) + abr.2013$dbh + abr.2013$ht_pitch_tube + abr.2013$CF + abr.2013$SSI)
+abr.lm <- lm(
+  log10(abr.2013$r_value + 1) ~ log10(abr.2013$nbr_infest + 1) +
+    abr.2013$dbh +
+    abr.2013$ht_pitch_tube +
+    abr.2013$CF +
+    abr.2013$SSI
+)
 summary(abr.lm)
 
 ########
@@ -375,7 +423,13 @@ hist(abr.2014$SSI)
 # There are several records where year = 0
 abr.2014$beetle_yr[abr.2014$beetle_yr == 0] <- 2014
 
-abr.lm <- lm(log10(abr.2014$r_value + 1) ~ log10(abr.2014$nbr_infest + 1) + abr.2014$dbh + abr.2014$ht_pitch_tube + abr.2014$CF + abr.2014$SSI)
+abr.lm <- lm(
+  log10(abr.2014$r_value + 1) ~ log10(abr.2014$nbr_infest + 1) +
+    abr.2014$dbh +
+    abr.2014$ht_pitch_tube +
+    abr.2014$CF +
+    abr.2014$SSI
+)
 summary(abr.lm)
 
 ########
@@ -397,7 +451,13 @@ hist(abr.2015$ht_pitch_tube)
 hist(abr.2015$CF)
 hist(abr.2015$SSI)
 
-abr.lm <- lm(log10(abr.2015$r_value + 1) ~ log10(abr.2015$nbr_infest + 1) + abr.2015$dbh + abr.2015$ht_pitch_tube + abr.2015$CF + abr.2015$SSI)
+abr.lm <- lm(
+  log10(abr.2015$r_value + 1) ~ log10(abr.2015$nbr_infest + 1) +
+    abr.2015$dbh +
+    abr.2015$ht_pitch_tube +
+    abr.2015$CF +
+    abr.2015$SSI
+)
 summary(abr.lm)
 
 ########
@@ -419,7 +479,13 @@ hist(abr.2016$ht_pitch_tube)
 hist(abr.2016$CF)
 hist(abr.2016$SSI)
 
-abr.lm <- lm(log10(abr.2016$r_value + 1) ~ log10(abr.2016$nbr_infest + 1) + abr.2016$dbh + abr.2016$ht_pitch_tube + abr.2016$CF + abr.2016$SSI)
+abr.lm <- lm(
+  log10(abr.2016$r_value + 1) ~ log10(abr.2016$nbr_infest + 1) +
+    abr.2016$dbh +
+    abr.2016$ht_pitch_tube +
+    abr.2016$CF +
+    abr.2016$SSI
+)
 summary(abr.lm)
 
 ########
@@ -441,7 +507,13 @@ hist(abr.2017$ht_pitch_tube)
 hist(abr.2017$CF)
 hist(abr.2017$SSI)
 
-abr.lm <- lm(log10(abr.2017$r_value + 1) ~ log10(abr.2017$nbr_infest + 1) + abr.2017$dbh + abr.2017$ht_pitch_tube + abr.2017$CF + abr.2017$SSI)
+abr.lm <- lm(
+  log10(abr.2017$r_value + 1) ~ log10(abr.2017$nbr_infest + 1) +
+    abr.2017$dbh +
+    abr.2017$ht_pitch_tube +
+    abr.2017$CF +
+    abr.2017$SSI
+)
 summary(abr.lm)
 
 ########
@@ -463,7 +535,13 @@ hist(abr.2018$ht_pitch_tube)
 hist(abr.2018$CF)
 hist(abr.2018$SSI)
 
-abr.lm <- lm(log10(abr.2018$r_value + 1) ~ log10(abr.2018$nbr_infest + 1) + abr.2018$dbh + abr.2018$ht_pitch_tube + abr.2018$CF + abr.2018$SSI)
+abr.lm <- lm(
+  log10(abr.2018$r_value + 1) ~ log10(abr.2018$nbr_infest + 1) +
+    abr.2018$dbh +
+    abr.2018$ht_pitch_tube +
+    abr.2018$CF +
+    abr.2018$SSI
+)
 summary(abr.lm)
 
 ########
@@ -488,7 +566,13 @@ hist(abr.2019$ht_pitch_tube)
 hist(abr.2019$CF)
 hist(abr.2019$SSI)
 
-abr.lm <- lm(log10(abr.2019$r_value + 1) ~ log10(abr.2019$nbr_infest + 1) + abr.2019$dbh + abr.2019$ht_pitch_tube + abr.2019$CF + abr.2019$SSI)
+abr.lm <- lm(
+  log10(abr.2019$r_value + 1) ~ log10(abr.2019$nbr_infest + 1) +
+    abr.2019$dbh +
+    abr.2019$ht_pitch_tube +
+    abr.2019$CF +
+    abr.2019$SSI
+)
 summary(abr.lm)
 
 ###########################
@@ -555,25 +639,55 @@ abr.new[(abr.new$yr == 0), ]
 sum(abr.new$yr == 2003)
 abr.new[(abr.new$yr == 2003), ]
 
-abr.lm <- lm(log10(abr.new$r + 1) ~ log10(abr.new$infest + 1) + abr.new$dbh + abr.new$ht + abr.new$cf + abr.new$ssi)
+abr.lm <- lm(
+  log10(abr.new$r + 1) ~ log10(abr.new$infest + 1) +
+    abr.new$dbh +
+    abr.new$ht +
+    abr.new$cf +
+    abr.new$ssi
+)
 summary(abr.lm)
 
-abr.lm <- lm(log10(abr.new$r + 1) ~
-  abr.new$yr + abr.new$lat + abr.new$lon +
-  log10(abr.new$infest + 1) + abr.new$dbh + abr.new$ht + abr.new$cf + abr.new$ssi)
+abr.lm <- lm(
+  log10(abr.new$r + 1) ~
+    abr.new$yr +
+    abr.new$lat +
+    abr.new$lon +
+    log10(abr.new$infest + 1) +
+    abr.new$dbh +
+    abr.new$ht +
+    abr.new$cf +
+    abr.new$ssi
+)
 summary(abr.lm)
 
 abr.early <- abr.new[(abr.new$yr < 2016), ]
 abr.late <- abr.new[(abr.new$yr > 2014), ]
 
-abr.lm.early <- lm(log10(abr.early$r + 1) ~
-  abr.early$yr + abr.early$lat + abr.early$lon +
-  log10(abr.early$infest + 1) + abr.early$dbh + abr.early$ht + abr.early$cf + abr.early$ssi)
+abr.lm.early <- lm(
+  log10(abr.early$r + 1) ~
+    abr.early$yr +
+    abr.early$lat +
+    abr.early$lon +
+    log10(abr.early$infest + 1) +
+    abr.early$dbh +
+    abr.early$ht +
+    abr.early$cf +
+    abr.early$ssi
+)
 summary(abr.lm.early)
 
-abr.lm.late <- lm(log10(abr.late$r + 1) ~
-  abr.late$yr + abr.late$lat + abr.late$lon +
-  log10(abr.late$infest + 1) + abr.late$dbh + abr.late$ht + abr.late$cf + abr.late$ssi)
+abr.lm.late <- lm(
+  log10(abr.late$r + 1) ~
+    abr.late$yr +
+    abr.late$lat +
+    abr.late$lon +
+    log10(abr.late$infest + 1) +
+    abr.late$dbh +
+    abr.late$ht +
+    abr.late$cf +
+    abr.late$ssi
+)
 summary(abr.lm.late)
 
 ####################
@@ -633,15 +747,37 @@ cor(log10(abr$NBR_INFEST + 1), abr$HT_PITCH_T, use = "pairwise.complete.obs")
 # stem:               PITCH_TUBE_HT, DBH
 #
 # R-VALUE = SSI, PINE_PCT, NUMBER INFESTED, PITCH_TUBE_HT, DBH
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI + abr$PINE_PCT + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI +
+    abr$PINE_PCT +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH
+)
 summary(R.lm)
 
 # Try including interactions
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI * abr$PINE_PCT * abr$CF * log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T * abr$DBH)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI *
+    abr$PINE_PCT *
+    abr$CF *
+    log10(abr$NBR_INFEST + 1) *
+    abr$HT_PITCH_T *
+    abr$DBH
+)
 summary(R.lm)
 
 # Try including quadratic on density
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI + abr$PINE_PCT + abr$CF + log10(abr$NBR_INFEST + 1) + (log10(abr$NBR_INFEST + 1))^2 + abr$HT_PITCH_T + abr$DBH)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI +
+    abr$PINE_PCT +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    (log10(abr$NBR_INFEST + 1))^2 +
+    abr$HT_PITCH_T +
+    abr$DBH
+)
 summary(R.lm)
 
 y <- log10(abr$R_VALUE + 1)
@@ -679,8 +815,8 @@ par(mfrow = c(1, 1))
 boxplot(abr$DBH ~ abr$Beetle_YEAR, xlab = "year")
 
 
-# File RTC are red tree counts from Mike Undershultz Feb 22, 2023
-rtc <- read.table("data/ab/RedTreeCounts.txt", header = T)
+## File RTC are red tree counts from Mike Undershultz Feb 22, 2023
+rtc <- read.table("data/ab/RedTreeCounts.txt", header = TRUE)
 
 win.graph(height = 8, width = 7)
 par(mfrow = c(2, 1))
@@ -688,25 +824,59 @@ par(mar = c(5, 4, 4, 4) + 0.3)
 
 hist(abr$Beetle_YEAR)
 
-plot(rtc$Year, log10(rtc$RedTrees), xlab = "year", ylab = "Log10 Red Trees Detected", type = "l", col = "red", ylim = c(3, 7))
+plot(
+  rtc$Year,
+  log10(rtc$RedTrees),
+  xlab = "year",
+  ylab = "Log10 Red Trees Detected",
+  type = "l",
+  col = "red",
+  ylim = c(3, 7)
+)
 points(rtc$Year, log10(rtc$RedTrees), pch = 19, col = "red", cex = 1.2)
 axis(side = 2, col = "red")
 par(new = TRUE)
-plot(rtc$Year, log10(rtc$TreesControlled), axes = F, type = "l", xlab = "", ylab = "", lwd = 2, col = "darkgreen", ylim = c(3, 7))
+plot(
+  rtc$Year,
+  log10(rtc$TreesControlled),
+  axes = F,
+  type = "l",
+  xlab = "",
+  ylab = "",
+  lwd = 2,
+  col = "darkgreen",
+  ylim = c(3, 7)
+)
 points(rtc$Year, log10(rtc$TreesControlled), pch = 15, col = "darkgreen", cex = 1.5)
 axis(side = 4, col = "darkgreen", at = pretty(range(log10(na.omit(rtc$TreesControlled)))))
 mtext("Log10 Green Trees Controlled", side = 4, line = 2)
 
-# March 6, 2023 - adding Q values of contorta-pinus introgression
+## March 6, 2023 - adding Q values of contorta-pinus introgression
 win.graph(height = 5, width = 12)
 par(mfrow = c(1, 1))
 hist(abr$Qvalue)
 
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI + abr$PINE_PCT + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH + abr$Qvalue)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI +
+    abr$PINE_PCT +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH +
+    abr$Qvalue
+)
 summary(R.lm)
 
-# Try including interactions
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI * abr$PINE_PCT * abr$CF * log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T * abr$DBH * abr$Qvalue)
+## Try including interactions
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI *
+    abr$PINE_PCT *
+    abr$CF *
+    log10(abr$NBR_INFEST + 1) *
+    abr$HT_PITCH_T *
+    abr$DBH *
+    abr$Qvalue
+)
 summary(R.lm)
 
 min(abr$Qvalue)
@@ -716,25 +886,76 @@ sum(use)
 
 length(abr$Qvalue)
 
-R.lm <- lm(log10(abr$R_VALUE[use] + 1) ~ abr$SSI[use] + abr$PINE_PCT[use] + abr$CF[use] + log10(abr$NBR_INFEST[use] + 1) + abr$HT_PITCH_T[use] + abr$DBH[use] + abr$Qvalue[use])
+R.lm <- lm(
+  log10(abr$R_VALUE[use] + 1) ~ abr$SSI[use] +
+    abr$PINE_PCT[use] +
+    abr$CF[use] +
+    log10(abr$NBR_INFEST[use] + 1) +
+    abr$HT_PITCH_T[use] +
+    abr$DBH[use] +
+    abr$Qvalue[use]
+)
 summary(R.lm)
 
-R.lm <- lm(log10(abr$R_VALUE[use] + 1) ~ abr$SSI[use] + abr$PINE_PCT[use] + abr$CF[use] + log10(abr$NBR_INFEST[use] + 1) + abr$HT_PITCH_T[use] + abr$DBH[use])
+R.lm <- lm(
+  log10(abr$R_VALUE[use] + 1) ~ abr$SSI[use] +
+    abr$PINE_PCT[use] +
+    abr$CF[use] +
+    log10(abr$NBR_INFEST[use] + 1) +
+    abr$HT_PITCH_T[use] +
+    abr$DBH[use]
+)
 summary(R.lm)
 
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI + abr$PINE_PCT + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH + abr$Qvalue)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI +
+    abr$PINE_PCT +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH +
+    abr$Qvalue
+)
 summary(R.lm)
 
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI + abr$PINE_PCT + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI +
+    abr$PINE_PCT +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T
+)
 summary(R.lm)
 
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI + abr$PINE_PCT + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI +
+    abr$PINE_PCT +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH
+)
 summary(R.lm)
 
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI * abr$PINE_PCT * abr$CF * log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T * abr$DBH * abr$Qvalue)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI *
+    abr$PINE_PCT *
+    abr$CF *
+    log10(abr$NBR_INFEST + 1) *
+    abr$HT_PITCH_T *
+    abr$DBH *
+    abr$Qvalue
+)
 summary(R.lm)
 
-R.lm <- lm(log10(abr$R_VALUE[use] + 1) ~ abr$SSI[use] * abr$PINE_PCT[use] * abr$CF[use] * log10(abr$NBR_INFEST[use] + 1) * abr$HT_PITCH_T[use] * abr$DBH[use])
+R.lm <- lm(
+  log10(abr$R_VALUE[use] + 1) ~ abr$SSI[use] *
+    abr$PINE_PCT[use] *
+    abr$CF[use] *
+    log10(abr$NBR_INFEST[use] + 1) *
+    abr$HT_PITCH_T[use] *
+    abr$DBH[use]
+)
 summary(R.lm)
 
 win.graph()
@@ -763,7 +984,13 @@ for (yr in 2006:2015) {
   lat <- abr$PLOT_LAT[use]
   lon <- abr$PLOT_LON[use]
 
-  plot(lon, lat, main = paste("lat/lon", yr), xlim = c(min(abr$PLOT_LON), max(abr$PLOT_LON)), ylim = c(min(abr$PLOT_LAT), max(abr$PLOT_LAT)))
+  plot(
+    lon,
+    lat,
+    main = paste("lat/lon", yr),
+    xlim = c(min(abr$PLOT_LON), max(abr$PLOT_LON)),
+    ylim = c(min(abr$PLOT_LAT), max(abr$PLOT_LAT))
+  )
 }
 
 win.graph(height = 12, width = 20)
@@ -795,9 +1022,11 @@ for (yr in 2006:2015) {
   z <- sqrt(abr$R_VALUE + 1)[use]
 
   # Create z map data structure to be IDW'd
-  z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+  z.map <- structure(
+    list(longitude = lon, latitude = lat, data = z),
     .Names = c("X", "Y", "Z"),
-    class = "data.frame", row.names = c(NA, length(z))
+    class = "data.frame",
+    row.names = c(NA, length(z))
   )
   sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -826,16 +1055,22 @@ for (yr in 2006:2015) {
   fit_IDW <- gstat::gstat(
     formula = z ~ 1,
     data = as(sf_z.map, "Spatial"),
-    nmax = 10, nmin = 3,
+    nmax = 10,
+    nmin = 3,
     set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
   )
   interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
   # output forest raster with plot data overlaid
   map.ab <- mask(interp_IDW, ab) # mask IDW to Alberta
-  plot(map.ab,
+  plot(
+    map.ab,
     col = pal[(round(interp_IDW@data@min):round(interp_IDW@data@max) - interp_IDW@data@min + 1)],
-    xlab = "Longitude", ylab = "Latitude", main = paste("R value", yr), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+    xlab = "Longitude",
+    ylab = "Latitude",
+    main = paste("R value", yr),
+    xlim = c(-120.1, -109),
+    ylim = c(48.9, 60.1)
   )
   plot(ab, lwd = 4, add = T)
   points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -864,9 +1099,11 @@ for (yr in 2006:2013) {
   z <- 10 * log10(abr$NBR_INFEST[use] + 1)
 
   # Create z map data structure to be IDW'd
-  z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+  z.map <- structure(
+    list(longitude = lon, latitude = lat, data = z),
     .Names = c("X", "Y", "Z"),
-    class = "data.frame", row.names = c(NA, length(z))
+    class = "data.frame",
+    row.names = c(NA, length(z))
   )
   sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -895,16 +1132,22 @@ for (yr in 2006:2013) {
   fit_IDW <- gstat::gstat(
     formula = z ~ 1,
     data = as(sf_z.map, "Spatial"),
-    nmax = 10, nmin = 3,
+    nmax = 10,
+    nmin = 3,
     set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
   )
   interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
   # output forest raster with plot data overlaid
   map.ab <- mask(interp_IDW, ab) # mask IDW to Alberta
-  plot(map.ab,
+  plot(
+    map.ab,
     col = pal[(round(interp_IDW@data@min):round(interp_IDW@data@max) - interp_IDW@data@min + 1)],
-    xlab = "Longitude", ylab = "Latitude", main = paste("Trees per cluster", yr), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+    xlab = "Longitude",
+    ylab = "Latitude",
+    main = paste("Trees per cluster", yr),
+    xlim = c(-120.1, -109),
+    ylim = c(48.9, 60.1)
   )
   plot(ab, lwd = 4, add = T)
   points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -933,9 +1176,11 @@ for (yr in 2006:2015) {
   z <- (abr$HT_PITCH_T + 1)[use]
 
   # Create z map data structure to be IDW'd
-  z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+  z.map <- structure(
+    list(longitude = lon, latitude = lat, data = z),
     .Names = c("X", "Y", "Z"),
-    class = "data.frame", row.names = c(NA, length(z))
+    class = "data.frame",
+    row.names = c(NA, length(z))
   )
   sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -964,16 +1209,22 @@ for (yr in 2006:2015) {
   fit_IDW <- gstat::gstat(
     formula = z ~ 1,
     data = as(sf_z.map, "Spatial"),
-    nmax = 10, nmin = 3,
+    nmax = 10,
+    nmin = 3,
     set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
   )
   interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
   # output forest raster with plot data overlaid
   map.ab <- mask(interp_IDW, ab) # mask IDW to Alberta
-  plot(map.ab,
+  plot(
+    map.ab,
     col = pal[(round(interp_IDW@data@min):round(interp_IDW@data@max) - interp_IDW@data@min + 1)],
-    xlab = "Longitude", ylab = "Latitude", main = paste("Pitch Tube Ht.", yr), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+    xlab = "Longitude",
+    ylab = "Latitude",
+    main = paste("Pitch Tube Ht.", yr),
+    xlim = c(-120.1, -109),
+    ylim = c(48.9, 60.1)
   )
   plot(ab, lwd = 4, add = T)
   points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -1009,9 +1260,11 @@ for (yr in 2006:2015) {
   z <- (abr$DBH)[use]
 
   # Create z map data structure to be IDW'd
-  z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+  z.map <- structure(
+    list(longitude = lon, latitude = lat, data = z),
     .Names = c("X", "Y", "Z"),
-    class = "data.frame", row.names = c(NA, length(z))
+    class = "data.frame",
+    row.names = c(NA, length(z))
   )
   sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -1040,16 +1293,22 @@ for (yr in 2006:2015) {
   fit_IDW <- gstat::gstat(
     formula = z ~ 1,
     data = as(sf_z.map, "Spatial"),
-    nmax = 10, nmin = 3,
+    nmax = 10,
+    nmin = 3,
     set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
   )
   interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
   # output forest raster with plot data overlaid
   map.ab <- mask(interp_IDW, ab) # mask IDW to Alberta
-  plot(map.ab,
+  plot(
+    map.ab,
     col = pal[(round(interp_IDW@data@min):round(interp_IDW@data@max) - interp_IDW@data@min + 1)],
-    xlab = "Longitude", ylab = "Latitude", main = paste("DBH", yr), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+    xlab = "Longitude",
+    ylab = "Latitude",
+    main = paste("DBH", yr),
+    xlim = c(-120.1, -109),
+    ylim = c(48.9, 60.1)
   )
   plot(ab, lwd = 4, add = T)
   points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -1085,9 +1344,11 @@ for (yr in 2006:2015) {
   z <- round(100 * (abr$Qvalue[use])) + 1
 
   # Create forest z data structure to be IDW'd
-  z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+  z.map <- structure(
+    list(longitude = lon, latitude = lat, data = z),
     .Names = c("X", "Y", "Z"),
-    class = "data.frame", row.names = c(NA, length(z))
+    class = "data.frame",
+    row.names = c(NA, length(z))
   )
   sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -1116,16 +1377,22 @@ for (yr in 2006:2015) {
   fit_IDW <- gstat::gstat(
     formula = z ~ 1,
     data = as(sf_z.map, "Spatial"),
-    nmax = 10, nmin = 3,
+    nmax = 10,
+    nmin = 3,
     set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
   )
   interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
   # output forest raster with plot data overlaid
   map.ab <- mask(interp_IDW, ab) # mask IDW to Alberta
-  plot(map.ab,
+  plot(
+    map.ab,
     col = pal[(round(interp_IDW@data@min):round(interp_IDW@data@max) - interp_IDW@data@min + 1)],
-    xlab = "Longitude", ylab = "Latitude", main = paste("Q value", yr), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+    xlab = "Longitude",
+    ylab = "Latitude",
+    main = paste("Q value", yr),
+    xlim = c(-120.1, -109),
+    ylim = c(48.9, 60.1)
   )
   plot(ab, lwd = 4, add = T)
   points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -1161,9 +1428,11 @@ for (yr in 2006:2013) {
   z <- round(100 * (abr$CF[use])) + 1
 
   # Create forest map data structure to be IDW'd
-  z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+  z.map <- structure(
+    list(longitude = lon, latitude = lat, data = z),
     .Names = c("X", "Y", "Z"),
-    class = "data.frame", row.names = c(NA, length(z))
+    class = "data.frame",
+    row.names = c(NA, length(z))
   )
   sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -1192,16 +1461,22 @@ for (yr in 2006:2013) {
   fit_IDW <- gstat::gstat(
     formula = z ~ 1,
     data = as(sf_z.map, "Spatial"),
-    nmax = 10, nmin = 3,
+    nmax = 10,
+    nmin = 3,
     set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
   )
   interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
   # output forest raster with plot data overlaid
   map.ab <- mask(interp_IDW, ab) # mask IDW to Alberta
-  plot(map.ab,
+  plot(
+    map.ab,
     col = pal[(round(interp_IDW@data@min):round(interp_IDW@data@max) - interp_IDW@data@min + 1)],
-    xlab = "Longitude", ylab = "Latitude", main = paste("CF", yr), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+    xlab = "Longitude",
+    ylab = "Latitude",
+    main = paste("CF", yr),
+    xlim = c(-120.1, -109),
+    ylim = c(48.9, 60.1)
   )
   plot(ab, lwd = 4, add = T)
   points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -1239,9 +1514,11 @@ for (yr in 2006:2013) {
   z <- abr$SSI[use]
 
   # Create forest map data structure to be IDW'd
-  z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+  z.map <- structure(
+    list(longitude = lon, latitude = lat, data = z),
     .Names = c("X", "Y", "Z"),
-    class = "data.frame", row.names = c(NA, length(z))
+    class = "data.frame",
+    row.names = c(NA, length(z))
   )
   sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -1270,57 +1547,118 @@ for (yr in 2006:2013) {
   fit_IDW <- gstat::gstat(
     formula = z ~ 1,
     data = as(sf_z.map, "Spatial"),
-    nmax = 10, nmin = 3,
+    nmax = 10,
+    nmin = 3,
     set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
   )
   interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
   # output forest raster with plot data overlaid
   map.ab <- mask(interp_IDW, ab)
-  plot(map.ab,
+  plot(
+    map.ab,
     col = pal[round(interp_IDW@data@min):round(interp_IDW@data@max)],
-    xlab = "Longitude", ylab = "Latitude", main = paste("SSI", yr), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+    xlab = "Longitude",
+    ylab = "Latitude",
+    main = paste("SSI", yr),
+    xlim = c(-120.1, -109),
+    ylim = c(48.9, 60.1)
   )
   plot(ab, lwd = 4, add = T)
   points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
 }
 dev.off()
 
-R.lm <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH, na.action = na.exclude)
+R.lm <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH,
+  na.action = na.exclude
+)
 summary(R.lm)
 
-R.lm.full <- lm(log10(abr$R_VALUE + 1) ~ abr$SSI * abr$CF * log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T * abr$DBH, na.action = na.exclude)
+R.lm.full <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$SSI * abr$CF * log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T * abr$DBH,
+  na.action = na.exclude
+)
 summary(R.lm.full)
 
-R.lm.st <- lm(log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR + abr$PLOT_LONG + abr$PLOT_LAT + abr$Beetle_YEAR * abr$PLOT_LONG + abr$Beetle_YEAR * abr$PLOT_LAT + abr$PLOT_LONG * abr$PLOT_LAT + abr$SSI + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH, na.action = na.exclude)
-summary(R.lm.st)
-
-R.lm.st <- lm(log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR + abr$PLOT_LONG + abr$PLOT_LAT + abr$Beetle_YEAR * abr$PLOT_LONG + abr$Beetle_YEAR * abr$PLOT_LAT + abr$PLOT_LONG * abr$PLOT_LAT +
-  abr$Qvalue + abr$SSI + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH, na.action = na.exclude)
-summary(R.lm.st)
-
 R.lm.st <- lm(
-  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR + abr$PLOT_LONG + abr$PLOT_LAT +
-    abr$Beetle_YEAR * abr$PLOT_LONG + abr$Beetle_YEAR * abr$PLOT_LAT + abr$PLOT_LONG * abr$PLOT_LAT +
-    abr$Qvalue + abr$SSI + abr$CF + log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH +
-    abr$Beetle_YEAR * abr$PLOT_LONG * abr$HT_PITCH_T + abr$Beetle_YEAR * abr$PLOT_LAT * abr$HT_PITCH_T + abr$PLOT_LONG * abr$PLOT_LAT * abr$HT_PITCH_T,
+  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR +
+    abr$PLOT_LONG +
+    abr$PLOT_LAT +
+    abr$Beetle_YEAR * abr$PLOT_LONG +
+    abr$Beetle_YEAR * abr$PLOT_LAT +
+    abr$PLOT_LONG * abr$PLOT_LAT +
+    abr$SSI +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH,
   na.action = na.exclude
 )
 summary(R.lm.st)
 
 R.lm.st <- lm(
-  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR + abr$PLOT_LONG + abr$PLOT_LAT +
-    abr$Beetle_YEAR * abr$PLOT_LONG + abr$Beetle_YEAR * abr$PLOT_LAT + abr$PLOT_LONG * abr$PLOT_LAT +
-    abr$Qvalue + abr$SSI + abr$CF +
-    log10(abr$NBR_INFEST + 1) + abr$HT_PITCH_T + abr$DBH +
-    log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T + abr$DBH * abr$HT_PITCH_T + log10(abr$NBR_INFEST + 1) * abr$DBH +
+  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR +
+    abr$PLOT_LONG +
+    abr$PLOT_LAT +
+    abr$Beetle_YEAR * abr$PLOT_LONG +
+    abr$Beetle_YEAR * abr$PLOT_LAT +
+    abr$PLOT_LONG * abr$PLOT_LAT +
+    abr$Qvalue +
+    abr$SSI +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH,
+  na.action = na.exclude
+)
+summary(R.lm.st)
+
+R.lm.st <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR +
+    abr$PLOT_LONG +
+    abr$PLOT_LAT +
+    abr$Beetle_YEAR * abr$PLOT_LONG +
+    abr$Beetle_YEAR * abr$PLOT_LAT +
+    abr$PLOT_LONG * abr$PLOT_LAT +
+    abr$Qvalue +
+    abr$SSI +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH +
+    abr$Beetle_YEAR * abr$PLOT_LONG * abr$HT_PITCH_T +
+    abr$Beetle_YEAR * abr$PLOT_LAT * abr$HT_PITCH_T +
+    abr$PLOT_LONG * abr$PLOT_LAT * abr$HT_PITCH_T,
+  na.action = na.exclude
+)
+summary(R.lm.st)
+
+R.lm.st <- lm(
+  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR +
+    abr$PLOT_LONG +
+    abr$PLOT_LAT +
+    abr$Beetle_YEAR * abr$PLOT_LONG +
+    abr$Beetle_YEAR * abr$PLOT_LAT +
+    abr$PLOT_LONG * abr$PLOT_LAT +
+    abr$Qvalue +
+    abr$SSI +
+    abr$CF +
+    log10(abr$NBR_INFEST + 1) +
+    abr$HT_PITCH_T +
+    abr$DBH +
+    log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T +
+    abr$DBH * abr$HT_PITCH_T +
+    log10(abr$NBR_INFEST + 1) * abr$DBH +
     log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T * abr$DBH,
   na.action = na.exclude
 )
 summary(R.lm.st)
 
 R.lm.st <- lm(
-  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR * abr$PLOT_LONG * abr$PLOT_LAT +
+  log10(abr$R_VALUE + 1) ~ abr$Beetle_YEAR *
+    abr$PLOT_LONG *
+    abr$PLOT_LAT +
     abr$Qvalue * abr$SSI * abr$CF * log10(abr$NBR_INFEST + 1) * abr$HT_PITCH_T * abr$DBH,
   na.action = na.exclude
 )
@@ -1362,9 +1700,11 @@ lat <- abr$PLOT_LAT[use]
 lon <- abr$PLOT_LON[use]
 
 # Create forest map data structure to be IDW'd
-z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+z.map <- structure(
+  list(longitude = lon, latitude = lat, data = z),
   .Names = c("X", "Y", "Z"),
-  class = "data.frame", row.names = c(NA, length(z))
+  class = "data.frame",
+  row.names = c(NA, length(z))
 )
 sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -1393,16 +1733,22 @@ grd_template_raster <- grd_template %>%
 fit_IDW <- gstat::gstat(
   formula = z ~ 1,
   data = as(sf_z.map, "Spatial"),
-  nmax = 10, nmin = 3,
+  nmax = 10,
+  nmin = 3,
   set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
 )
 interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
 # output forest raster with plot data overlaid
 map.ab <- mask(interp_IDW, ab)
-plot(map.ab,
+plot(
+  map.ab,
   col = pal[round(interp_IDW@data@min):round(interp_IDW@data@max)],
-  xlab = "Longitude", ylab = "Latitude", main = paste("residuals"), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+  xlab = "Longitude",
+  ylab = "Latitude",
+  main = paste("residuals"),
+  xlim = c(-120.1, -109),
+  ylim = c(48.9, 60.1)
 )
 plot(ab, lwd = 4, add = T)
 points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -1429,9 +1775,11 @@ lat <- abr$PLOT_LAT[use]
 lon <- abr$PLOT_LON[use]
 
 # Create forest map data structure to be IDW'd
-z.map <- structure(list(longitude = lon, latitude = lat, data = z),
+z.map <- structure(
+  list(longitude = lon, latitude = lat, data = z),
   .Names = c("X", "Y", "Z"),
-  class = "data.frame", row.names = c(NA, length(z))
+  class = "data.frame",
+  row.names = c(NA, length(z))
 )
 sf_z.map <- st_as_sf(z.map, coords = c("X", "Y"), crs = 26915) # North American UTM code, data to match IDW target grid
 
@@ -1460,16 +1808,22 @@ grd_template_raster <- grd_template %>%
 fit_IDW <- gstat::gstat(
   formula = z ~ 1,
   data = as(sf_z.map, "Spatial"),
-  nmax = 10, nmin = 3,
+  nmax = 10,
+  nmin = 3,
   set = list(idp = 1.5) # inverse distance power; higher power = more localized contagion; lower power = dispersed
 )
 interp_IDW <- interpolate(grd_template_raster, fit_IDW)
 
 # output forest raster with plot data overlaid
 map.ab <- mask(interp_IDW, ab)
-plot(map.ab,
+plot(
+  map.ab,
   col = pal[round(interp_IDW@data@min):round(interp_IDW@data@max)],
-  xlab = "Longitude", ylab = "Latitude", main = paste("residuals"), xlim = c(-120.1, -109), ylim = c(48.9, 60.1)
+  xlab = "Longitude",
+  ylab = "Latitude",
+  main = paste("residuals"),
+  xlim = c(-120.1, -109),
+  ylim = c(48.9, 60.1)
 )
 plot(ab, lwd = 4, add = T)
 points(lon, lat, pch = 21, cex = 2, col = "black", bg = pal[c(z)])
@@ -1488,18 +1842,31 @@ cutoff.low <- 0.2 # no fewer than 0.2 degree of lat or lon (i.e. exclude ze)
 # determine correlogram structure, to prepare for bootstrap
 sample.size <- 400
 random.sample <- round(runif(n = sample.size, min = 1, max = sample.universe))
-resid.s.correlog <- correlog(lon[random.sample], lat[random.sample], z[random.sample], increment = 0.5)
-use.dist <- (resid.s.correlog$mean.of.class < cutoff.high) & (resid.s.correlog$mean.of.class > cutoff.low)
+resid.s.correlog <- correlog(
+  lon[random.sample],
+  lat[random.sample],
+  z[random.sample],
+  increment = 0.5
+)
+use.dist <- (resid.s.correlog$mean.of.class < cutoff.high) &
+  (resid.s.correlog$mean.of.class > cutoff.low)
 
 distance.classes <- sum(use.dist == TRUE)
 nreps <- 10
 residuals.sum.correlog <- as.data.frame(matrix(0, nrow = distance.classes, ncol = nreps + 1))
 residuals.sum.correlog[, 1] <- resid.s.correlog$mean.of.class[use.dist]
 
-for (reps in 1:nreps) { # bootstrap random sample
+for (reps in 1:nreps) {
+  # bootstrap random sample
   random.sample <- round(runif(n = sample.size, min = 1, max = sample.universe))
-  resid.s.correlog <- correlog(lon[random.sample], lat[random.sample], z[random.sample], increment = 0.5)
-  use.dist <- (resid.s.correlog$mean.of.class < cutoff.high) & (resid.s.correlog$mean.of.class > cutoff.low)
+  resid.s.correlog <- correlog(
+    lon[random.sample],
+    lat[random.sample],
+    z[random.sample],
+    increment = 0.5
+  )
+  use.dist <- (resid.s.correlog$mean.of.class < cutoff.high) &
+    (resid.s.correlog$mean.of.class > cutoff.low)
 
   # store correlogram in sum object
   residuals.sum.correlog[, reps + 1] <- resid.s.correlog$correlation[use.dist]
@@ -1508,9 +1875,13 @@ for (reps in 1:nreps) { # bootstrap random sample
 residuals.sum.correlog.mean <- apply(residuals.sum.correlog[, 2:reps + 1], 1, mean)
 
 win.graph(height = 12, width = 12)
-plot(residuals.sum.correlog[, 1], residuals.sum.correlog.mean,
-  ylim = c(-0.5, 0.5), xlab = "distance (degrees of lat/lon)",
-  ylab = "spatial autocorrelation in model residuals", main = paste("Correlogram")
+plot(
+  residuals.sum.correlog[, 1],
+  residuals.sum.correlog.mean,
+  ylim = c(-0.5, 0.5),
+  xlab = "distance (degrees of lat/lon)",
+  ylab = "spatial autocorrelation in model residuals",
+  main = paste("Correlogram")
 )
 lines(residuals.sum.correlog[, 1], residuals.sum.correlog.mean)
 points(residuals.sum.correlog[, 1], residuals.sum.correlog.mean, pch = 21)

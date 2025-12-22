@@ -842,13 +842,17 @@ JNPBNP_Rvsr <- ggplot(plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
 JNPBNP_Rvsr <- JNPBNP_Rvsr +
   annotate("text", x = 0.6, y = 2.3, label = annot_text, size = 5, hjust = 0.5, vjust = -0.5)
 
-# Optional: Add the red bounding box (same coordinates as Alberta)
+## Optional: Add the red bounding box (same coordinates as Alberta)
 JNPBNP_Rvsr <- JNPBNP_Rvsr +
   annotate(
     "rect",
-    xmin  = log10(0.1 + 1), xmax = log10(2 + 1),
-    ymin  = 0.1,            ymax = 2,
-    color = "red", fill = NA, linewidth = 1
+    xmin = log10(0.1 + 1),
+    xmax = log10(2 + 1),
+    ymin = 0.1,
+    ymax = 2,
+    color = "red",
+    fill = NA,
+    linewidth = 1
   ) +
   geom_text(
     aes(label = beetle_yr),
