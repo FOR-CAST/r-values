@@ -759,7 +759,7 @@ Rt_log_delagged2_trimmed <- Rt_log_delagged2[rtc$Year %in% beetle_years]
 
 ## Final assignment
 rt_aligned_df <- data.frame(
-  beetle_yr = beetle_years,
+  beetle_yr = as.integer(beetle_years),
   r_log = rt.mean$r_log,
   Rt_log_delagged2 = Rt_log_delagged2_trimmed
 )
@@ -869,7 +869,7 @@ p_val <- mod_sum$fstatistic
 p_val <- pf(p_val[1], p_val[2], p_val[3], lower.tail = FALSE)
 
 # --- 2. Identify the 2007 immigration point ---
-df_2007 <- rt_aligned_df %>% filter(beetle_yr == 2007)
+df_2007 <- rt_aligned_df |> filter(beetle_yr == 2007)
 
 annot_text <- paste0(
   "R² = ",
@@ -889,8 +889,7 @@ AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
   ## (A) Solid black points
   geom_point(size = 3, color = "black") +
 
-  ## (B) Year labels
-  geom_text(aes(label = beetle_yr), vjust = -1, size = 4) +
+  ## (B) Year labels added below to ensure they overlay the shaded areas
 
   ## (C) Quadratic regression line with shaded SE interval
   geom_smooth(
@@ -957,6 +956,9 @@ AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
     size = 5
   ) +
 
+  ## (B) Year labels
+  ggrepel::geom_text_repel(aes(label = beetle_yr), hjust = -0.5, vjust = -0.75, size = 4) +
+
   ## (H) Square frame and harmonized theme
   theme_minimal(base_size = 12) +
   theme(
@@ -990,7 +992,7 @@ mp.r2 <- format(round(MtnParks_mod_sum$r.squared, 2), nsmall = 2)
 mp.pval <- formatC(MtnParks_mod_sum$coefficients[2, "Pr(>|t|)"], format = "f", digits = 5)
 annot_text_Mtn <- paste0("R² = ", mp.r2, "\np = ", mp.pval)
 
-#sanity test plot
+## sanity test plot
 sanity.test.plot <- ggplot(MtnParks_plot_df, aes(x = r_log, y = Rt_log)) +
   geom_point(size = 3, color = "#6A1B1A") +
   geom_smooth(
@@ -1001,7 +1003,6 @@ sanity.test.plot <- ggplot(MtnParks_plot_df, aes(x = r_log, y = Rt_log)) +
     fill = "#6A1B1A",
     alpha = 0.2
   ) +
-  geom_text(aes(label = beetle_yr), vjust = -1, size = 4) +
 
   ## --- X AXIS: log scale, natural labels (IDENTICAL TO ALBERTA) ---
   scale_x_continuous(
@@ -1017,6 +1018,8 @@ sanity.test.plot <- ggplot(MtnParks_plot_df, aes(x = r_log, y = Rt_log)) +
     name = "Rₜ₊₂ (natural scale)"
   ) +
 
+  ggrepel::geom_text_repel(aes(label = beetle_yr), vjust = -1, size = 4) +
+
   theme_minimal(base_size = 12) +
   theme(
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
@@ -1026,14 +1029,11 @@ sanity.test.plot <- ggplot(MtnParks_plot_df, aes(x = r_log, y = Rt_log)) +
     axis.title = element_text(color = "black")
   )
 
-ABvsMtnParks_Rvsr_plot <-
-  ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
-
+ABvsMtnParks_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
   ## (A) Solid black points
   geom_point(size = 3, color = "black") +
 
-  ## (B) Year labels
-  geom_text(aes(label = beetle_yr), vjust = -1, size = 4) +
+  ## (B) Year labels added below to ensure they overlay the shaded areas
 
   ## (C) Quadratic regression line with shaded SE interval
   geom_smooth(
@@ -1082,6 +1082,9 @@ ABvsMtnParks_Rvsr_plot <-
     size = 5
   ) +
 
+  ## (B) Year labels
+  ggrepel::geom_text_repel(aes(label = beetle_yr), vjust = -1, size = 4) +
+
   ## (H) Square frame and harmonized theme
   theme_minimal(base_size = 12) +
   theme(
@@ -1092,62 +1095,24 @@ ABvsMtnParks_Rvsr_plot <-
     axis.title = element_text(color = "black")
   )
 
-ABvsMtnParks_Rvsr_plot <- ggplot() +
-  ## ------------------------------------------------------------
-  ## (1) MOUNTAIN PARKS — plotted FIRST, in maroon
-  ## ------------------------------------------------------------
-  geom_point(
-    data = MtnParks_plot_df,
-    aes(x = r_log, y = Rt_log),
-    size = 3,
-    color = "#6A1B1A"
-  ) +
-  geom_smooth(
-    data = MtnParks_plot_df,
-    aes(x = r_log, y = Rt_log),
-    method = "lm",
-    formula = y ~ x,
-    se = TRUE,
-    color = "#6A1B1A",
-    fill = "#6A1B1A",
-    alpha = 0.2
-  ) +
-  geom_text(
-    data = MtnParks_plot_df,
-    aes(x = r_log, y = Rt_log, label = beetle_yr),
-    vjust = -1,
-    size = 4,
-    color = "#6A1B1A"
-  ) +
+## combine the MtnParks and AB datasets to simplify plotting with ggplot2
+ABvsMtnParks_Rvsr_df <- bind_rows(
+  MtnParks_plot_df |> select(beetle_yr, r_log, Rt_log) |> mutate(source = "MtnParks"),
+  rt_aligned_df |> rename(Rt_log = Rt_log_delagged2) |> mutate(source = "AB")
+) |>
+  group_by(source)
 
-  ## ------------------------------------------------------------
-  ## (2) ALBERTA — plotted AFTER, in black
-  ## ------------------------------------------------------------
+ABvsMtnParks_Rvsr_plot.orig
+
+ABvsMtnParks_Rvsr_plot <- ggplot(ABvsMtnParks_Rvsr_df, aes(x = r_log, y = Rt_log)) +
+  ## plot all points; Mountain parks in maroon, AB in black/grey
+  geom_point(aes(col = source), size = 3) +
+  scale_color_manual(values = c(MtnParks = "#6A1B1A", AB = "black")) +
+
+  ## add circle around the 2007 data point in the top left corner
   geom_point(
-    data = rt_aligned_df,
-    aes(x = r_log, y = Rt_log_delagged2),
-    size = 3,
-    color = "black"
-  ) +
-  geom_text(
-    data = rt_aligned_df,
-    aes(x = r_log, y = Rt_log_delagged2, label = beetle_yr),
-    vjust = -1,
-    size = 4
-  ) +
-  geom_smooth(
-    data = subset(rt_aligned_df, beetle_yr != 2007),
-    aes(x = r_log, y = Rt_log_delagged2),
-    method = "lm",
-    formula = y ~ x + I(x^2),
-    se = TRUE,
-    color = "black",
-    fill = "grey70",
-    alpha = 0.4
-  ) +
-  geom_point(
-    data = df_2007,
-    aes(x = r_log, y = Rt_log_delagged2),
+    data = subset(ABvsMtnParks_Rvsr_df, source == "AB" & beetle_yr == 2007),
+    aes(x = r_log, y = Rt_log),
     shape = 21,
     fill = NA,
     color = "red",
@@ -1155,9 +1120,26 @@ ABvsMtnParks_Rvsr_plot <- ggplot() +
     size = 5
   ) +
 
-  ## ------------------------------------------------------------
-  ## (3) AXES — EXACTLY as in your Alberta block
-  ## ------------------------------------------------------------
+  ## add shaded regions and trendlines
+  geom_smooth(
+    data = subset(ABvsMtnParks_Rvsr_df, source == "MtnParks"),
+    aes(col = source, fill = source),
+    method = "lm",
+    formula = y ~ x,
+    se = TRUE,
+    alpha = 0.2
+  ) +
+  geom_smooth(
+    data = subset(ABvsMtnParks_Rvsr_df, source == "AB" & beetle_yr != 2007),
+    aes(col = source, fill = source),
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    se = TRUE,
+    alpha = 0.4
+  ) +
+  scale_fill_manual(values = c(MtnParks = "#6A1B1A", AB = "grey20")) +
+
+  ## set axes EXACTLY as in your Alberta block
   scale_x_continuous(
     name = expression(r[t]),
     breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20) + 1),
@@ -1169,46 +1151,51 @@ ABvsMtnParks_Rvsr_plot <- ggplot() +
     breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
     labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)
   ) +
-  ## ------------------------------------------------------------
-  ## (4a) R² annotation (Alberta)
-  ## ------------------------------------------------------------
+
+  ## R² annotations
   annotate(
     "text",
     x = x_center,
     y = y_center,
     hjust = 0.5,
     vjust = 0.5,
-    label = annot_text,
+    label = annot_text, ## Alberta
     size = 5
   ) +
-
-  ## ------------------------------------------------------------
-  ## (4b) R² annotation (Alberta)
-  ## ------------------------------------------------------------
   annotate(
     "text",
     x = log10(5),
     y = log10(0.08),
     hjust = 0.5,
     vjust = 0.5,
-    label = annot_text_Mtn,
+    label = annot_text_Mtn, ## Mtn Parks
     size = 5,
     col = "#6A1B1A"
   ) +
 
-  ## ------------------------------------------------------------
-  ## (5) Theme — unchanged
-  ## ------------------------------------------------------------
+  ## add years as labels for points
+  ggrepel::geom_text_repel(
+    data = ABvsMtnParks_Rvsr_df,
+    aes(x = r_log, y = Rt_log, label = beetle_yr, color = source),
+    min.segment.length = 0,
+    hjust = -0.75,
+    vjust = -1,
+    size = 4
+  ) +
+
+  ## theme (unchanged)
   theme_minimal(base_size = 12) +
   theme(
-    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
     axis.text = element_text(color = "black"),
-    axis.title = element_text(color = "black")
+    axis.title = element_text(color = "black"),
+    legend.position = "none",
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
   )
+
+## This is Figure 6 in the manuscript
 ggsave(
-  #This is Figure 6 in the manuscript
   file.path(figPath, "MtnParksvsAB_Rvsr.png"),
   ABvsMtnParks_Rvsr_plot,
   height = 6,
