@@ -1144,12 +1144,15 @@ ABvsMtnParks_Rvsr_plot <- ggplot(ABvsMtnParks_Rvsr_df, aes(x = r_log, y = Rt_log
     name = expression(r[t]),
     breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20) + 1),
     labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20),
-    limits = c(log10(0.2 + 1), log10(20 + 1))
+    limits = c(log10(0.2 + 1), log10(15 + 1))
   ) +
   scale_y_continuous(
     name = expression(R[t + 2] == C[t + 2] / C[t + 1]),
     breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
-    labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)
+    labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20),
+    sec.axis = dup_axis(
+      name = expression(R[t + 2] == A[t + 2] / A[t + 1])
+    )
   ) +
 
   ## R² annotations
@@ -1186,10 +1189,22 @@ ABvsMtnParks_Rvsr_plot <- ggplot(ABvsMtnParks_Rvsr_df, aes(x = r_log, y = Rt_log
   ## theme (unchanged)
   theme_minimal(base_size = 12) +
   theme(
+    ## all axes
     axis.line = element_line(color = "black"),
     axis.ticks = element_line(color = "black"),
+
+    ## x-axis
     axis.text = element_text(color = "black"),
     axis.title = element_text(color = "black"),
+
+    ## y-axis left
+    axis.text.y.left = element_text(color = "black"),
+    axis.title.y.left = element_text(color = "black"),
+
+    ## y-axis right
+    axis.text.y.right = element_text(color = "#6A1B1A"),
+    axis.title.y.right = element_text(color = "#6A1B1A"),
+
     legend.position = "none",
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5)
   )
