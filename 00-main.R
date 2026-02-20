@@ -50,7 +50,9 @@ outputPath <- "outputs" |> fs::dir_create()
 
 # data download -------------------------------------------------------------------------------
 
-source("01-download-data.R") ## will prompt for Google authentication
+googledrive::drive_auth() ## will prompt for Google authentication
+
+source("01-download-data.R")
 
 # MPB r-value data ----------------------------------------------------------------------------
 
@@ -98,5 +100,5 @@ if (run_for == "AB") {
   source("02c-Alberta-analyses.R")
 } else if (run_for == "NP") {
   ##
-  source("03-Jasper.R")
+  source("03-Jasper-analyses.R")
 }

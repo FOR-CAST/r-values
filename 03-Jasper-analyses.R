@@ -197,7 +197,7 @@ ABMtnParksMPB_plot <- ggplot(ABMtnParksMPB_long, aes(x = Year)) +
   geom_point(aes(y = Count, fill = Park), shape = 22, size = 3, color = "black", stroke = 0.5) +
 
   ## Area infested (secondary axis, scaled)
-  geom_line(aes(y = Area_ha * scaleFact, color = Park), size = 1) +
+  geom_line(aes(y = Area_ha * scaleFact, color = Park), linewidth = 1) +
   geom_point(
     aes(y = Area_ha * scaleFact, fill = Park),
     shape = 21,
@@ -311,8 +311,8 @@ cat("The Jasper-Banff correlation in A/C 1999-2023 is:", JB.cor)
 ## Combine
 JB.Rt <- data.frame(
   year = ABMtnParksMPB$year,
-  Rt_Jasper = Rt_Jasper,
-  Rt_Banff = Rt_Banff
+  Rt_Jasper = Rt_Jasper_df$Rt_Jasper,
+  Rt_Banff = Rt_Banff_df$Rt_Banff
 )
 
 JB.Rt.cor <- cor(JB.Rt$Rt_Jasper, JB.Rt$Rt_Banff, use = "pairwise.complete.obs")
@@ -752,15 +752,15 @@ ABMtnParks_area <- ABMtnParksMPB |>
   filter(!is.na(combined_area)) |>
   dplyr::select(year, combined_area)
 
-#disambiguate "year" by referencing "survey year".
-#This will help clarify the coming join, wherere beetle_yr will precede survey_yr by one.
+## disambiguate "year" by referencing "survey year".
+## This will help clarify the coming join, wherere beetle_yr will precede survey_yr by one.
 ABMtnParks_area <- ABMtnParks_area |>
   rename(survey_yr = year)
 
 ABMtnParks_area <- ABMtnParks_area |>
   mutate(Rt = combined_area / lag(combined_area))
 
-#Explicitly store the beetle year that causes the change in Rt
+## Explicitly store the beetle year that causes the change in Rt
 ABMtnParks_area <- ABMtnParks_area |>
   mutate(beetle_yr = survey_yr - 2)
 
@@ -810,15 +810,17 @@ annot_text <- paste0("R² = ", r2, "\np = ", pval)
 
 MtnParks_plot_df <- tibble(
   beetle_yr = r_summary$beetle_yr,
-  mean_r    = r_summary$mean_r,
-  Rt_plus2  = ABMtnParks_area$Rt[
+  mean_r = r_summary$mean_r,
+  Rt_plus2 = ABMtnParks_area$Rt[
     match(r_summary$beetle_yr + 2, ABMtnParks_area$survey_yr)
   ]
-) %>%
+) |>
   mutate(
-    r_log  = log10(mean_r + 1),   # same x‑space as Alberta
-    Rt_log = log10(Rt_plus2)      # same y‑space as Alberta
+    r_log = log10(mean_r + 1), ## same x‑space as Alberta
+    Rt_log = log10(Rt_plus2) ## same y‑space as Alberta
   )
+
+write.csv(MtnParks_plot_df, file.path(outputPath, "MtnParks_plot_df.csv"))
 
 JNPBNP_Rvsr <- ggplot(MtnParks_plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
   geom_point(size = 3, color = "black") +
