@@ -808,13 +808,19 @@ annot_text <- paste0("R² = ", r2, "\np = ", pval)
 ## - Rt extracted using match(beetle_yr + 2, survey_yr)
 ## ---------------------------------------------------------------
 
-plot_df <- tibble(
+MtnParks_plot_df <- tibble(
   beetle_yr = r_summary$beetle_yr,
-  mean_r = r_summary$mean_r,
-  Rt_plus2 = ABMtnParks_area$Rt[match(r_summary$beetle_yr + 2, ABMtnParks_area$survey_yr)]
-)
+  mean_r    = r_summary$mean_r,
+  Rt_plus2  = ABMtnParks_area$Rt[
+    match(r_summary$beetle_yr + 2, ABMtnParks_area$survey_yr)
+  ]
+) %>%
+  mutate(
+    r_log  = log10(mean_r + 1),   # same x‑space as Alberta
+    Rt_log = log10(Rt_plus2)      # same y‑space as Alberta
+  )
 
-JNPBNP_Rvsr <- ggplot(plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
+JNPBNP_Rvsr <- ggplot(MtnParks_plot_df, aes(x = log10(mean_r + 1), y = Rt_plus2)) +
   geom_point(size = 3, color = "black") +
   geom_smooth(method = "lm", se = TRUE, color = "black", fill = "grey70", alpha = 0.4) +
   scale_x_continuous(

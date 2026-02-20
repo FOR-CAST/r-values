@@ -352,7 +352,7 @@ ggsave(
 
 ## Re-do the ribbon plot but without the ridiculous overlay scheme in ggplot
 
-## Plot r on log scale
+## Plot r on log scale (This is Figure 4 in the manuscript)
 png(file.path(figPath, "r_Psurv_overtime.png"), height = 1800, width = 2400, res = 300)
 par(mar = c(4, 5, 2, 6))
 plot(
@@ -383,11 +383,11 @@ plot(
   ylim = c(0, 100)
 )
 axis(4)
-mtext("Psurv (%)", side = 4, line = 3)
+mtext("P (% survival)", side = 4, line = 3)
 legend(
   2012,
   20,
-  legend = c("r", "Psurv"),
+  legend = c("r", "P"),
   pch = c(16, 22),
   pt.cex = 1.5,
   cex = 1,
@@ -515,13 +515,6 @@ zero_prop_df <- plot_df |>
 
 ## overlay proportion zeroes onto violin plot
 r.violin.bar <- ggplot() +
-  ## Violin plot for r > 0
-  geom_violin(
-    data = plot_df_pos,
-    aes(x = factor(beetle_yr), y = r),
-    fill = "grey40",
-    color = "black"
-  ) +
   ## Overlay bars for proportion of zeroes
   geom_col(
     data = zero_prop_df,
@@ -530,6 +523,29 @@ r.violin.bar <- ggplot() +
     alpha = 0.3,
     width = 0.6
   ) +
+  ## Violin plot for r > 0
+  geom_violin(
+    data = plot_df_pos,
+    aes(x = factor(beetle_yr), y = r),
+    fill = "grey40",
+    color = "black"
+  ) +
+  ## Boxplot overlay (same data, same x/y)
+  geom_boxplot(
+    data = plot_df_pos,
+    aes(x = factor(beetle_yr), y = r),
+    width = 0.1
+  ) +
+
+  ## Median point overlay
+  stat_summary(
+    data = plot_df_pos,
+    aes(x = factor(beetle_yr), y = r),
+    fun = median,
+    geom = "point",
+    size = 2
+  ) +
+
   ## Log scale for r
   scale_y_log10(
     breaks = c(0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100),
@@ -550,8 +566,8 @@ r.violin.bar <- ggplot() +
     axis.title.x = element_text(margin = margin(t = 10))
   )
 
-ggsave(
-  file.path(figPath, "violinbarplot_r_over_time.png"),
+ggsave( #This is Figure 2 in the manuscript
+  file.path(figPath, "violinbarplot_r_over_time2.png"),
   r.violin.bar,
   height = 6,
   width = 9,
@@ -848,6 +864,9 @@ mod_AB <- lm(Rt_log_delagged2 ~ r_log + I(r_log^2), data = subset(rt_aligned_df,
 mod_sum <- summary(mod_AB)
 R2_val <- mod_sum$r.squared
 
+#This model includes 2007
+mod_AB_2007_incl <- lm(Rt_log_delagged2 ~ r_log + I(r_log^2), data = rt_aligned_df)
+
 p_val <- mod_sum$fstatistic
 p_val <- pf(p_val[1], p_val[2], p_val[3], lower.tail = FALSE)
 
@@ -909,6 +928,17 @@ AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
     breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
     labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)
   ) +
+  ## Dashed regression line INCLUDING 2007
+  geom_smooth(
+    data = rt_aligned_df,
+    aes(x = r_log, y = Rt_log_delagged2),
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    se = FALSE,
+    color = "black",
+    linetype = "dashed",
+    linewidth = 0.8
+  ) +
 
   ## (F) Red bounding box: r = 0.1–2, R = 0.1–2
   # annotate(
@@ -940,9 +970,250 @@ AB_Rvsr_plot <- ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
   )
 
 AB_Rvsr_plot
-ggsave(
+ggsave( #This is Figure 3 in the manuscript
   file.path(figPath, "AB_Rvsr.png"),
   AB_Rvsr_plot,
   height = 6,
   width = 6
 )
+
+#Replot but with Mtn Parks contrast as overlay
+#This is Figure 6 in the manuscript
+
+#Rebuild the MtnParks model on log R
+#You must run the Jasper script to get this data strcuture
+MtnParks_mod <- lm(Rt_log ~ r_log, data = MtnParks_plot_df)
+MtnParks_mod_sum <- summary(MtnParks_mod)
+
+mp.r2 <- format(round(MtnParks_mod_sum$r.squared, 2), nsmall = 2)
+mp.pval <- formatC(MtnParks_mod_sum$coefficients[2, "Pr(>|t|)"],
+                format = "f", digits = 5)
+annot_text_Mtn <- paste0("R² = ", mp.r2, "\np = ", mp.pval)
+
+#sanity test plot
+sanity.test.plot<-ggplot(MtnParks_plot_df, aes(x = r_log, y = Rt_log)) +
+  geom_point(size = 3, color = "#6A1B1A") +
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x,
+    se = TRUE,
+    color = "#6A1B1A",
+    fill = "#6A1B1A",
+    alpha = 0.2
+  ) +
+  geom_text(aes(label = beetle_yr), vjust = -1, size = 4) +
+
+  ## --- X AXIS: log scale, natural labels (IDENTICAL TO ALBERTA) ---
+  scale_x_continuous(
+    breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
+    labels = c("0.1", "0.2", "0.5", "1", "2", "5", "10", "20"),
+    name = "rₜ (natural scale)"
+  ) +
+
+  ## --- Y AXIS: log scale, natural labels (IDENTICAL TO ALBERTA) ---
+  scale_y_continuous(
+    breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5)),
+    labels = c("0.1", "0.2", "0.5", "1", "2", "5"),
+    name = "Rₜ₊₂ (natural scale)"
+  ) +
+
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  )
+
+ABvsMtnParks_Rvsr_plot <-
+
+  ggplot(rt_aligned_df, aes(x = r_log, y = Rt_log_delagged2)) +
+
+  ## (A) Solid black points
+  geom_point(size = 3, color = "black") +
+
+  ## (B) Year labels
+  geom_text(aes(label = beetle_yr), vjust = -1, size = 4) +
+
+  ## (C) Quadratic regression line with shaded SE interval
+  geom_smooth(
+    data = subset(rt_aligned_df, beetle_yr != 2007),
+    aes(x = r_log, y = Rt_log_delagged2),
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    se = TRUE,
+    color = "black",
+    fill = "grey70",
+    alpha = 0.4
+  ) +
+
+  ## (D) Highlight 2007 immigration point with red ring
+  geom_point(
+    data = df_2007,
+    aes(x = r_log, y = Rt_log_delagged2),
+    shape = 21,
+    fill = NA,
+    color = "red",
+    stroke = 1.2,
+    size = 5
+  ) +
+
+  ## (E) Natural-scale axis labels on log10 coordinates
+  scale_x_continuous(
+    name = expression(r[t]),
+    breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20) + 1),
+    labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20),
+    limits = c(log10(0.2 + 1), log10(16 + 1))
+  ) +
+  scale_y_continuous(
+    name = expression(R[t + 2] == C[t + 2] / C[t + 1]),
+    breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
+    labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)
+  ) +
+
+  ## (G) R^2 annotation
+  annotate(
+    "text",
+    x = x_center,
+    y = y_center,
+    hjust = 0.5,
+    vjust = 0.5,
+    label = annot_text,
+    size = 5
+  ) +
+
+  ## (H) Square frame and harmonized theme
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  )
+
+ABvsMtnParks_Rvsr_plot <- ggplot() +
+## ------------------------------------------------------------
+## (1) MOUNTAIN PARKS — plotted FIRST, in maroon
+## ------------------------------------------------------------
+geom_point(
+  data = MtnParks_plot_df,
+  aes(x = r_log, y = Rt_log),
+  size = 3,
+  color = "#6A1B1A"
+) +
+  geom_smooth(
+    data = MtnParks_plot_df,
+    aes(x = r_log, y = Rt_log),
+    method = "lm",
+    formula = y ~ x,
+    se = TRUE,
+    color = "#6A1B1A",
+    fill = "#6A1B1A",
+    alpha = 0.2
+  ) +
+  geom_text(
+    data = MtnParks_plot_df,
+    aes(x = r_log, y = Rt_log, label = beetle_yr),
+    vjust = -1,
+    size = 4,
+    color = "#6A1B1A"
+  ) +
+
+## ------------------------------------------------------------
+## (2) ALBERTA — plotted AFTER, in black
+## ------------------------------------------------------------
+geom_point(
+  data = rt_aligned_df,
+  aes(x = r_log, y = Rt_log_delagged2),
+  size = 3,
+  color = "black"
+) +
+  geom_text(
+    data = rt_aligned_df,
+    aes(x = r_log, y = Rt_log_delagged2, label = beetle_yr),
+    vjust = -1,
+    size = 4
+  ) +
+  geom_smooth(
+    data = subset(rt_aligned_df, beetle_yr != 2007),
+    aes(x = r_log, y = Rt_log_delagged2),
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    se = TRUE,
+    color = "black",
+    fill = "grey70",
+    alpha = 0.4
+  ) +
+  geom_point(
+    data = df_2007,
+    aes(x = r_log, y = Rt_log_delagged2),
+    shape = 21,
+    fill = NA,
+    color = "red",
+    stroke = 1.2,
+    size = 5
+  ) +
+
+## ------------------------------------------------------------
+## (3) AXES — EXACTLY as in your Alberta block
+## ------------------------------------------------------------
+scale_x_continuous(
+  name = expression(r[t]),
+  breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20) + 1),
+  labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20),
+  limits = c(log10(0.2 + 1), log10(20 + 1))
+) +
+  scale_y_continuous(
+    name = expression(R[t + 2] == C[t + 2] / C[t + 1]),
+    breaks = log10(c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)),
+    labels = c(0.1, 0.2, 0.5, 1, 2, 5, 10, 20)
+  ) +
+## ------------------------------------------------------------
+## (4a) R² annotation (Alberta)
+## ------------------------------------------------------------
+annotate(
+  "text",
+  x = x_center,
+  y = y_center,
+  hjust = 0.5,
+  vjust = 0.5,
+  label = annot_text,
+  size = 5
+) +
+
+## ------------------------------------------------------------
+## (4b) R² annotation (Alberta)
+## ------------------------------------------------------------
+annotate(
+  "text",
+  x = log10(5),
+  y = log10(0.08),
+  hjust = 0.5,
+  vjust = 0.5,
+  label = annot_text_Mtn,
+  size = 5,
+  col="#6A1B1A"
+) +
+
+  ## ------------------------------------------------------------
+## (5) Theme — unchanged
+## ------------------------------------------------------------
+theme_minimal(base_size = 12) +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
+    axis.line = element_line(color = "black"),
+    axis.ticks = element_line(color = "black"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  )
+ggsave( #This is Figure 6 in the manuscript
+  file.path(figPath, "MtnParksvsAB_Rvsr.png"),
+  ABvsMtnParks_Rvsr_plot,
+  height = 6,
+  width = 6,
+  dpi=300
+)
+
+
